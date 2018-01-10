@@ -1,0 +1,3 @@
+This is unit test data. We have code to generate this in nitf_file_test (which
+depends on AFIDS). Nothing special about this code, it is just some basic
+NITF that we can check we can read.
