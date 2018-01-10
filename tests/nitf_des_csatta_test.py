@@ -1,5 +1,5 @@
 from pynitf.nitf_des_csatta import *
-from test_support import *
+from pynitf_test_support import *
 import io, six
 
 def test_des_csatta_basic():

@@ -1,5 +1,5 @@
 from pynitf.nitf_text_subheader import *
-from test_support import *
+from pynitf_test_support import *
 import io, six
 
 def test_text_subheader_basic():

@@ -5,7 +5,7 @@ from pynitf.nitf_tre_piae import *
 from pynitf.nitf_tre_rpc import *
 from pynitf.nitf_tre_geosde import *
 from pynitf.nitf_des_csatta import *
-from test_support import *
+from pynitf_test_support import *
 import subprocess
 import os
 import json

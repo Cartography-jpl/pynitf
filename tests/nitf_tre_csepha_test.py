@@ -1,6 +1,6 @@
 from pynitf.nitf_tre import *
 from pynitf.nitf_tre_csepha import *
-from test_support import *
+from pynitf_test_support import *
 import io, six
 
 #To Do: Figure out how to deal w floating point numbers

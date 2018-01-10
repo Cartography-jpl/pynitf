@@ -1,6 +1,6 @@
 from pynitf.nitf_tre import *
 from pynitf.nitf_tre_rsmpia import *
-from test_support import *
+from pynitf_test_support import *
 import io, six
 
 def test_tre_rsmpia():

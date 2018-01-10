@@ -1,6 +1,6 @@
 from pynitf.nitf_tre import *
 from pynitf.nitf_tre_rsmapb import *
-from test_support import *
+from pynitf_test_support import *
 import io, six
 
 _gsapids = ['OFFX', 'OFFY', 'OFFZ', 'ROTX', 'ROTY', 'ROTZ', 'SCAL',

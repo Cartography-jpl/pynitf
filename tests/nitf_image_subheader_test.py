@@ -1,6 +1,6 @@
 from pynitf.nitf_file_header import *
 from pynitf.nitf_image_subheader import *
-from test_support import *
+from pynitf_test_support import *
 import io,six
 
 def test_basic():
