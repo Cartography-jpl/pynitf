@@ -171,6 +171,18 @@ class NitfImageGeneral(NitfImage):
             self.dataType = dataType
             #self.data = np.ndarray(shape=(nrow, ncol, numbands), dtype = dataType,
             #            buffer=np.array([value]*nrow*ncol*numbands))
+
+        set_image_subheader(nrow, ncol, dataType, numbands)
+
+    def __str__(self):
+        if hasattr(self.data, 'shape'):
+            return "NitfImageGeneral %d x %d, %d bands of type %s" \
+                   % (self.data.shape[0], self.data.shape[1], self.data.shape[2], self.data.dtype)
+        else:
+            return "NitfImageGeneral %d x %d, %d bands, blob size %d" \
+               % (self.image_subheader.nrows, self.image_subheader.ncols, self.image_subheader.nbands, self.data_size)
+
+    def set_image_subheader(self, nrow, ncol, dataType, numbands):
         ih = self.image_subheader
         ih.iid1 = "Test data"
         ih.iid2 = "This is from a NitfImageFromNumpy, used as sample data."
@@ -194,6 +206,10 @@ class NitfImageGeneral(NitfImage):
             ih.abpp = 32
             ih.nbpp = 32
             ih.pvtype = "R"
+        elif (dataType == np.float64):
+            ih.abpp = 64
+            ih.nbpp = 64
+            ih.pvtype = "R"
         else:
             raise NitfImageCannotHandle("Unsupported dataType")
 
@@ -207,21 +223,13 @@ class NitfImageGeneral(NitfImage):
 
         for b in range(numbands):
             ih.irepband[b] = 'M'
-            ih.isubcat[b] = b+1
+            ih.isubcat[b] = b + 1
             ih.nluts[b] = 0
 
-        #If numbands is 1, we end up with the irepband being "R"
-        ih.irepband[numbands-1] = "B"
-        ih.irepband[int(numbands/2)] = "G"
+        # If numbands is 1, we end up with the irepband being "R"
+        ih.irepband[numbands - 1] = "B"
+        ih.irepband[int(numbands / 2)] = "G"
         ih.irepband[0] = "R"
-
-    def __str__(self):
-        if hasattr(self.data, 'shape'):
-            return "NitfImageGeneral %d x %d, %d bands of type %s" \
-                   % (self.data.shape[0], self.data.shape[1], self.data.shape[2], self.data.dtype)
-        else:
-            return "NitfImageGeneral %d x %d, %d bands, blob size %d" \
-               % (self.image_subheader.nrows, self.image_subheader.ncols, self.image_subheader.nbands, self.data_size)
 
     #Todo: Since we don't store the data in self.data anymore,
     #We need to now provide data accessor functions instead of allowing for direct
