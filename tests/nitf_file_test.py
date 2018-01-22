@@ -227,9 +227,9 @@ def test_tre_overflow_write(isolated_dir):
     check_tre([tre for tre in f2.tre_list if tre.tre_tag == "USE00A"][0])
     check_tre2([tre for tre in f2.image_segment[0].tre_list if tre.tre_tag == "USE00A"][0])
     print_diag(f2)
-    
+
+@require_raid
 def test_read_quickbird():
-    '''Test reading a quickbird NITF file.'''
     # This is a large file, which we don't want to depend on. Run this
     # test if we happen to find the data, but skip otherwise.
     fname = "/raid21/quickbird/05NOV23034644-P1BS-005545406180_01_P001.NTF"
@@ -242,6 +242,7 @@ def test_read_quickbird():
         print(f.summary())
         print(f)
 
+@require_raid
 def test_read_worldview():
     '''Test reading a worldview NITF file.'''
     # This is a large file, which we don't want to depend on. Run this
@@ -256,6 +257,7 @@ def test_read_worldview():
         print(f.summary())
         print(f)
 
+@require_raid
 def test_read_ikonos():
     '''Test reading a ikonos NITF file.'''
     # This is a large file, which we don't want to depend on. Run this
@@ -270,6 +272,7 @@ def test_read_ikonos():
         print(f.summary())
         print(f)
 
+@require_raid
 def test_copy_quickbird():
     #Test copying a quickbird NITF file. It creates a copy of the file and then
     #reads it back and compares the str() result to that of the original file
@@ -293,6 +296,7 @@ def test_copy_quickbird():
 
     assert originalOutput == copyOutput
 
+@require_raid    
 @pytest.mark.skip(reason="We're writing out a duplicate TRE for some reason for this file.")
 def test_copy_worldview():
     #Test copying a worldview NITF file. It creates a copy of the file and then
@@ -316,6 +320,7 @@ def test_copy_worldview():
 
     assert originalOutput == copyOutput
 
+@require_raid    
 def test_copy_ikonos():
     #Test copying a ikonos NITF file. It creates a copy of the file and then
     #reads it back and compares the str() result to that of the original file
