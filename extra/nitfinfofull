@@ -1,0 +1,30 @@
+#! /usr/bin/env python
+from __future__ import print_function
+import pynitf
+import subprocess
+import os
+import sys
+import docopt_simple
+
+version="%prog Feb 22, 2018"
+usage="""Usage: 
+  nitfinfo [options] <input_file>
+  nitfinfo -h | --help
+  nitfinfo -v | --version
+
+Print out full information about a NITF file.
+
+This program is equivalent to running nitfinfo --full in geocal
+
+Options:
+  -h --help         
+       Print this message
+
+  -v --version      
+       Print program version
+
+"""
+args = docopt_simple.docopt_simple(usage, version=version)
+
+f = pynitf.NitfFile(args.input_file)
+print(f)
