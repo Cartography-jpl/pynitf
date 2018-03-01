@@ -1,5 +1,6 @@
 from __future__ import print_function
 from .nitf_field import *
+import six
 
 hlp = '''This is a NITF image subheader. The field names can be pretty
 cryptic, but these are documented in detail in the NITF 2.10 documentation
@@ -99,3 +100,5 @@ def _summary(self):
     return res.getvalue()
 
 NitfImageSubheader.summary = _summary
+
+__all__ = ["NitfImageSubheader"]

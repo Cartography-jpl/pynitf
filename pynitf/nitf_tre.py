@@ -290,3 +290,7 @@ def create_nitf_tre_structure(name, description, hlp = None,
     _tre_class[tre_tag.encode("utf-8")] = res
     return res
     
+__all__ = [ "Tre", "TreObjectImplementation", "TreUnknown", "tre_object",
+            "read_tre", "prepare_tre_write", "read_tre_data",
+            "create_nitf_tre_structure"]
+

@@ -60,3 +60,5 @@ desc2 = copy.deepcopy(desc)
 desc2[0] = "RPC00A"
 
 TreRPC00A = create_nitf_tre_structure("TreRPC00A",desc2,hlp=hlp)
+
+__all__ = [ "TreRPC00B", "TreRPC00A"]

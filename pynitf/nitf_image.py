@@ -281,3 +281,7 @@ class NitfImageGeneral(NitfImage):
 
         else:
             fh.write(self.data.tobytes())
+
+__all__ = ["NitfImageCannotHandle", "NitfImage", "NitfImagePlaceHolder",
+           "NitfImageFromNumpy", "NitfImageGeneral"]
+

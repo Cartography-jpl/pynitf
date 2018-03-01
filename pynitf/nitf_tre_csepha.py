@@ -1,6 +1,7 @@
 from __future__ import print_function
 from .nitf_field import *
 from .nitf_tre import *
+import six
 
 hlp = '''This is the CSEPHA TRE, Ephemeris Data. 
 
@@ -35,3 +36,4 @@ def _summary(self):
 
 TreCSEPHA.summary = _summary
 
+__all__ = [ "TreCSEPHA" ]

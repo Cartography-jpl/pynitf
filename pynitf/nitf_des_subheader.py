@@ -1,5 +1,6 @@
 from __future__ import print_function
 from .nitf_field import *
+import six
 
 hlp = '''This is a NITF DES subheader. The field names can be pretty
 cryptic, but these are documented in detail in the NITF 2.10 documentation
@@ -41,3 +42,5 @@ def summary(self):
     return res.getvalue()
 
 NitfDesSubheader.summary = summary
+
+__all__ = ["NitfDesSubheader"]

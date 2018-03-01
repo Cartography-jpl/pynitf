@@ -174,3 +174,5 @@ class NitfImageHDF5(NitfImage):
                 else:
                     print("we're at exact match on both dimensions along block boundaries")
                     self.writeFullRow(fh, data, h_low, h_high, v_low, v_high)
+
+__all__ = ["NitfImageHDF5"]

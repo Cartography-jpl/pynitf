@@ -1,6 +1,7 @@
 from __future__ import print_function
 from .nitf_field import *
 from .nitf_tre import *
+import six
 
 hlp = '''This is the SENSRB TRE, Sensor parameters.
 
@@ -254,3 +255,5 @@ def _summary(self):
     return res.getvalue()
 
 TreSENSRB.summary = _summary
+
+__all__ = [ "TreSENSRB" ]

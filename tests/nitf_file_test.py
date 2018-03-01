@@ -5,10 +5,13 @@ from pynitf.nitf_tre_piae import *
 from pynitf.nitf_tre_rpc import *
 from pynitf.nitf_tre_geosde import *
 from pynitf.nitf_des_csatta import *
+from pynitf.nitf_image import *
+from pynitf.nitf_tre import *
 from pynitf_test_support import *
 import subprocess
 import os
 import json
+import six
 
 # Do these in a few places, so collect in one spot.
 def create_image_seg(f):

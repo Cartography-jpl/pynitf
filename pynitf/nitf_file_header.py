@@ -87,4 +87,5 @@ def summary(self):
 
 NitfFileHeader.summary = summary
 
+__all__ = ["NitfFileHeader"]
 
