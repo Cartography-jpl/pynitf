@@ -10,7 +10,8 @@ setup(name='pynitf',
       packages=['pynitf'],
       install_requires=[
           'six',
-          'numpy'
+          'numpy',
+          'docopt'
       ],
       extras_require={
           'test': ['pytest'],
