@@ -51,3 +51,4 @@ desc = ["RSMPIA",
 TreRSMPIA = create_nitf_tre_structure("TreRSMPIA",desc,hlp=hlp)
                                       
 
+__all__ = [ "TreRSMPIA" ]

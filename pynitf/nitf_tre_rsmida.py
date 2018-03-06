@@ -105,3 +105,4 @@ desc = ["RSMIDA",
 
 TreRSMIDA = create_nitf_tre_structure("TreRSMIDA",desc,hlp=hlp)
 
+__all__ = [ "TreRSMIDA" ]

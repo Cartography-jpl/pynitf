@@ -1,6 +1,7 @@
 from __future__ import print_function
 from .nitf_field import *
 from .nitf_tre import *
+import six
 
 hlp = '''This is the HISTOA TRE, History version A.
 
@@ -66,3 +67,5 @@ def _summary(self):
     return res.getvalue()
 
 TreHISTOA.summary = _summary
+
+__all__ = [ "TreHISTOA" ]

@@ -1,6 +1,7 @@
 from __future__ import print_function
 from .nitf_field import *
 from .nitf_tre import *
+import six
 
 hlp = '''This is the PIXMTA TRE, Pixel Metric.
 
@@ -46,3 +47,5 @@ def _summary(self):
     return res.getvalue()
 
 TrePIXMTA.summary = _summary
+
+__all__ = [ "TrePIXMTA" ]

@@ -1,5 +1,6 @@
 from __future__ import print_function
 from .nitf_tre import *
+import six
 
 hlp = '''This is the STDIDC TRE, Standard ID
 
@@ -93,4 +94,4 @@ def _summary(self):
 TreUSE00A.summary = _summary
 
 
-
+__all__ = ["TreSTDIDC", "TreUSE00A"]

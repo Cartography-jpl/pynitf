@@ -76,3 +76,4 @@ desc = ["RSMAPA",
 
 TreRSMAPA = create_nitf_tre_structure("TreRSMAPA",desc,hlp=hlp)
 
+__all__ = [ "TreRSMAPA" ]

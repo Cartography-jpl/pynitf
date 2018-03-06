@@ -1,6 +1,7 @@
 from __future__ import print_function
 from .nitf_field import *
 from .nitf_tre import *
+import six
 
 hlp = '''This is the PIXQLA TRE, Pixel Quality.
 
@@ -33,3 +34,5 @@ def _summary(self):
     return res.getvalue()
 
 TrePIXQLA.summary = _summary
+
+__all__ = ["TrePIXQLA" ]

@@ -34,3 +34,5 @@ desc = ["PIAIMC",
         ]
 
 TrePIAIMC = create_nitf_tre_structure("TrePIAIMC", desc, hlp=hlp)
+
+__all__ = ["TrePIAIMC" ]

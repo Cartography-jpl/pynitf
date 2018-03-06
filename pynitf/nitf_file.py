@@ -484,4 +484,10 @@ class NitfResSegment(NitfPlaceHolder):
     segments called RES.'''
     def __init__(self, header_size=None, data_size=None):
         NitfPlaceHolder.__init__(self, header_size, data_size, "RES")
-    
+
+__all__ = ["NitfFile", "NitfSegmentHook", "NitfSegment",
+           "NitfPlaceHolder", "NitfImageSegment", "NitfGraphicSegment",
+           "NitfTextSegment", "NitfDesSegment", "NitfResSegment"]
+
+           
+           

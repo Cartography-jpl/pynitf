@@ -630,3 +630,6 @@ def create_nitf_field_structure(name, description, hlp = None):
         except AttributeError:
             pass
     return res
+
+__all__ = ["FieldData", "StringFieldData", "hardcoded_value", "NitfLiteral",
+           "create_nitf_field_structure"]

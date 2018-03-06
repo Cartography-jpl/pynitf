@@ -1,6 +1,7 @@
 from __future__ import print_function
 from .nitf_field import *
-from .nitf_des_subheader import *
+from .nitf_des_subheader import desc
+import six
 
 hlp = '''This is a NITF CSEPHB DES. The field names can be pretty
 cryptic, but these are documented in detail in the NITF 2.10 documentation
@@ -52,3 +53,5 @@ def _summary(self):
     return res.getvalue()
 
 DesCSEPHB.summary = _summary
+
+__all__ = ["DesCSEPHB"]

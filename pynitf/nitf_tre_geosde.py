@@ -84,3 +84,4 @@ desc = ["PRJPSB",
 TrePRJPS = create_nitf_tre_structure("TrePRJPS", desc, hlp=hlp)
 
         
+__all__ = [ "TreMAPLO", "TreGEOPS", "TrePRJPS" ]
