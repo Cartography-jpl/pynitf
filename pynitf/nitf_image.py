@@ -172,7 +172,7 @@ class NitfImageGeneral(NitfImage):
             #self.data = np.ndarray(shape=(nrow, ncol, numbands), dtype = dataType,
             #            buffer=np.array([value]*nrow*ncol*numbands))
 
-        set_image_subheader(nrow, ncol, dataType, numbands)
+        self.set_image_subheader(nrow, ncol, dataType, numbands)
 
     def __str__(self):
         if hasattr(self.data, 'shape'):

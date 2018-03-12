@@ -4,17 +4,19 @@
 
 # Code is in geocal.nitf (not geocal)
 #from geocal.nitf import *
-from .nitf_file import *
-from .nitf_tre_csde import *
-from .nitf_tre_csepha import *
-from .nitf_tre_piae import *
-from .nitf_tre_rpc import *
-from .nitf_tre_geosde import *
-from .nitf_tre_histoa import *
-from .nitf_des_csatta import *
-from test_support import *
+from pynitf.nitf_file import *
+from pynitf.nitf_image import *
+from pynitf.nitf_tre_csde import *
+from pynitf.nitf_tre_csepha import *
+from pynitf.nitf_tre_piae import *
+from pynitf.nitf_tre_rpc import *
+from pynitf.nitf_tre_geosde import *
+from pynitf.nitf_tre_histoa import *
+from pynitf.nitf_des_csatta import *
+from pynitf_test_support import *
 import copy
 import json
+import six
 
 def createHISTOA():
 
