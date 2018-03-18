@@ -8,9 +8,9 @@ import docopt_simple
 
 version="%prog Feb 22, 2018"
 usage="""Usage: 
-  nitfinfo [options] <input_file>
-  nitfinfo -h | --help
-  nitfinfo -v | --version
+  nitfinfofull [options] <input_file>
+  nitfinfofull -h | --help
+  nitfinfofull -v | --version
 
 Print out full information about a NITF file.
 
