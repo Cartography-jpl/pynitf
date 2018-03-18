@@ -2,8 +2,6 @@
 # Example of creating a simple nitf file
 #======================================================================
 
-# Code is in geocal.nitf (not geocal)
-#from geocal.nitf import *
 from pynitf.nitf_file import *
 from pynitf.nitf_image import *
 from pynitf.nitf_tre_csde import *
@@ -67,7 +65,7 @@ def test_main():
     f.image_segment.append(NitfImageSegment(img))
 
     # Create a larger img segment
-    img2 = NitfImageGeneral(nrow=3000, ncol=3000, numbands=100)
+    img2 = NitfImageGeneral(nrow=3000, ncol=3000, numbands=50)
     segment2 = NitfImageSegment(img2)
     segment2.tre_list.append(createHISTOA())
     f.image_segment.append(segment2)
