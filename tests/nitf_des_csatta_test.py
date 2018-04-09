@@ -38,4 +38,4 @@ def test_des_csatta_basic():
         assert d2.att_q3[n] == 0.11111
         assert d2.att_q4[n] == 0.11111
 
-    print (d2.summary())
+    print (d2)
