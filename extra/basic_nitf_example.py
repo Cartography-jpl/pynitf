@@ -11,10 +11,10 @@ from pynitf.nitf_tre_rpc import *
 from pynitf.nitf_tre_geosde import *
 from pynitf.nitf_tre_histoa import *
 from pynitf.nitf_des_csatta import *
-from pynitf_test_support import *
 import copy
 import json
 import six
+import numpy as np
 
 def createHISTOA():
 
@@ -44,6 +44,9 @@ def createHISTOA():
 
     return t
 
+def write_zero(d, bstart, lstart, sstart):
+    d[:,:,:] = 0
+
 def test_main():
     # Create the file. We don't supply a name yet, that comes when we actually
     # write
@@ -54,7 +57,7 @@ def test_main():
     # the data into a numpy array, which is nice for testing. We'll probably
     # need to write other image sources (although most things can go to a
     # numpy array, so maybe not).
-    img = NitfImageFromNumpy(nrow=10, ncol=10)
+    img = NitfImageWriteNumpy(10, 10, np.uint8)
     for i in range(10):
         for j in range(10):
             img.data[i,j] = i + j
@@ -65,12 +68,12 @@ def test_main():
     f.image_segment.append(NitfImageSegment(img))
 
     # Create a larger img segment
-    img2 = NitfImageGeneral(nrow=3000, ncol=3000, numbands=50)
+    img2 = NitfImageWriteDataOnDemand(nrow=3000, ncol=3000, data_type=np.uint8,
+                                      numbands=50, data_callback=write_zero,
+                                      generate_by_band=True)
     segment2 = NitfImageSegment(img2)
     segment2.tre_list.append(createHISTOA())
     f.image_segment.append(segment2)
-
-
 
     # Can add TRES to either the file or image segment level. This automatically
     # handles TRE overflow, you just put the tre in and the writing figures out

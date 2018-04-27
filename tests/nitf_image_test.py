@@ -6,16 +6,16 @@ import io,six
 
 def test_basic_read():
     t = NitfFileHeader()
-    t2 = NitfImageFromNumpy()
+    t2 = NitfImageReadNumpy(mmap=True)
     with open(unit_test_data + "sample.ntf", 'rb') as fh:
         t.read_from_file(fh)
         t2.image_subheader.read_from_file(fh)
         t2.read_from_file(fh)
-    assert t2.data.shape == (10, 10)
+    assert t2.data.shape == (1, 10, 10)
     for i in range(10):
         for j in range(10):
-            assert t2.data[i,j] == i + j
-    t2 = NitfImageFromNumpy(nrow=10, ncol=10)
+            assert t2[i,j] == i + j
+    t2 = NitfImageWriteNumpy(10, 10, np.uint8)
     assert t2.data.shape == (10, 10)
     for i in range(10):
         for j in range(10):

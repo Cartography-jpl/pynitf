@@ -12,10 +12,11 @@ import subprocess
 import os
 import json
 import six
+import numpy as np
 
 # Do these in a few places, so collect in one spot.
 def create_image_seg(f):
-    img = NitfImageFromNumpy(nrow=10, ncol=10)
+    img = NitfImageWriteNumpy(10, 10, np.uint8)
     for i in range(10):
         for j in range(10):
             img.data[i,j] = i + j
@@ -141,10 +142,10 @@ def test_basic_read():
     f = NitfFile(unit_test_data + "sample.ntf")
     assert len(f.image_segment) == 1
     img = f.image_segment[0].data
-    assert img.data.shape == (10,10)
+    assert img.data.shape == (1, 10,10)
     for i in range(10):
         for j in range(10):
-            assert img.data[i,j] == i + j
+            assert img[i,j] == i + j
     if(False):
         print(f)
 
@@ -165,10 +166,10 @@ def test_basic_write(isolated_dir):
     f2 = NitfFile("z.ntf")
     assert len(f2.image_segment) == 1
     img = f2.image_segment[0].data
-    assert img.data.shape == (10,10)
+    assert img.data.shape == (1, 10,10)
     for i in range(10):
         for j in range(10):
-            assert img.data[i,j] == i + j
+            assert img[i,j] == i + j
     assert len(f2.tre_list) == 1
     assert len(f2.image_segment[0].tre_list) == 1
     check_tre(f2.tre_list[0])
@@ -192,10 +193,10 @@ def test_large_tre_write(isolated_dir):
     f2 = NitfFile("z.ntf")
     assert len(f2.image_segment) == 1
     img = f2.image_segment[0].data
-    assert img.data.shape == (10,10)
+    assert img.data.shape == (1, 10,10)
     for i in range(10):
         for j in range(10):
-            assert img.data[i,j] == i + j
+            assert img[i,j] == i + j
     assert len(f2.tre_list) == 2
     assert len(f2.image_segment[0].tre_list) == 2
     check_tre([tre for tre in f2.tre_list if tre.tre_tag == "USE00A"][0])
@@ -221,10 +222,10 @@ def test_tre_overflow_write(isolated_dir):
     f2 = NitfFile("z.ntf")
     assert len(f2.image_segment) == 1
     img = f2.image_segment[0].data
-    assert img.data.shape == (10,10)
+    assert img.data.shape == (1, 10,10)
     for i in range(10):
         for j in range(10):
-            assert img.data[i,j] == i + j
+            assert img[i,j] == i + j
     assert len(f2.tre_list) == 3
     assert len(f2.image_segment[0].tre_list) == 3
     check_tre([tre for tre in f2.tre_list if tre.tre_tag == "USE00A"][0])
@@ -369,5 +370,4 @@ def test_full_file(isolated_dir):
 
     print("Text Data:")
     print(f2.text_segment[0].data)        
-    f2.write("basic_nitf2.ntf")
     
