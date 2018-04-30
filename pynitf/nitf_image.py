@@ -124,13 +124,13 @@ class NitfImageReadNumpy(NitfImageWithSubset):
     This is a good default class. It does not handle blocked data or 
     compression however.
     '''
-    def __init__(self, *args, mmap=True, **kwargs):
+    def __init__(self, *args, **kwargs):
         '''Read data. If the keyword mmap=True, we memory map the data rather
         than reading it into memory (useful for larger files). Otherwise, we
         read directly into memory'''
+        self.do_mmap = kwargs.pop('mmap', True)
         super().__init__(*args, **kwargs)
         self.data = None
-        self.do_mmap = mmap
         if self.image_subheader is None:
             self.image_subheader = NitfImageSubheader()
 

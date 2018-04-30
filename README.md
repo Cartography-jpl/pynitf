@@ -8,7 +8,7 @@ The module is extendable, you can add new TREs and can also tie in new objects
 to manage TREs. See GeoCal, with the file geocal_nitf_rsm.py to see how this 
 works.
 
-## Callbacks
+## On demand data
 
 NITF is an old format, with all kinds of limitations. One limitation is that
 we can't write out data until we are creating the whole file.
@@ -28,6 +28,18 @@ access it when we actually write out the NITF file.
 An alternative is to generate data on demand. Rather than writing to a NITF 
 file, we register various call back functions to generate the data when we
 are ready for it. These callbacks then get called as we write out the file.
+
+See the class NitfImageWriteDataOnDemand, and derived classes for an example
+of supplying the data on demand.
+
+In addition, it can be useful to create TRE metadata and/or make other
+changes when a NITF element is getting written out or read in. We
+supply a list of "hooks" to be be run, providing a higher level interface.
+See for example geocal_nitf_rsm.py in GeoCal for an example of supplying
+a "rsm" object tied to the multiple RSM TREs.
+
+The hooks are there as a convenience, there is also nothing wrong with
+directly creating TREs and adding to the various segments directly.
 
 
 
