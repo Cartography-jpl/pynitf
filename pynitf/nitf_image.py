@@ -230,20 +230,35 @@ class NitfImageWriteNumpy(NitfImageWriteDataOnDemand):
         super().__init__(nrow, ncol, data_type, numbands=numbands,
                          iid1=iid1, iid2=iid2, idatim=idatim)
         if(numbands == 1):
-            self.data = np.zeros((nrow, ncol), dtype = data_type,)
+            self._data = np.zeros((nrow, ncol), dtype = data_type,)
         else:
-            self.data = np.zeros((numbands,nrow, ncol), dtype = data_type,)
+            self._data = np.zeros((numbands,nrow, ncol), dtype = data_type,)
+
+    # Declare a few types that we would expect from a numpy array
+    @property
+    def shape(self):
+        return self._data.shape
+
+    @property
+    def dtype(self):
+        return self._data.dtype
+
+    def __getitem__(self, ind):
+        return self._data[ind]
+
+    def __setitem__(self, ind, v):
+        self._data[ind] = v
 
     def __str__(self):
         if(self.image_subheader.number_band == 1):
-            return "NitfImageWriteNumpy %d x %d %s image" % (self.data.shape[0], self.data.shape[1], str(self.data.dtype.newbyteorder("=")))
-        return "NitfImageWriteNumpy %d x %d x %d %s image" % (self.data.shape[0],self.data.shape[1], self.data.shape[2], str(self.data.dtype.newbyteorder("=")))
+            return "NitfImageWriteNumpy %d x %d %s image" % (self._data.shape[0], self._data.shape[1], str(self._data.dtype.newbyteorder("=")))
+        return "NitfImageWriteNumpy %d x %d x %d %s image" % (self._data.shape[0],self._data.shape[1], self._data.shape[2], str(self._data.dtype.newbyteorder("=")))
 
     def data_to_write(self, d, bstart, lstart, sstart):
         if(self.image_subheader.number_band == 1):
-            d[0,:,:] = self.data[lstart:(lstart+d.shape[1]),sstart:(sstart+d.shape[2])]
+            d[0,:,:] = self._data[lstart:(lstart+d.shape[1]),sstart:(sstart+d.shape[2])]
         else:
-            d[:,:,:] = self.data[bstart:(bstart+d.shape[0]),lstart:(lstart+d.shape[1]),sstart:(sstart+d.shape[2])]
+            d[:,:,:] = self._data[bstart:(bstart+d.shape[0]),lstart:(lstart+d.shape[1]),sstart:(sstart+d.shape[2])]
 
 
 __all__ = ["NitfImageCannotHandle", "NitfImage", "NitfImagePlaceHolder",
