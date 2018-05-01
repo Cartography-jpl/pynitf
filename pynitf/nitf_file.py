@@ -11,6 +11,7 @@ from .nitf_des_subheader import NitfDesSubheader
 from .nitf_image import (NitfImagePlaceHolder, NitfImageCannotHandle,
                          NitfImageReadNumpy)
 from .nitf_tre import read_tre, prepare_tre_write
+from .nitf_tre_engrda import add_engrda_function
 import io,six,copy
 
 class NitfFile(object):
@@ -483,6 +484,11 @@ class NitfResSegment(NitfPlaceHolder):
     segments called RES.'''
     def __init__(self, header_size=None, data_size=None):
         NitfPlaceHolder.__init__(self, header_size, data_size, "RES")
+
+# Add engrda to give hash access to ENGRDA TREs
+add_engrda_function(NitfFile)
+add_engrda_function(NitfImageSegment)
+add_engrda_function(NitfTextSegment)
 
 __all__ = ["NitfFile", "NitfSegmentHook", "NitfSegment",
            "NitfPlaceHolder", "NitfImageSegment", "NitfGraphicSegment",
