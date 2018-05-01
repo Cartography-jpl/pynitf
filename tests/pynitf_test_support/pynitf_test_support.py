@@ -5,6 +5,7 @@ from unittest import SkipTest
 import os
 import sys
 import subprocess
+import re
 import pytest
 
 # Location of test data that is part of source
@@ -25,6 +26,25 @@ def cmd_exists(cmd):
 # python code that we know can't be run
 require_python3 = pytest.mark.skipif(not sys.version_info > (3,),
        reason = "require python 3 to run")                                     
+
+def gdal_value(f, line, sample, band = None):
+    '''Return value at the given location, according to gdal. This is 
+    return as a bytes, which you can then cast to the desired type
+    (e.g., int())'''
+    cmd = ["gdallocationinfo", "-valonly"]
+    if(band is not None):
+        cmd.extend(["-b", str(band + 1)])
+    cmd.extend([f, str(sample), str(line)])
+    res = subprocess.run(cmd, check=True,stdout=subprocess.PIPE).stdout
+    # Complex numbers need special handling, because gdallocationinfo doesn't
+    # write a string that python knows how to parse.
+    if(b'+' in res or b'i' in res):
+        res = (b'(' + re.sub(b'i', b'j', res.rstrip()) + b')\n').decode('utf-8')
+    return res
+
+require_gdal_value = pytest.mark.skipif(not sys.version_info > (3,) or
+                   not cmd_exists("gdallocationinfo"),
+                   reason="Require python 3 and gdallocationinfo")
 
 @pytest.yield_fixture(scope="function")
 def isolated_dir(tmpdir):

@@ -135,12 +135,12 @@ def _dtype(ih):
         return np.dtype('>i4')
     elif(ih.nbpp ==32 and ih.pvtype == "R"):
         return np.dtype('>f4')
-    elif(ih.nbpp ==32 and ih.pvtype == "C"):
-        return np.dtype('>c4')
-    elif(ih.nbpp ==64 and ih.pvtype == "R"):
-        return np.dtype('>f8')
     elif(ih.nbpp ==64 and ih.pvtype == "C"):
         return np.dtype('>c8')
+    elif(ih.nbpp ==64 and ih.pvtype == "R"):
+        return np.dtype('>f8')
+    elif(ih.nbpp ==128 and ih.pvtype == "C"):
+        return np.dtype('>c16')
     else:
         raise RuntimeError("Unrecognized nbpp %d and pvtype %s" %
                            (ih.nbpp, ih.pvtype))
@@ -186,17 +186,17 @@ def _set_dtype(ih, data_type):
         ih.abpp = 32
         ih.nbpp = 32
         ih.pvtype = "R"
-    elif (data_type == np.dtype('<c4') or data_type == np.dtype('>c4')):
-        ih.abpp = 32
-        ih.nbpp = 32
+    elif (data_type == np.dtype('<c8') or data_type == np.dtype('>c8')):
+        ih.abpp = 64
+        ih.nbpp = 64
         ih.pvtype = "C"
     elif (data_type == np.dtype('<f8') or data_type == np.dtype('>f8')):
         ih.abpp = 64
         ih.nbpp = 64
         ih.pvtype = "R"
-    elif (data_type == np.dtype('<c8') or data_type == np.dtype('>c8')):
-        ih.abpp = 64
-        ih.nbpp = 64
+    elif (data_type == np.dtype('<c16') or data_type == np.dtype('>c16')):
+        ih.abpp = 128
+        ih.nbpp = 128
         ih.pvtype = "C"
     else:
         raise RuntimeError("Unsupported data_type")

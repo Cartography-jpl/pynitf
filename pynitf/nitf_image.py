@@ -139,6 +139,15 @@ class NitfImageReadNumpy(NitfImageWithSubset):
             return self.data[0, ind[0], ind[1]]
         return self.data[ind]
 
+    # Declare a few types that we would expect from a numpy array
+    @property
+    def shape(self):
+        return self.data.shape
+
+    @property
+    def dtype(self):
+        return self.data.dtype
+    
     def __str__(self):
         return "NitfImageReadNumpy %d x %d x %d %s image" % (self.data.shape[0], self.data.shape[1], self.data.shape[2], str(self.data.dtype.newbyteorder("=")))
 
