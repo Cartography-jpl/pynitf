@@ -12,6 +12,7 @@ from .nitf_image import (NitfImagePlaceHolder, NitfImageCannotHandle,
                          NitfImageReadNumpy)
 from .nitf_tre import read_tre, prepare_tre_write
 from .nitf_tre_engrda import add_engrda_function
+from .nitf_des import read_des_data
 import io,six,copy
 
 class NitfFile(object):
@@ -500,6 +501,15 @@ class NitfDesSegment(NitfSegment):
         print("Sub header:", file=fh)
         print(self.subheader, file=fh)
         print("Data length %d" % len(self.data), file=fh)
+
+        #Special case for TRE_OVERFLOW
+        #Because we will print the data out as TREs later so we'll skip
+        if (self.subheader.desid.encode("utf-8") == b'TRE_OVERFLOW'):
+            return ""
+
+        des = read_des_data(self.subheader.desid.encode("utf-8"), self.data)
+        print(des, file=fh)
+
         return fh.getvalue()
     def write_to_file(self, fh):
         '''Write to a file. The returns (sz_header, sz_data), because this

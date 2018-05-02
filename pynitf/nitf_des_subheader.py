@@ -8,7 +8,7 @@ cryptic, but these are documented in detail in the NITF 2.10 documentation
 
 The NITF DES subheader is described in Table A-8, starting page 112.
 '''
-desc = [['de', "", 2, str],
+des_desc = [['de', "", 2, str],
         ['desid', "", 25, str],
         ['dsver', "", 2, int],
         ['dsclas', "", 1, str],
@@ -32,7 +32,7 @@ desc = [['de', "", 2, str],
         ['desshl', "", 4, int],
         ['desshf', "", 'f.desshl', None, {'field_value_class' : FieldData}],
 ]
-NitfDesSubheader = create_nitf_field_structure("NitfDesSubheader", desc, hlp=hlp)
+NitfDesSubheader = create_nitf_field_structure("NitfDesSubheader", des_desc, hlp=hlp)
 
 NitfDesSubheader.de_value = hardcoded_value("DE")
 

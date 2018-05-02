@@ -1,6 +1,6 @@
 from __future__ import print_function
 from .nitf_field import *
-from .nitf_des_subheader import desc
+from .nitf_des import *
 import six
 
 hlp = '''This is a NITF CSATTA DES. The field names can be pretty
@@ -12,8 +12,8 @@ The NITF DES subheader is described in Table A-8, starting page 112.
 
 _quat_format = "%08.5lf"
 
-desc2 = desc + \
-       [['att_type', "Type of attitude data being provided", 12, str],
+desc2 =["CSATTA",
+        ['att_type', "Type of attitude data being provided", 12, str],
         ['dt_att', "Time interval between attitude reference points", 14, str],
         ['date_att', "Day of First Attitude Reference Point", 8, int],
         ['t0_att', "UTC of First Attitude Reference Point", 13, str],
@@ -28,9 +28,8 @@ desc2 = desc + \
 
 #print (desc2)
 
-DesCSATTA = create_nitf_field_structure("DesCSATTA", desc2, hlp=hlp)
+DesCSATTA = create_nitf_des_structure("DesCSATTA", desc2, hlp=hlp)
 
-DesCSATTA.desid = hardcoded_value("DES CSATTA")
 DesCSATTA.desver = hardcoded_value("01")
 
 def summary(self):
