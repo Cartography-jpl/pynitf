@@ -19,7 +19,7 @@ def create_image_seg(f):
     img = NitfImageWriteNumpy(9, 10, np.uint8)
     for i in range(9):
         for j in range(10):
-            img[i,j] = i * 10 + j
+            img[0, i,j] = i * 10 + j
     f.image_segment.append(NitfImageSegment(img))
 
 def create_tre(f):
@@ -145,7 +145,7 @@ def test_basic_read():
     assert img.shape == (1, 10, 10)
     for i in range(10):
         for j in range(10):
-            assert img[i,j] == i + j
+            assert img[0, i,j] == i + j
     if(False):
         print(f)
 
@@ -169,7 +169,7 @@ def test_basic_write(isolated_dir):
     assert img.shape == (1, 9, 10)
     for i in range(9):
         for j in range(10):
-            assert img[i,j] == i * 10 + j
+            assert img[0, i,j] == i * 10 + j
     assert len(f2.tre_list) == 1
     assert len(f2.image_segment[0].tre_list) == 1
     check_tre(f2.tre_list[0])
@@ -196,7 +196,7 @@ def test_large_tre_write(isolated_dir):
     assert img.shape == (1, 9, 10)
     for i in range(9):
         for j in range(10):
-            assert img[i,j] == i * 10 + j
+            assert img[0, i,j] == i * 10 + j
     assert len(f2.tre_list) == 2
     assert len(f2.image_segment[0].tre_list) == 2
     check_tre([tre for tre in f2.tre_list if tre.tre_tag == "USE00A"][0])
@@ -225,7 +225,7 @@ def test_tre_overflow_write(isolated_dir):
     assert img.shape == (1, 9, 10)
     for i in range(9):
         for j in range(10):
-            assert img[i,j] == i * 10 + j
+            assert img[0, i,j] == i * 10 + j
     assert len(f2.tre_list) == 3
     assert len(f2.image_segment[0].tre_list) == 3
     check_tre([tre for tre in f2.tre_list if tre.tre_tag == "USE00A"][0])

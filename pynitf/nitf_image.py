@@ -45,6 +45,25 @@ class NitfImage(object):
     def __str__(self):
         return 'NitfImage'
 
+    # Declare a few types that we would expect from a numpy array, since
+    # we often want to treat a NitfImage as something close to a numpy array.
+    @property
+    def shape(self):
+        return self.image_subheader.shape
+
+    @property
+    def dtype(self):
+        return self.image_subheader.dtype
+
+    # Few properties from image_subheader that we want at this level
+    @property
+    def idlvl(self):
+        return self.image_subheader.idlvl
+
+    @property
+    def iid1(self):
+        return self.image_subheader.iid1
+    
     @abc.abstractmethod
     def read_from_file(self, fh):
         '''Read an image from a file. For larger images a derived class might
@@ -135,21 +154,13 @@ class NitfImageReadNumpy(NitfImageWithSubset):
             self.image_subheader = NitfImageSubheader()
 
     def __getitem__(self, ind):
-        if(len(ind) == 2):
-            return self.data[0, ind[0], ind[1]]
         return self.data[ind]
 
-    # Declare a few types that we would expect from a numpy array
-    @property
-    def shape(self):
-        return self.data.shape
-
-    @property
-    def dtype(self):
-        return self.data.dtype
-    
     def __str__(self):
-        return "NitfImageReadNumpy %d x %d x %d %s image" % (self.data.shape[0], self.data.shape[1], self.data.shape[2], str(self.data.dtype.newbyteorder("=")))
+        if(self.shape[0] == 1):
+            print(self.dtype)
+            return "NitfImageReadNumpy %d x %d %s image" % (self.shape[1], self.shape[2], str(self.dtype.newbyteorder("=")))
+        return "NitfImageReadNumpy %d x %d x %d %s image" % (self.shape[0], self.shape[1], self.shape[2], str(self.dtype.newbyteorder("=")))
 
     def read_from_file(self, fh):
         '''Read from a file'''
@@ -166,14 +177,13 @@ class NitfImageReadNumpy(NitfImageWithSubset):
         if(self.do_mmap):
             foff = fh.tell()
             self.data = np.memmap(fh, mode="r", dtype = ih.dtype,
-                                  shape=(ih.number_band,ih.nrows, ih.ncols),
+                                  shape=self.shape,
                                   offset = foff)
             fh.seek(self.data.size * self.data.itemsize + foff, 0)
         else:
             self.data = np.fromfile(fh, dtype = ih.dtype,
                                     count=ih.nrows*ih.ncols*ih.number_band)
-            self.data = np.reshape(self.data, (ih.number_band, ih.nrows,
-                                               ih.ncols))
+            self.data = np.reshape(self.data, self.shape)
         self.data_size = self.data.size * self.data.itemsize
 
     def write_to_file(self, fh):
@@ -189,14 +199,30 @@ class NitfImageWriteDataOnDemand(NitfImageWithSubset):
                  numbands=1,
                  iid1 = "Test data", iid2 = "This is sample data",
                  idatim = "20160101120000",
+                 irep="MONO",
+                 icat="VIS",
+                 idlvl = 0,
                  generate_by_band=False):
         '''If generate_by_band=True, we call data_to_write a single band 
         at a time, otherwise we do everything at once. Depending on how
-        the data is generated or its size this can be more or less efficient.'''
+        the data is generated or its size this can be more or less efficient.
+
+        You can pass a number of values to set in the image subheader. You
+        can also just modify the image subheader after the constructor, 
+        whatever is more convenient.
+
+        Note that idlvl should be unique in a file, there are tools that 
+        depend on this (plus the standard says that it should be unique).
+
+        iid1 does *not* have to be unique, you can group similiar image 
+        together by giving them the same iid1 (e.g., have a number of 
+        "Radiance" image segments for multiple view from AirMSPI or something
+        like that).'''
         super().__init__(NitfImageSubheader())
         set_default_image_subheader(self.image_subheader, nrow, ncol, data_type,
                                     numbands=numbands, iid1=iid1, iid2=iid2,
-                                    idatim=idatim)
+                                    idatim=idatim, irep=irep, icat=icat,
+                                    idlvl=idlvl)
         self.data_callback = data_callback
         self.generate_by_band = generate_by_band
 
@@ -224,24 +250,9 @@ class NitfImageWriteDataOnDemand(NitfImageWithSubset):
 class NitfImageWriteNumpy(NitfImageWriteDataOnDemand):
     '''This is a simple implementation of a NitfImage where we just use 
     a numpy array to hold the data, and write that out.'''
-    def __init__(self, nrow, ncol, data_type, numbands=1,
-                 iid1 = "Test data", iid2 = "This is sample data",
-                 idatim = "20160101120000"):
-        super().__init__(nrow, ncol, data_type, numbands=numbands,
-                         iid1=iid1, iid2=iid2, idatim=idatim)
-        if(numbands == 1):
-            self._data = np.zeros((nrow, ncol), dtype = data_type,)
-        else:
-            self._data = np.zeros((numbands,nrow, ncol), dtype = data_type,)
-
-    # Declare a few types that we would expect from a numpy array
-    @property
-    def shape(self):
-        return self._data.shape
-
-    @property
-    def dtype(self):
-        return self._data.dtype
+    def __init__(self, nrow, ncol, data_type, **keywords):
+        super().__init__(nrow, ncol, data_type, **keywords)
+        self._data = np.zeros(self.shape, dtype = data_type)
 
     def __getitem__(self, ind):
         return self._data[ind]
@@ -250,18 +261,34 @@ class NitfImageWriteNumpy(NitfImageWriteDataOnDemand):
         self._data[ind] = v
 
     def __str__(self):
-        if(self.image_subheader.number_band == 1):
-            return "NitfImageWriteNumpy %d x %d %s image" % (self._data.shape[0], self._data.shape[1], str(self._data.dtype.newbyteorder("=")))
-        return "NitfImageWriteNumpy %d x %d x %d %s image" % (self._data.shape[0],self._data.shape[1], self._data.shape[2], str(self._data.dtype.newbyteorder("=")))
+        if(self.shape[0] == 1):
+            return "NitfImageWriteNumpy %d x %d %s image" % (self.shape[1], self.shape[2], str(self.dtype.newbyteorder("=")))
+        return "NitfImageWriteNumpy %d x %d x %d %s image" % (self.shape[0],self.shape[1], self.shape[2], str(self.dtype.newbyteorder("=")))
 
     def data_to_write(self, d, bstart, lstart, sstart):
-        if(self.image_subheader.number_band == 1):
-            d[0,:,:] = self._data[lstart:(lstart+d.shape[1]),sstart:(sstart+d.shape[2])]
-        else:
-            d[:,:,:] = self._data[bstart:(bstart+d.shape[0]),lstart:(lstart+d.shape[1]),sstart:(sstart+d.shape[2])]
+        d[:,:,:] = self._data[bstart:(bstart+d.shape[0]),lstart:(lstart+d.shape[1]),sstart:(sstart+d.shape[2])]
 
 
+class NitfRadCalc(object):
+    '''Sample calculation class, that shows how we can generate data on 
+    demand. See unit test for an example of this.'''
+    def __init__(self, dn_img, gain_img, offset_img):
+        '''Constructor. Takes images for DN, gain, and offset which should
+        supply the data as something like a numpy array or something
+        derived from NitfImageWithSubset. We pretty much need a __getitem__
+        that can take slices'''
+        self.dn = dn_img
+        self.gain = gain_img
+        self.offset = offset_img
+
+    def data_to_write(self, d, bstart, lstart, sstart):
+        bs = slice(bstart, bstart + d.shape[0])
+        ls = slice(lstart, lstart + d.shape[1])
+        ss = slice(sstart, sstart + d.shape[2])
+        d[:,:,:] = self.dn[bs,ls,ss] * self.gain[bs,ls,ss] + self.offset[bs,ls,ss]
+
+            
 __all__ = ["NitfImageCannotHandle", "NitfImage", "NitfImagePlaceHolder",
            "NitfImageReadNumpy", "NitfImageWriteDataOnDemand",
-           "NitfImageWriteNumpy"]
+           "NitfImageWriteNumpy", "NitfRadCalc"]
 

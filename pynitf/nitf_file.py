@@ -180,6 +180,28 @@ class NitfFile(object):
                     h.update_field(fh, fds, ds, (i,))
             # Now we have to update the file length
             h.update_field(fh, "fl", fh.tell())
+            
+    def iseg_by_idlvl(self, idlvl):
+        '''Return the image segment with a idlvl matching the given id'''
+        for iseg in self.image_segment:
+            if(iseg.idlvl == idlvl):
+                return iseg
+        return KeyError(str(id))
+
+    def iseg_by_iid1(self, iid1):
+        '''Return a (possibly empty) list of image segments with the given
+        iid1 value.'''
+        return [iseg for iseg in self.image_segment if iseg.iid1 == iid1]
+
+    def iseg_by_iid1_single(self,iid1):
+        '''Return a single match to the given iid1. If we have 0 or more than
+        1 match, then this throws an error.'''
+        t = self.iseg_by_iid1(iid1)
+        if(len(t) == 0):
+            raise KeyError(iid1)
+        if(len(t) > 1):
+            raise RuntimeError("More than one match found to iid1='%s'" % iid1)
+        return t[0]
 
 class NitfSegmentHook(object):
     '''To allow special handling of TREs etc. we allow a hook_list of
@@ -371,6 +393,16 @@ class NitfImageSegment(NitfSegment):
         print(self.data, file=fh)
         return fh.getvalue()
 
+    # Few properties from image_subheader that we want at this level
+    @property
+    def idlvl(self):
+        return self.subheader.idlvl
+
+    @property
+    def iid1(self):
+        return self.subheader.iid1
+    
+    
 class NitfGraphicSegment(NitfPlaceHolder):
     '''Graphic segment (GS), support the standard graphic type of data.'''
     def __init__(self, header_size=None, data_size=None):

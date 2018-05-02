@@ -194,7 +194,7 @@ TreENGRDA.__setitem__ = _setitem
 
 def _engrda_as_hash(self):
     '''Return access to all the ENGRDA TREs as a hash on resrc (which should be
-    unique). Error occurs is resrc is not unique.'''
+    unique). Error occurs if resrc is not unique.'''
     res = {}
     for t in self.tre_list:
         if(t.tre_tag == "ENGRDA"):

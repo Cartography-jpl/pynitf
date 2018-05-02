@@ -122,9 +122,9 @@ def _dtype(ih):
     this is what NITF uses. This is the opposite of the native intel format
     (which is little endian).'''
     if(ih.nbpp == 8 and ih.pvtype == "INT"):
-        return np.uint8
+        return np.dtype(np.uint8)
     elif(ih.nbpp == 8 and ih.pvtype == "SI"):
-        return np.int8
+        return np.dtype(np.int8)
     elif(ih.nbpp ==16 and ih.pvtype == "INT"):
         return np.dtype('>u2')
     elif(ih.nbpp ==16 and ih.pvtype == "SI"):
@@ -203,10 +203,18 @@ def _set_dtype(ih, data_type):
 
 NitfImageSubheader.dtype = property(_dtype, _set_dtype)
 
+def _shape(self):
+    return (self.number_band, self.nrows, self.ncols)
+
+NitfImageSubheader.shape = property(_shape)
+
 def set_default_image_subheader(ih, nrow, ncol, data_type, numbands=1,
                                 iid1 = "Test data",
                                 iid2 = "This is sample data.",
-                                idatim = "20160101120000"):
+                                idatim = "20160101120000",
+                                irep="MONO",
+                                icat="VIS",
+                                idlvl = 0):
     '''This populates an image subheader with some basic data. ih should
     be the image subheader. It is possible this function will go away as we
     learn a bit more about this, but for now we have this function.
@@ -218,6 +226,13 @@ def set_default_image_subheader(ih, nrow, ncol, data_type, numbands=1,
     np.dtype('>i2') are all treated the same by this function.'''
     ih.iid1 = iid1
     ih.iid2 = iid2
+    ih.idlvl = idlvl
+    # Should probably add some sort of overall class to handle classification
+    # stuff. For now, default to unclassfied
+    ih.isclas = "U"
+    ih.irep = irep
+    ih.icat = icat
+    ih.encryp = 0
     ih.idatim = idatim
     ih.nrows = nrow
     ih.ncols = ncol
@@ -228,6 +243,7 @@ def set_default_image_subheader(ih, nrow, ncol, data_type, numbands=1,
     ih.dtype = data_type
     ih.number_band = numbands 
     ih.ic = "NC"
+    ih.nicom = 0
 
     for b in range(numbands):
         ih.irepband[b] = 'M'
