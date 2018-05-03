@@ -148,7 +148,7 @@ class NitfImageReadNumpy(NitfImageWithSubset):
         than reading it into memory (useful for larger files). Otherwise, we
         read directly into memory'''
         self.do_mmap = kwargs.pop('mmap', True)
-        super().__init__(*args, **kwargs)
+        super(NitfImageReadNumpy, self).__init__(*args, **kwargs)
         self.data = None
         if self.image_subheader is None:
             self.image_subheader = NitfImageSubheader()
@@ -218,7 +218,7 @@ class NitfImageWriteDataOnDemand(NitfImageWithSubset):
         together by giving them the same iid1 (e.g., have a number of 
         "Radiance" image segments for multiple view from AirMSPI or something
         like that).'''
-        super().__init__(NitfImageSubheader())
+        super(NitfImageWriteDataOnDemand, self).__init__(NitfImageSubheader())
         set_default_image_subheader(self.image_subheader, nrow, ncol, data_type,
                                     numbands=numbands, iid1=iid1, iid2=iid2,
                                     idatim=idatim, irep=irep, icat=icat,
@@ -251,7 +251,7 @@ class NitfImageWriteNumpy(NitfImageWriteDataOnDemand):
     '''This is a simple implementation of a NitfImage where we just use 
     a numpy array to hold the data, and write that out.'''
     def __init__(self, nrow, ncol, data_type, **keywords):
-        super().__init__(nrow, ncol, data_type, **keywords)
+        super(NitfImageWriteNumpy, self).__init__(nrow, ncol, data_type, **keywords)
         self._data = np.zeros(self.shape, dtype = data_type)
 
     def __getitem__(self, ind):
