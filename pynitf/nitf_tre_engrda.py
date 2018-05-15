@@ -106,7 +106,7 @@ def _add_or_update(self, key, data, units):
     elif(len(data.shape) == 1):
         self.engmtxc[i_to_change]=data.shape[0]
         self.engmtxr[i_to_change]=1
-    elif(len(data.shape) == 1):
+    elif(len(data.shape) == 2):
         self.engmtxc[i_to_change]=data.shape[1]
         self.engmtxr[i_to_change]=data.shape[0]
     else:
