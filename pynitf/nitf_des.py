@@ -24,7 +24,6 @@ class Des(_FieldStruct):
         fh = six.BytesIO(bt)
         _FieldStruct.read_from_file(self,fh, nitf_literal)
     def read_from_file(self, fh, nitf_literal = False):
-        print (nitf_literal)
         _FieldStruct.read_from_file(self,fh, nitf_literal)
     def write_to_file(self, fh):
         t = self.des_bytes()
@@ -63,16 +62,22 @@ class Des(_FieldStruct):
 class DesUnknown(Des):
     '''The is a general class to handle DESs that we don't have another 
     handler for. It just reports the tre string.'''
-    def __init__(self):
+    def __init__(self, name):
+        self.name = name
+        super(DesUnknown, self).__init__()
+        
+    def read_from_file(self, fh, nitf_literal = False):
+        # Nothing to do, we can just ignore the data
         pass
+
     def __str__(self):
         '''Text description of structure, e.g., something you can print
         out.'''
         res = six.StringIO()
-        print( "   String: %s" % self.des_bytes, file=res)
+        print("   Unknown DES: %s" % self.name)
         return res.getvalue()
 
-class TRE_OVERFLOW(Des):
+class TreOverflow(Des):
     '''DES used to handle TRE overflow.'''
     def __init__(self):
         pass
@@ -93,9 +98,8 @@ def des_object(des_name):
     return DesUnknown(des_name)
     
 def read_des_data(desid, data):
-    '''Read a blob of data, and translate into a series of TREs'''
+    '''Read a blob of data, and translate into a DES'''
     fh = six.BytesIO(data)
-    print(data)
     t = des_object(desid)
     t.read_from_file(fh)
     return t
@@ -132,7 +136,7 @@ def create_nitf_des_structure(name, description, hlp = None):
     _des_class[des_tag.encode("utf-8")] = res
     return res
 
-_des_class[b'TRE_OVERFLOW'] = TRE_OVERFLOW
-__all__ = [ "TRE_OVERFLOW", "Des", "DesUnknown", "des_object", "read_des_data",
+_des_class[b'TRE_OVERFLOW'] = TreOverflow
+__all__ = [ "TreOverflow", "Des", "DesUnknown", "des_object", "read_des_data",
             "create_nitf_des_structure"]
 
