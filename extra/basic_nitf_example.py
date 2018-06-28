@@ -58,9 +58,9 @@ def test_main():
     # need to write other image sources (although most things can go to a
     # numpy array, so maybe not).
     img = NitfImageWriteNumpy(10, 10, np.uint8)
-    for i in range(10):
-        for j in range(10):
-            img.data[i,j] = i + j
+    #for i in range(10):
+    #    for j in range(10):
+    #        img.data[i,j] = i + j
 
     # We just directly add this to the NitfFile. We need to wrap this as a
     # NitfImageSegment (which adds the subheader). f.image_segment here is
