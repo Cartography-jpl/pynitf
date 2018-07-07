@@ -117,7 +117,7 @@ def create_nitf_des_structure(name, description, hlp = None):
 
     t = _create_nitf_field_structure()
     des_tag = description.pop(0)
-    d = des_desc + description
+    d = description
     res = type(name, (Des,), t.process(d))
     res.des_tag = des_tag
 

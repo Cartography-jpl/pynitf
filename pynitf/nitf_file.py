@@ -511,6 +511,10 @@ class NitfDesSegment(NitfSegment):
         print(des, file=fh)
 
         return fh.getvalue()
+
+    def get_des_object(self):
+        return read_des_data(self.subheader.desid.encode("utf-8"), self.data)
+
     def write_to_file(self, fh):
         '''Write to a file. The returns (sz_header, sz_data), because this
         information is needed by NitfFile.'''

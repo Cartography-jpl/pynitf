@@ -11,6 +11,7 @@ from pynitf.nitf_tre_rpc import *
 from pynitf.nitf_tre_geosde import *
 from pynitf.nitf_tre_histoa import *
 from pynitf.nitf_des_csatta import *
+from pynitf.nitf_des_csattb import *
 import copy
 import json
 import six
@@ -128,8 +129,37 @@ def test_main():
     data = six.BytesIO()
     des.write_to_file(data)
     de = NitfDesSegment(data = data.getvalue())
-    de.subheader.desid = "CSATTA"
+    de.subheader.desid = "CSATTA DES"
     f.des_segment.append(de)
+
+    d = DesCSATTB()
+
+    d.dsclas = 'U'
+    d.id = '4385ab47-f3ba-40b7-9520-13d6b7a7f311'
+    d.numais = '010'
+    for i in range(int(d.numais)):
+        d.aisdlvl[i] = 5 + i
+    d.reservedsubh_len = 0
+    d.qual_flag_att = 1
+    d.interp_type_att = 1
+    d.att_type = 1
+    d.eci_ecf_att = 0
+    d.dt_att = 900.5
+    d.date_att = 20170501
+    d.t0_att = 235959.100001010
+    d.num_att = 5
+    for n in range(d.num_att):
+        d.q1[n] = -0.11111
+        d.q2[n] = -0.11111
+        d.q3[n] = 0.11111
+        d.q4[n] = 0.11111
+    d.reserved_len = 0
+
+    data2 = six.BytesIO()
+    d.write_to_file(data2)
+    de2 = NitfDesSegment(data=data2.getvalue())
+    de2.subheader.desid = "CSATTB DES"
+    f.des_segment.append(de2)
 
     print (f)
 
@@ -147,8 +177,11 @@ def test_main():
     print("Text Data:")
     print(f2.text_segment[0].data)
 
-    print("DES Data: ")
-    print(f2.des_segment[0].data)
+    assert f2.des_segment[0].get_des_object().t0_att == '235959.100001'
+
+    assert f2.des_segment[1].get_des_object().dt_att == 900.5
+    assert f2.des_segment[1].get_des_object().date_att == 20170501
+    assert f2.des_segment[1].get_des_object().t0_att == 235959.100001010
 
     # We then print out a description of the file
     print(f2.summary())

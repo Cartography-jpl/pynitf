@@ -1,6 +1,6 @@
 from __future__ import print_function
 from .nitf_field import *
-from .nitf_des_subheader import des_desc
+from .nitf_des import *
 import six
 
 hlp = '''This is a NITF CSATTB DES. The field names can be pretty
@@ -12,8 +12,8 @@ The NITF DES subheader is described in a separate DRAFT document for the SNIP st
 
 _quat_format = "%+18.15lf"
 
-desc2 = des_desc + \
-       [['id', 'Assigned UUID for the DES', 36, str],
+desc2 =["CSATTB DES",
+        ['id', 'Assigned UUID for the DES', 36, str],
         ["numais", "Number of Associated Image Segments", 3, str],
         [["loop", "0 if f.numais == 'ALL' else int(f.numais)"],
          ["aisdlvl", "Associated Image Segment Display Level", 3, int]],
@@ -43,7 +43,7 @@ desc2 = des_desc + \
 
 #print (desc2)
 
-DesCSATTB = create_nitf_field_structure("DesCSATTB", desc2, hlp=hlp)
+DesCSATTB = create_nitf_des_structure("DesCSATTB", desc2, hlp=hlp)
 
 DesCSATTB.desid = hardcoded_value("DES CSATTB")
 DesCSATTB.desver = hardcoded_value("01")
