@@ -6,7 +6,6 @@ def test_des_csatta_basic():
 
     d = DesCSATTA()
 
-    d.dsclas = 'U'
     d.att_type = 'ORIGINAL'
     d.dt_att = '900.5000000000'
     d.date_att = 20170501
@@ -21,12 +20,11 @@ def test_des_csatta_basic():
     fh = six.BytesIO()
     d.write_to_file(fh)
     print(fh.getvalue())
-    assert fh.getvalue() == b'                           00U                                                                                                                                                                      0000ORIGINAL    900.500000000020170501235959.10000100005-0.11111-0.1111100.1111100.11111-0.11111-0.1111100.1111100.11111-0.11111-0.1111100.1111100.11111-0.11111-0.1111100.1111100.11111-0.11111-0.1111100.1111100.11111'
+    assert fh.getvalue() == b'ORIGINAL    900.500000000020170501235959.10000100005-0.11111-0.1111100.1111100.11111-0.11111-0.1111100.1111100.11111-0.11111-0.1111100.1111100.11111-0.11111-0.1111100.1111100.11111-0.11111-0.1111100.1111100.11111'
     fh2 = six.BytesIO(fh.getvalue())
     d2 = DesCSATTA()
     d2.read_from_file(fh2)
 
-    assert d2.dsclas  ==  'U'
     assert d2.att_type == 'ORIGINAL'
     assert d2.dt_att == '900.5000000000'
     assert d2.date_att == 20170501
