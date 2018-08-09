@@ -14,20 +14,25 @@ where in the document a particular TRE is defined.
 
 CSCRNA is documented at blah.
 '''
+
+_lat_frmt = '%+09.5f'
+_long_frmt = '%+010.5f'
+_ht_frmt = '%+08.1f'
+
 desc = ["CSCRNA",
         ["predict_corners", "predicted corners flag", 1, str],
-        ["ulcnr_lat", "lat UL", 9, int],
-        ["ulcnr_long", "long UL", 10, int],
-        ["ulcnr_ht", "height UL", 8, int],
-        ["urcnr_lat", "lat UR", 9, int],
-        ["urcnr_long", "long UR", 10, int],
-        ["urcnr_ht", "height UR", 8, int],
-        ["lrcnr_lat", "lat LR", 9, int],
-        ["lrcnr_long", "long LR", 10, int],
-        ["lrcnr_ht", "height LR", 8, int],
-        ["llcnr_lat", "lat LL", 9, int],
-        ["llcnr_long", "long LL", 10, int],
-        ["llcnr_ht", "height LL", 8, int],
+        ["ulcnr_lat", "lat UL", 9, float, {'frmt': _lat_frmt}],
+        ["ulcnr_long", "long UL", 10, float, {'frmt': _long_frmt}],
+        ["ulcnr_ht", "height UL", 8, float, {'frmt': _ht_frmt}],
+        ["urcnr_lat", "lat UR", 9, float, {'frmt': _lat_frmt}],
+        ["urcnr_long", "long UR", 10, float, {'frmt': _long_frmt}],
+        ["urcnr_ht", "height UR", 8, float, {'frmt': _ht_frmt}],
+        ["lrcnr_lat", "lat LR", 9, float, {'frmt': _lat_frmt}],
+        ["lrcnr_long", "long LR", 10, float, {'frmt': _long_frmt}],
+        ["lrcnr_ht", "height LR", 8, float, {'frmt': _ht_frmt}],
+        ["llcnr_lat", "lat LL", 9, float, {'frmt': _lat_frmt}],
+        ["llcnr_long", "long LL", 10, float, {'frmt': _long_frmt}],
+        ["llcnr_ht", "height LL", 8, float, {'frmt': _ht_frmt}],
 ]
 
 TreCSCRNA = create_nitf_tre_structure("TreCSCRNA",desc,hlp=hlp)
