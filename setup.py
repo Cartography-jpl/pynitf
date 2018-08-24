@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='pynitf',
-      version='0.5',
+      version='0.51',
       description='This is a package for reading and writing NITF',
       url='https://github.jpl.nasa.gov/Cartography/pynitf',
       author='Mike Smyth <Mike.M.Smyth@jpl.nasa.gov>, Philip Yoon <Philip.J.Yoon@jpl.nasa.gov>',
@@ -13,7 +13,6 @@ setup(name='pynitf',
           'numpy',
           'docopt'
       ],
-      extras_require={
-          'test': ['pytest'],
-      },
+      setup_requires=["pytest-runner",],
+      tests_requires=["pytest",],
       zip_safe=False)

@@ -11,6 +11,8 @@ from pynitf.nitf_tre_rpc import *
 from pynitf.nitf_tre_geosde import *
 from pynitf.nitf_tre_histoa import *
 from pynitf.nitf_des_csatta import *
+from pynitf.nitf_des_csattb import *
+from pynitf.nitf_des_ext_def_content import *
 import copy
 import json
 import six
@@ -60,7 +62,7 @@ def test_main():
     img = NitfImageWriteNumpy(10, 10, np.uint8)
     for i in range(10):
         for j in range(10):
-            img.data[i,j] = i + j
+            img[0,i,j] = i + j
 
     # We just directly add this to the NitfFile. We need to wrap this as a
     # NitfImageSegment (which adds the subheader). f.image_segment here is
@@ -128,8 +130,47 @@ def test_main():
     data = six.BytesIO()
     des.write_to_file(data)
     de = NitfDesSegment(data = data.getvalue())
-    de.subheader.desid = "CSATTA"
+    de.subheader.desid = des.des_tag
     f.des_segment.append(de)
+
+    d = DesCSATTB()
+
+    d.id = '4385ab47-f3ba-40b7-9520-13d6b7a7f311'
+    d.numais = '010'
+    for i in range(int(d.numais)):
+        d.aisdlvl[i] = 5 + i
+    d.reservedsubh_len = 0
+    d.qual_flag_att = 1
+    d.interp_type_att = 1
+    d.att_type = 1
+    d.eci_ecf_att = 0
+    d.dt_att = 900.5
+    d.date_att = 20170501
+    d.t0_att = 235959.100001010
+    d.num_att = 5
+    for n in range(d.num_att):
+        d.q1[n] = -0.11111
+        d.q2[n] = -0.11111
+        d.q3[n] = 0.11111
+        d.q4[n] = 0.11111
+    d.reserved_len = 0
+
+    data2 = six.BytesIO()
+    d.write_to_file(data2)
+    de2 = NitfDesSegment(data=data2.getvalue())
+    de2.subheader.desid = d.des_tag
+    f.des_segment.append(de2)
+
+    d = DesEXT_DEF_CONTENT()
+
+    d.content_headers_len = 10
+    d.content_headers = b'1234567890'
+
+    data3 = six.BytesIO()
+    d.write_to_file(data3)
+    de3 = NitfDesSegment(data=data3.getvalue())
+    de3.subheader.desid = d.des_tag
+    f.des_segment.append(de3)
 
     print (f)
 
@@ -147,8 +188,17 @@ def test_main():
     print("Text Data:")
     print(f2.text_segment[0].data)
 
-    print("DES Data: ")
-    print(f2.des_segment[0].data)
+    assert f2.des_segment[0].subheader.desid == 'CSATTA DES'
+    assert f2.des_segment[0].get_des_object().t0_att == '235959.100001'
+
+    assert f2.des_segment[1].subheader.desid == 'CSATTB DES'
+    assert f2.des_segment[1].get_des_object().dt_att == 900.5
+    assert f2.des_segment[1].get_des_object().date_att == 20170501
+    assert f2.des_segment[1].get_des_object().t0_att == 235959.100001010
+
+    assert f2.des_segment[2].subheader.desid == 'EXT_DEF_CONTENT'
+    assert f2.des_segment[2].get_des_object().content_headers_len == 10
+    assert f2.des_segment[2].get_des_object().content_headers == b'1234567890'
 
     # We then print out a description of the file
     print(f2.summary())

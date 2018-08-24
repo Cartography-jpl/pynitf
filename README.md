@@ -41,6 +41,27 @@ a "rsm" object tied to the multiple RSM TREs.
 The hooks are there as a convenience, there is also nothing wrong with
 directly creating TREs and adding to the various segments directly.
 
+## Install
+
+This has standard setup.py. You can install a tar file using pip, or
+run setup tools directly (e.g., python setup.py install). 
+
+## Testing
+
+Tests can be run by
+
+    python setup.py test
+	
+Standard pytest arguments can be passed:
+
+    python setup.py test --addopts="-k test_tre_read"
+
+For development, it can be useful to run just a single file. You can 
+do this by:
+
+    PYTHONPATH=`pwd`:${PYTHONPATH} pytest -s tests/nitf_tre_test.py
+	
+
 
 
 
