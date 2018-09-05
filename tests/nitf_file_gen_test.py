@@ -95,6 +95,7 @@ def test_main():
     ih.nbpc = 1
     ih.nppbh = 1
     ih.nppbv = 400
+    ih.imode="P"
     segment3 = NitfImageSegment(img3)
     segment3.tre_list.append(createHISTOA())
     f.image_segment.append(segment3)

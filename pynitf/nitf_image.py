@@ -172,8 +172,8 @@ class NitfImageReadNumpy(NitfImageWithSubset):
         #    raise NitfImageCannotHandle("Cannot handle blocked data")
         # We could add support here for pixel or row interleave here if
         # needed, just need to work though juggling the data here.
-        if(ih.imode != "B"):
-            raise NitfImageCannotHandle("Currently only support block interleave")
+        if(ih.imode != "B" and ih.imode != "P"):
+            raise NitfImageCannotHandle("Currently only support Image Modes B and P")
         if(self.do_mmap):
             foff = fh.tell()
             self.data = np.memmap(fh, mode="r", dtype = ih.dtype,
