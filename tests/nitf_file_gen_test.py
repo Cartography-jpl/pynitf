@@ -89,7 +89,7 @@ def test_main():
     # Write by column
     img3 = NitfImageWriteDataOnDemand(nrow=400, ncol=300, data_type=np.dtype('>i2'),
                                       numbands=50, data_callback=write_by_col,
-                                      image_gen_mode=NitfImageWriteDataOenDemand.IMAGE_GEN_MODE_COL)
+                                      image_gen_mode=NitfImageWriteDataOnDemand.IMAGE_GEN_MODE_COL)
     ih = img3.image_subheader
     ih.nbpr = 400
     ih.nbpc = 1
