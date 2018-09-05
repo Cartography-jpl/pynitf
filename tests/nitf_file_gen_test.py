@@ -49,6 +49,15 @@ def createHISTOA():
 def write_zero(d, bstart, lstart, sstart):
     d[:,:,:] = 0
 
+def write_by_row(d, bstart, lstart, sstart):
+    d[:,:,:] = lstart * 2
+
+def write_by_col(d, bstart, lstart, sstart):
+    #print("sstart", sstart)
+    for a in range(d.shape[0]):
+        for b in range(d.shape[1]):
+            d[a, b, 0] = sstart * 3
+
 def test_main():
     # Create the file. We don't supply a name yet, that comes when we actually
     # write
@@ -72,10 +81,23 @@ def test_main():
     # Create a larger img segment
     img2 = NitfImageWriteDataOnDemand(nrow=3000, ncol=3000, data_type=np.uint8,
                                       numbands=50, data_callback=write_zero,
-                                      generate_by_band=True)
+                                      image_gen_mode=NitfImageWriteDataOnDemand.IMAGE_GEN_MODE_BAND)
     segment2 = NitfImageSegment(img2)
     segment2.tre_list.append(createHISTOA())
     f.image_segment.append(segment2)
+
+    # Write by column
+    img3 = NitfImageWriteDataOnDemand(nrow=400, ncol=300, data_type=np.dtype('>i2'),
+                                      numbands=50, data_callback=write_by_col,
+                                      image_gen_mode=NitfImageWriteDataOenDemand.IMAGE_GEN_MODE_COL)
+    ih = img3.image_subheader
+    ih.nbpr = 400
+    ih.nbpc = 1
+    ih.nppbh = 1
+    ih.nppbv = 400
+    segment3 = NitfImageSegment(img3)
+    segment3.tre_list.append(createHISTOA())
+    f.image_segment.append(segment3)
 
     # Can add TRES to either the file or image segment level. This automatically
     # handles TRE overflow, you just put the tre in and the writing figures out
@@ -199,6 +221,11 @@ def test_main():
     assert f2.des_segment[2].subheader.desid == 'EXT_DEF_CONTENT'
     assert f2.des_segment[2].get_des_object().content_headers_len == 10
     assert f2.des_segment[2].get_des_object().content_headers == b'1234567890'
+
+    print (f2.image_segment[2])
+
+    reshaped_data = f2.image_segment[2].data.data.reshape(300, 400, 50)
+    print(reshaped_data[50,:,:])
 
     # We then print out a description of the file
     print(f2.summary())
