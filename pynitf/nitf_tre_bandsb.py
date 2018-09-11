@@ -18,17 +18,27 @@ desc = ["BANDSB",
         ["count", "Number of Bands", 5, int],
         ["radiometric_quantity", "Data Representation", 24, str],
         ["radiometric_quantity_unit", "Data Representation Unit", 1, str],
-        ["row_gsd", "Row Ground Sample Distance", 7, int],
+        ["scale_factor", "Cube Scale Factor", 4, None, {'field_value_class' : FieldData}],
+        ["additive_factor", "Cube Additive Factor", 4, None, {'field_value_class' : FieldData}],
+        ["row_gsd", "Row Ground Sample Distance", 7, str], #This field is really weird. The value is 000.001 to 9999.99
+                                                    # notice the change in precision. Also, it can be ------- which
+                                                    #is not a number at all. Only way to store any of that is through str
         ["row_gsd_unit", "Units of Row Ground Sample Distance", 1, str],
-        ["col_gsd", "Column Ground Sample Distance", 7, int],
+        ["col_gsd", "Column Ground Sample Distance", 7, str], #Same weirdness as row_gsd
         ["col_gsd_unit", "Units of Column Ground Sample Distance", 1, str],
-        ["spt_resp_row", "Spatial Response Function (Rows)", 7, int],
+        ["spt_resp_row", "Spatial Response Function (Rows)", 7, str], #Same weirdness as row_gsd
         ["spt_resp_unit_row", "Units of Spatial Response Function (Rows)", 1, str],
-        ["spt_resp_col", "Spatial Response Function (Cols)", 7, int],
+        ["spt_resp_col", "Spatial Response Function (Cols)", 7, str], #Same weirdness as row_gsd
         ["spt_resp_unit_col", "Units of Spatial Response Function (Cols)", 1, str],
+        ["data_fld_1", "Field reserved for future use", 1, None, {'field_value_class' : FieldData}],
+        ["existence_mask", "Bit-wise existence mask field", 4, None, {'field_value_class' : FieldData}],
         ["radiometric_adjustment_surface", "Adjustment Surface", 24, str,
          {'condition': "f.existence_mask & 0x80000000"}],
-        ["diameter", "Diameter of the lens", 7, int, {'condition': "f.existence_mask & 0x40000000"}],
+        ["atmospheric_adjustment_altitude", "Adjustment altitude above WGS84 Ellipsoid", 4, None,
+         {'field_value_class' : FieldData, 'condition': "f.existence_mask & 0x40000000"}],
+        ["diameter", "Diameter of the lens", 7, int, {'condition': "f.existence_mask & 0x20000000"}],
+        ["data_fld_2", "Field reserved for future use", 1, None,
+         {'field_value_class' : FieldData, 'condition': "f.existence_mask & 0x20000000"}],
         ["wave_length_unit", "Wave Length Units", 1, str, {'condition': "f.existence_mask & 0x01F80000"}],
         [
             ["loop", "f.count"],
