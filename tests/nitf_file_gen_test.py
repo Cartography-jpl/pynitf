@@ -91,7 +91,7 @@ def test_main():
                                       numbands=50, data_callback=write_by_col,
                                       image_gen_mode=NitfImageWriteDataOnDemand.IMAGE_GEN_MODE_COL)
     ih = img3.image_subheader
-    ih.nbpr = 400
+    ih.nbpr = 300
     ih.nbpc = 1
     ih.nppbh = 1
     ih.nppbv = 400
