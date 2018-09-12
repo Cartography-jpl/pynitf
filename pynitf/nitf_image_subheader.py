@@ -95,8 +95,8 @@ def _summary(self):
     print("%s %s %s" % (self.im, self.iid1, self.iid2), file=res)
     numBands = self.nbands
     if (numBands == 0):
-            numbands = self.xbands
-    print("%d X %d, %d Bands, %d/%d bpp"
+        numBands = self.xbands
+    print("%d X %d, %d Band(s), %d/%d bpp"
           % (self.nrows, self.ncols, numBands, self.abpp, self.nbpp), file=res)
     return res.getvalue()
 
