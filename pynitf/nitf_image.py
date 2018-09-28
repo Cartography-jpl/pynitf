@@ -192,10 +192,12 @@ class NitfImageReadNumpy(NitfImageWithSubset):
 
 class NitfImageWriteDataOnDemand(NitfImageWithSubset):
 
-    IMAGE_GEN_MODE_ALL = 0
-    IMAGE_GEN_MODE_BAND = 1
-    IMAGE_GEN_MODE_ROW = 2
-    IMAGE_GEN_MODE_COL = 3
+    IMAGE_GEN_MODE_ALL = 0 #Write out pixel-by-pixel, not recommended because it's going to be very slow
+    IMAGE_GEN_MODE_BAND = 1 #Write out one band at a time
+    IMAGE_GEN_MODE_ROW_B = 2 #Write out one row at a time, bands first
+    IMAGE_GEN_MODE_ROW_P = 3 #Write out one row at a time, pixel first
+    IMAGE_GEN_MODE_COL_B = 4 #Write out one column at a time, bands first
+    IMAGE_GEN_MODE_COL_P = 5 # Write out one column at a time, pixel first
 
     '''This writes a NitfImage where we generate the data on demand when
     we need to write the data out. A function should be registered to
@@ -254,19 +256,31 @@ class NitfImageWriteDataOnDemand(NitfImageWithSubset):
             fh.write(d.tobytes())
 
         elif(self.image_gen_mode == NitfImageWriteDataOnDemand.IMAGE_GEN_MODE_BAND):
-            d = np.zeros((1,ih.nrows, ih.ncols), dtype = ih.dtype)
+            d = np.zeros((ih.nrows, ih.ncols), dtype = ih.dtype)
             for b in range(ih.number_band):
                 self.data_to_write(d, b, 0, 0)
                 fh.write(d.tobytes())
 
-        elif (self.image_gen_mode == NitfImageWriteDataOnDemand.IMAGE_GEN_MODE_ROW):
-            d = np.zeros((ih.number_band, 1, ih.ncols), dtype=ih.dtype)
+        elif (self.image_gen_mode == NitfImageWriteDataOnDemand.IMAGE_GEN_MODE_ROW_B):
+            d = np.zeros((ih.number_band, ih.ncols), dtype=ih.dtype)
             for r in range(ih.nrows):
                 self.data_to_write(d, 0, r, 0)
                 fh.write(d.tobytes())
 
-        elif (self.image_gen_mode == NitfImageWriteDataOnDemand.IMAGE_GEN_MODE_COL):
-            d = np.zeros((ih.number_band, ih.nrows, 1), dtype=ih.dtype)
+        elif (self.image_gen_mode == NitfImageWriteDataOnDemand.IMAGE_GEN_MODE_ROW_P):
+            d = np.zeros((ih.ncols, ih.number_band), dtype=ih.dtype)
+            for r in range(ih.nrows):
+                self.data_to_write(d, 0, r, 0)
+                fh.write(d.tobytes())
+
+        elif (self.image_gen_mode == NitfImageWriteDataOnDemand.IMAGE_GEN_MODE_COL_B):
+            d = np.zeros((ih.number_band, ih.nrows), dtype=ih.dtype)
+            for c in range(ih.ncols):
+                self.data_to_write(d, 0, 0, c)
+                fh.write(d.tobytes())
+
+        elif (self.image_gen_mode == NitfImageWriteDataOnDemand.IMAGE_GEN_MODE_COL_P):
+            d = np.zeros((ih.nrows, ih.number_band), dtype=ih.dtype)
             for c in range(ih.ncols):
                 self.data_to_write(d, 0, 0, c)
                 fh.write(d.tobytes())

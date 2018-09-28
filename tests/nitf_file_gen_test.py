@@ -47,16 +47,13 @@ def createHISTOA():
     return t
 
 def write_zero(d, bstart, lstart, sstart):
-    d[:,:,:] = 0
+    d[:,:] = 0
 
-def write_by_row(d, bstart, lstart, sstart):
-    d[:,:,:] = lstart * 2
-
-def write_by_col(d, bstart, lstart, sstart):
+def write_by_row_p(d, bstart, lstart, sstart):
     #print("sstart", sstart)
     for a in range(d.shape[0]):
         for b in range(d.shape[1]):
-            d[a, b, 0] = sstart * 3
+            d[a, b] = sstart * 3
 
 def test_main():
     # Create the file. We don't supply a name yet, that comes when we actually
@@ -69,9 +66,9 @@ def test_main():
     # need to write other image sources (although most things can go to a
     # numpy array, so maybe not).
     img = NitfImageWriteNumpy(10, 10, np.uint8)
-    for i in range(10):
-        for j in range(10):
-            img[0,i,j] = i + j
+    #for i in range(10):
+    #    for j in range(10):
+    #        img.data[i,j] = i + j
 
     # We just directly add this to the NitfFile. We need to wrap this as a
     # NitfImageSegment (which adds the subheader). f.image_segment here is
@@ -88,8 +85,8 @@ def test_main():
 
     # Write by column
     img3 = NitfImageWriteDataOnDemand(nrow=400, ncol=300, data_type=np.dtype('>i2'),
-                                      numbands=50, data_callback=write_by_col,
-                                      image_gen_mode=NitfImageWriteDataOnDemand.IMAGE_GEN_MODE_COL)
+                                      numbands=50, data_callback=write_by_row_p,
+                                      image_gen_mode=NitfImageWriteDataOnDemand.IMAGE_GEN_MODE_ROW_P)
     ih = img3.image_subheader
     ih.nbpr = 300
     ih.nbpc = 1
