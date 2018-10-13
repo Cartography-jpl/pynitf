@@ -12,7 +12,7 @@ from .nitf_image import (NitfImagePlaceHolder, NitfImageCannotHandle,
                          NitfImageReadNumpy)
 from .nitf_tre import read_tre, prepare_tre_write
 from .nitf_tre_engrda import add_engrda_function
-from .nitf_des import read_des_data
+from .nitf_des import read_des_data, read_des_uh_data
 import io,six,copy
 
 class NitfFile(object):
@@ -486,11 +486,16 @@ class NitfTextSegment(NitfSegment):
 class NitfDesSegment(NitfSegment):
     '''Data extension segment (DES), allows for the addition of different data 
     types with each type encapsulated in its own DES'''
-    def __init__(self, data='', header_size=None, data_size=None):
+    def __init__(self, data='', header_size=None, data_size=None, udsh = None):
         h = NitfDesSubheader()
         self.header_size = header_size
         self.data_size = data_size
         NitfSegment.__init__(self, h, copy.copy(data))
+
+        if (udsh is not None):
+            self.subheader.desshf = udsh
+            self.subheader.desshl = len(udsh)
+
     def read_from_file(self, fh):
         '''Read from a file'''
         self.subheader.read_from_file(fh)
@@ -510,10 +515,18 @@ class NitfDesSegment(NitfSegment):
         des = read_des_data(self.subheader.desid.encode("utf-8"), self.data)
         print(des, file=fh)
 
+        if (self.subheader.desshl > 0):
+            print("User-Defined Subheader: ", file=fh)
+            des_uh = read_des_uh_data(self.subheader.desid.encode("utf-8"), self.subheader.desshf)
+            print(des_uh, file=fh)
+
         return fh.getvalue()
 
     def get_des_object(self):
         return read_des_data(self.subheader.desid.encode("utf-8"), self.data)
+
+    def get_des_uh_object(self):
+        return read_des_uh_data(self.subheader.desid.encode("utf-8"), self.subheader.desshf)
 
     def write_to_file(self, fh):
         '''Write to a file. The returns (sz_header, sz_data), because this

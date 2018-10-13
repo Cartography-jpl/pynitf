@@ -1,6 +1,7 @@
 from __future__ import print_function
 from .nitf_field import *
 from .nitf_des import *
+from .nitf_des_csattb import *
 import six
 
 hlp = '''This is a NITF CSEPHB DES. The field names can be pretty
@@ -12,16 +13,7 @@ The NITF DES subheader is described in a separate DRAFT document for the SNIP st
 
 _eph_format = "%+012.2lf"
 
-desc2 =["CSEPHB",
-        ['id', 'Assigned UUID for the DES', 36, str],
-        ["numais", "Number of Associated Image Segments", 3, str],
-        [["loop", "0 if f.numais == 'ALL' else int(f.numais)"],
-         ["aisdlvl", "Associated Image Segment Display Level", 3, int]],
-        ['num_assoc_elem', 'Number of Associated Elements', 3, int],
-        [['loop', 'f.num_assoc_elem'],
-         ['assoc_elem_id', 'UUID of the nth Associated Element', 36, str]],
-        ['reservedsubh_len', 'Length of the Reserved Subheader Fields', 4, int],
-        ['reservedsubh', 'Reserved for Future Additions to the DES User-Defined Subheader', 'f.reservedsubh_len', None, {'field_value_class' : FieldData}],
+desc2 =["CSEPHB DES",
         ['qual_flag_eph', 'Ephemeris Data Quality Flag', 1, int],
         ['interp_type_eph', 'Interpolation Type', 1, int],
         ['interp_order_eph', 'Order of Lagrange Interpolation Polynomials', 1, int, {'condition': 'f.interp_type_eph==2'}],
@@ -42,7 +34,7 @@ desc2 =["CSEPHB",
 
 #print (desc2)
 
-DesCSEPHB = create_nitf_des_structure("DesCSEPHB", desc2, hlp=hlp)
+(DesCSEPHB, DesCSEPHB_UH) = create_nitf_des_structure("DesCSEPHB", desc2, udsh, hlp=hlp)
 
 DesCSEPHB.desid = hardcoded_value("DES CSEPHB")
 DesCSEPHB.desver = hardcoded_value("01")
@@ -54,4 +46,4 @@ def _summary(self):
 
 DesCSEPHB.summary = _summary
 
-__all__ = ["DesCSEPHB"]
+__all__ = ["DesCSEPHB", "DesCSEPHB_UH"]
