@@ -13,15 +13,6 @@ The NITF DES subheader is described in a separate DRAFT document for the SNIP st
 _quat_format = "%+18.15lf"
 
 desc2 =["CSATTB DES",
-        ['id', 'Assigned UUID for the DES', 36, str],
-        ["numais", "Number of Associated Image Segments", 3, str],
-        [["loop", "0 if f.numais == 'ALL' else int(f.numais)"],
-         ["aisdlvl", "Associated Image Segment Display Level", 3, int]],
-        ['num_assoc_elem', 'Number of Associated Elements', 3, int],
-        [['loop', 'f.num_assoc_elem'],
-         ['assoc_elem_id', 'UUID of the nth Associated Element', 36, str]],
-        ['reservedsubh_len', 'Length of the Reserved Subheader Fields', 4, int],
-        ['reservedsubh', 'Reserved for Future Additions to the DES User-Defined Subheader', 'f.reservedsubh_len', None, {'field_value_class' : FieldData}],
         ['qual_flag_att', 'Attitude Data Quality Flag', 1, int],
         ['interp_type_att', 'Interpolation Type', 1, int],
         ['interp_order_att', 'Order of Lagrange Interpolation Polynomials', 1, int, {'condition': 'f.interp_type_att==2'}],
@@ -43,7 +34,18 @@ desc2 =["CSATTB DES",
 
 #print (desc2)
 
-DesCSATTB = create_nitf_des_structure("DesCSATTB", desc2, hlp=hlp)
+udsh = [['id', 'Assigned UUID for the DES', 36, str],
+        ["numais", "Number of Associated Image Segments", 3, str],
+        [["loop", "0 if f.numais == 'ALL' else int(f.numais)"],
+         ["aisdlvl", "Associated Image Segment Display Level", 3, int]],
+        ['num_assoc_elem', 'Number of Associated Elements', 3, int],
+        [['loop', 'f.num_assoc_elem'],
+         ['assoc_elem_id', 'UUID of the nth Associated Element', 36, str]],
+        ['reservedsubh_len', 'Length of the Reserved Subheader Fields', 4, int],
+        ['reservedsubh', 'Reserved for Future Additions to the DES User-Defined Subheader', 'f.reservedsubh_len', None, {'field_value_class' : FieldData}]
+       ]
+
+(DesCSATTB, DesCSATTB_UH) = create_nitf_des_structure("DesCSATTB", desc2, udsh, hlp=hlp)
 
 DesCSATTB.desid = hardcoded_value("DES CSATTB")
 DesCSATTB.desver = hardcoded_value("01")
@@ -55,4 +57,4 @@ def _summary(self):
 
 DesCSATTB.summary = _summary
 
-__all__ = ["DesCSATTB"]
+__all__ = ["DesCSATTB", "DesCSATTB_UH", "udsh"]

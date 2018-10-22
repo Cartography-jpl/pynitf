@@ -3,6 +3,9 @@ from .nitf_field import *
 from .nitf_des import *
 import six
 
+'''WARNING!!! Do NOT use CSATTA. It's been deprecated and it hasn't kept up with the new DES design
+It will be fixed eventually and we can use it if we need to for legacy applications'''
+
 hlp = '''This is a NITF CSATTA DES. The field names can be pretty
 cryptic, but these are documented in detail in the NITF 2.10 documentation
 (MIL-STD-2500C, available at http://www.gwg.nga.mil/ntb/baseline/docs/2500c/2500C.pdf).
@@ -28,7 +31,7 @@ desc2 =["CSATTA DES",
 
 #print (desc2)
 
-DesCSATTA = create_nitf_des_structure("DesCSATTA", desc2, hlp=hlp)
+(DesCSATTA, a) = create_nitf_des_structure("DesCSATTA", desc2, None, hlp=hlp)
 
 DesCSATTA.desver = hardcoded_value("01")
 

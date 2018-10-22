@@ -8,8 +8,8 @@
 # from word to Excel. For some reason, you can't go directly to Excel. You
 # can then cut and paste from excel to emacs
 from __future__ import print_function
-from .nitf_field import _FieldStruct, _FieldLoopStruct, \
-    _FieldValueArrayAccess, _create_nitf_field_structure
+from .nitf_field import FieldData, _FieldStruct, _FieldLoopStruct, \
+    _FieldValueArrayAccess, _create_nitf_field_structure, create_nitf_field_structure
 from .nitf_des_subheader import des_desc
 import copy
 import io,six
@@ -89,6 +89,7 @@ class TreOverflow(Des):
         return res.getvalue()
 
 _des_class = {}
+_des_uh_class = {}
 
 def des_object(des_name):
     '''Return a DES object that can be used to read or write the given tre
@@ -96,6 +97,13 @@ def des_object(des_name):
     if(des_name in _des_class):
         return _des_class[des_name]()
     return DesUnknown(des_name)
+
+def uh_object(des_name):
+    '''Return a DES object that can be used to read or write the given tre
+    name, or a TreUnknown if we don't have that registered.'''
+    if(des_name in _des_uh_class):
+        return _des_uh_class[des_name]()
+    return _FieldStruct()
     
 def read_des_data(desid, data):
     '''Read a blob of data, and translate into a DES'''
@@ -104,7 +112,14 @@ def read_des_data(desid, data):
     t.read_from_file(fh)
     return t
 
-def create_nitf_des_structure(name, description, hlp = None):
+def read_des_uh_data(desid, data):
+    '''Read a blob of data, and translate into a DES'''
+    fh = six.BytesIO(data)
+    t = uh_object(desid)
+    t.read_from_file(fh)
+    return t
+
+def create_nitf_des_structure(name, desc_data, desc_uh, hlp = None):
     '''This is like create_nitf_field_structure, but adds a little
     extra structure for DESs. It basically creates a class out 
 
@@ -115,9 +130,10 @@ def create_nitf_des_structure(name, description, hlp = None):
 
     '''
 
+    # 1. First create Des class
     t = _create_nitf_field_structure()
-    des_tag = description.pop(0)
-    d = description
+    des_tag = desc_data.pop(0)
+    d = desc_data
     res = type(name, (Des,), t.process(d))
     res.des_tag = des_tag
 
@@ -133,10 +149,20 @@ def create_nitf_des_structure(name, description, hlp = None):
             res.__doc__ = hlp
         except AttributeError:
             pass
+
     _des_class[des_tag.encode("utf-8")] = res
-    return res
+
+    # 2. Then create User-defined subheader class
+    res2 = None
+    if (desc_uh is not None):
+        t2 = _create_nitf_field_structure()
+        res2 = type(name+'_UH', (_FieldStruct,), t2.process(desc_uh))
+        _des_uh_class[des_tag.encode("utf-8")] = res2
+
+    return (res, res2)
 
 _des_class[b'TRE_OVERFLOW'] = TreOverflow
+
 __all__ = [ "TreOverflow", "Des", "DesUnknown", "des_object", "read_des_data",
-            "create_nitf_des_structure"]
+            "read_des_uh_data", "create_nitf_des_structure"]
 

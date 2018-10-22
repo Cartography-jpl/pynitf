@@ -109,7 +109,7 @@ class NitfImageWithSubset(NitfImage):
         This is then used by write_to_file to determine that data that we
         will write.'''
         raise NotImplementedError()
-    
+
 class NitfImagePlaceHolder(NitfImage):
     '''Implementation that doesn't actually read any data, useful as a
     final place holder if none of our other NitfImage classes can handle
@@ -166,14 +166,14 @@ class NitfImageReadNumpy(NitfImageWithSubset):
         '''Read from a file'''
         # Check if we can read the data.
         ih = self.image_subheader
-        if(ih.ic != "NC"):
-            raise NitfImageCannotHandle("Can only handle uncompressed images")
-        if(ih.nbpr != 1 or ih.nbpc != 1):
-            raise NitfImageCannotHandle("Cannot handle blocked data")
+        #if(ih.ic != "NC"):
+        #    raise NitfImageCannotHandle("Can only handle uncompressed images")
+        #if(ih.nbpr != 1 or ih.nbpc != 1):
+        #    raise NitfImageCannotHandle("Cannot handle blocked data")
         # We could add support here for pixel or row interleave here if
         # needed, just need to work though juggling the data here.
-        if(ih.imode != "B"):
-            raise NitfImageCannotHandle("Currently only support block interleave")
+        if(ih.imode != "B" and ih.imode != "P"):
+            raise NitfImageCannotHandle("Currently only support Image Modes B and P")
         if(self.do_mmap):
             foff = fh.tell()
             self.data = np.memmap(fh, mode="r", dtype = ih.dtype,
@@ -191,6 +191,14 @@ class NitfImageReadNumpy(NitfImageWithSubset):
         raise NotImplementedError("Can't write a NitfImageReadNumpy")
 
 class NitfImageWriteDataOnDemand(NitfImageWithSubset):
+
+    IMAGE_GEN_MODE_ALL = 0 #Write out pixel-by-pixel, not recommended because it's going to be very slow
+    IMAGE_GEN_MODE_BAND = 1 #Write out one band at a time
+    IMAGE_GEN_MODE_ROW_B = 2 #Write out one row at a time, bands first
+    IMAGE_GEN_MODE_ROW_P = 3 #Write out one row at a time, pixel first
+    IMAGE_GEN_MODE_COL_B = 4 #Write out one column at a time, bands first
+    IMAGE_GEN_MODE_COL_P = 5 # Write out one column at a time, pixel first
+
     '''This writes a NitfImage where we generate the data on demand when
     we need to write the data out. A function should be registered to
     generate this data, or alternatively a class that derives from this one
@@ -202,10 +210,14 @@ class NitfImageWriteDataOnDemand(NitfImageWithSubset):
                  irep="MONO",
                  icat="VIS",
                  idlvl = 0,
-                 generate_by_band=False):
-        '''If generate_by_band=True, we call data_to_write a single band 
+                 image_gen_mode=IMAGE_GEN_MODE_ALL):
+        '''If generate_by_band==True, we call data_to_write a single band 
         at a time, otherwise we do everything at once. Depending on how
         the data is generated or its size this can be more or less efficient.
+        
+        If generate_by_column==True, we call data_to_write a single column
+        at a time. This would make sense if we have multi-band images that
+        come in numerous "slices"
 
         You can pass a number of values to set in the image subheader. You
         can also just modify the image subheader after the constructor, 
@@ -224,7 +236,7 @@ class NitfImageWriteDataOnDemand(NitfImageWithSubset):
                                     idatim=idatim, irep=irep, icat=icat,
                                     idlvl=idlvl)
         self.data_callback = data_callback
-        self.generate_by_band = generate_by_band
+        self.image_gen_mode = image_gen_mode
 
     def read_from_file(self, fh):
         '''Write an image to a file.'''
@@ -237,15 +249,43 @@ class NitfImageWriteDataOnDemand(NitfImageWithSubset):
         
     def write_to_file(self, fh):
         ih = self.image_subheader
-        if(self.generate_by_band):
-            d = np.zeros((1,ih.nrows, ih.ncols), dtype = ih.dtype)
-            for b in range(ih.number_band):
-                self.data_to_write(d, b, 0, 0)
-                fh.write(d.tobytes())
-        else:
+
+        if (self.image_gen_mode == NitfImageWriteDataOnDemand.IMAGE_GEN_MODE_ALL):
             d = np.zeros((ih.number_band,ih.nrows, ih.ncols), dtype = ih.dtype)
             self.data_to_write(d, 0, 0, 0)
             fh.write(d.tobytes())
+
+        elif(self.image_gen_mode == NitfImageWriteDataOnDemand.IMAGE_GEN_MODE_BAND):
+            d = np.zeros((ih.nrows, ih.ncols), dtype = ih.dtype)
+            for b in range(ih.number_band):
+                self.data_to_write(d, b, 0, 0)
+                fh.write(d.tobytes())
+
+        elif (self.image_gen_mode == NitfImageWriteDataOnDemand.IMAGE_GEN_MODE_ROW_B):
+            d = np.zeros((ih.number_band, ih.ncols), dtype=ih.dtype)
+            for r in range(ih.nrows):
+                self.data_to_write(d, 0, r, 0)
+                fh.write(d.tobytes())
+
+        elif (self.image_gen_mode == NitfImageWriteDataOnDemand.IMAGE_GEN_MODE_ROW_P):
+            d = np.zeros((ih.ncols, ih.number_band), dtype=ih.dtype)
+            for r in range(ih.nrows):
+                self.data_to_write(d, 0, r, 0)
+                fh.write(d.tobytes())
+
+        elif (self.image_gen_mode == NitfImageWriteDataOnDemand.IMAGE_GEN_MODE_COL_B):
+            d = np.zeros((ih.number_band, ih.nrows), dtype=ih.dtype)
+            for c in range(ih.ncols):
+                self.data_to_write(d, 0, 0, c)
+                fh.write(d.tobytes())
+
+        elif (self.image_gen_mode == NitfImageWriteDataOnDemand.IMAGE_GEN_MODE_COL_P):
+            d = np.zeros((ih.nrows, ih.number_band), dtype=ih.dtype)
+            for c in range(ih.ncols):
+                self.data_to_write(d, 0, 0, c)
+                fh.write(d.tobytes())
+        else:
+            raise RuntimeError("Incorrect Image Gen Mode %d" % self.image_gen_mode)
     
 class NitfImageWriteNumpy(NitfImageWriteDataOnDemand):
     '''This is a simple implementation of a NitfImage where we just use 
