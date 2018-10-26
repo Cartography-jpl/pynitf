@@ -460,7 +460,7 @@ class FieldData(object):
         if(self.loop is not None):
             self.loop.check_index(parent_obj, key)
         if(not self.check_condition(parent_obj, key)):
-            raise RuntimeError("Can't set value for field %s because the condition '%s' isn't met" % (self.field_name, self.condition))
+            return
         # Check that size is still correct. It is possible a value was set,
         # and then we updated the size field without updating data.
         if(self.size_not_updated):
@@ -486,12 +486,17 @@ class FieldData(object):
             print("Writing Field Data: ", self.field_name, self.value(parent_obj)[key])
         fh.write(self.value(parent_obj)[key])
     def read_from_file(self, parent_obj, key, fh,nitf_literal=False):
+        if(not self.check_condition(parent_obj, key)):
+            return
         f = parent_obj
         if(len(key) > 0):
             i1 = key[0]
         if(len(key) > 1):
             i2 = key[1]
-        sz = eval(self.size_field)
+        if (type(self.size_field) == int):
+            sz = self.size_field
+        else:
+            sz = eval(self.size_field)
         if(sz == 0):
             self.value(parent_obj)[key] = b''
             return
