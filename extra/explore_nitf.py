@@ -6,8 +6,8 @@
 import readline
 import shlex
 import pydoc
-from geocal import *
-from geocal.nitf import *
+from docopt_simple import *
+from pynitf import *
 
 version="%prog July 7, 2017"
 usage="""Usage:

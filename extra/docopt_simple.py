@@ -74,3 +74,4 @@ def docopt_simple(doc, argv=None, help=True, version=None,
     return DocOptSimple(doc, argv=argv, help=help, version=version, 
                         options_first=options_first)
 
+__all__ = ["docopt_simple"]
