@@ -60,7 +60,19 @@ For development, it can be useful to run just a single file. You can
 do this by:
 
     PYTHONPATH=`pwd`:${PYTHONPATH} pytest -s tests/nitf_tre_test.py
-	
+
+## Creating package
+
+Quick command to create a tar file including version number. First, make sure
+the version number is setup.py is correct. Then do something like:
+
+    V=`grep version setup.py | sed -r "s/.*'(.*)'.*/\1/"`
+    git tag -s $V -m "This is my new version"
+	git push origin $V
+    git archive --format=tar --prefix=pyntif-$V/ $V | gzip --best > pynitf-$V.tar.gz
+
+Note you can also just download the tar.gz file from github after you create
+the tag, if that is easier.
 
 
 

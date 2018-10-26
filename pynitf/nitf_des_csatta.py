@@ -42,4 +42,6 @@ def summary(self):
 
 DesCSATTA.summary = summary
 
+register_des_class(DesCSATTA)
+
 __all__ = ["DesCSATTA"]

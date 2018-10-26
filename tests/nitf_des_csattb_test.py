@@ -1,5 +1,6 @@
 from pynitf.nitf_des import *
 from pynitf.nitf_des_csattb import *
+from pynitf.nitf_file import NitfDesSegment
 from pynitf_test_support import *
 import io, six
 
@@ -47,13 +48,15 @@ def test_des_csattb_basic():
     d.reserved_len = 0
 
     fh = six.BytesIO()
-    d.write_to_file(fh)
+    dseg = NitfDesSegment(des=d);
+    hs, ds = dseg.write_to_file(fh)
     print(fh.getvalue())
-    assert fh.getvalue() == b'1110900.50000000020170501235959.10000101000005-0.111110000000000-0.111110000000000+0.111110000000000+0.111110000000000-0.111110000000000-0.111110000000000+0.111110000000000+0.111110000000000-0.111110000000000-0.111110000000000+0.111110000000000+0.111110000000000-0.111110000000000-0.111110000000000+0.111110000000000+0.111110000000000-0.111110000000000-0.111110000000000+0.111110000000000+0.11111000000000000000'
+    assert fh.getvalue() == b'DECSATTB DES               01U                                                                                                                                                                      0046                                    0  00000001110900.50000000020170501235959.10000101000005-0.111110000000000-0.111110000000000+0.111110000000000+0.111110000000000-0.111110000000000-0.111110000000000+0.111110000000000+0.111110000000000-0.111110000000000-0.111110000000000+0.111110000000000+0.111110000000000-0.111110000000000-0.111110000000000+0.111110000000000+0.111110000000000-0.111110000000000-0.111110000000000+0.111110000000000+0.11111000000000000000'
 
     fh2 = six.BytesIO(fh.getvalue())
-    d2 = DesCSATTB()
-    d2.read_from_file(fh2)
+    dseg2 = NitfDesSegment(header_size=hs, data_size=ds)
+    dseg2.read_from_file(fh2)
+    d2 = dseg2.des
 
     assert d2.qual_flag_att == 1
     assert d2.interp_type_att == 1

@@ -35,7 +35,7 @@ desc2 =["CSATTB DES",
 #print (desc2)
 
 udsh = [['id', 'Assigned UUID for the DES', 36, str],
-        ["numais", "Number of Associated Image Segments", 3, str],
+        ["numais", "Number of Associated Image Segments", 3, str, {"default": "0"}],
         [["loop", "0 if f.numais == 'ALL' else int(f.numais)"],
          ["aisdlvl", "Associated Image Segment Display Level", 3, int]],
         ['num_assoc_elem', 'Number of Associated Elements', 3, int],
@@ -57,4 +57,5 @@ def _summary(self):
 
 DesCSATTB.summary = _summary
 
-__all__ = ["DesCSATTB", "DesCSATTB_UH", "udsh"]
+register_des_class(DesCSATTB)
+__all__ = ["DesCSATTB", "DesCSATTB_UH"]

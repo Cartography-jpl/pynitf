@@ -1,7 +1,7 @@
 from __future__ import print_function
 from .nitf_field import *
 from .nitf_des import *
-from .nitf_des_csattb import *
+from .nitf_des_csattb import udsh
 import six
 
 hlp = '''This is a NITF CSEPHB DES. The field names can be pretty
@@ -34,6 +34,8 @@ desc2 =["CSEPHB DES",
 
 #print (desc2)
 
+# udsh here is a from nitf_des_csattb, since the same user defined subheader
+# is used for both
 (DesCSEPHB, DesCSEPHB_UH) = create_nitf_des_structure("DesCSEPHB", desc2, udsh, hlp=hlp)
 
 DesCSEPHB.desid = hardcoded_value("DES CSEPHB")
@@ -45,5 +47,7 @@ def _summary(self):
     return res.getvalue()
 
 DesCSEPHB.summary = _summary
+
+register_des_class(DesCSEPHB)
 
 __all__ = ["DesCSEPHB", "DesCSEPHB_UH"]
