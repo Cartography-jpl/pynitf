@@ -7,6 +7,14 @@ import sys
 import subprocess
 import re
 import pytest
+# Some unit tests require h5py. This is not an overall requirement, so if
+# not found we just skip those tests
+try:
+    import h5py
+    have_h5py = True
+except ImportError:
+    # Ok if we don't have h5py, we just can't execute this code
+    have_h5py = False
 
 # Location of test data that is part of source
 unit_test_data = os.path.abspath(os.path.dirname(__file__) + "/unit_test_data/") + "/"
@@ -78,3 +86,5 @@ require_raid = pytest.mark.skipif(True,
                                   reason = "require /raid* test data to run")
 
     
+require_h5py = pytest.mark.skipif(not have_h5py,
+      reason="need to have h5py available to run.")

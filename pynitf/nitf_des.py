@@ -70,11 +70,18 @@ class NitfDes(object):
         
         # Derived classes should fill in information.
 
+    def str_hook(self, file):
+        '''Convenient to have a place to add stuff in __str__ for derived
+        classes. This gets called after the DES name is written, but before
+        any fields. Default is to do nothing, but derived classes can 
+        override this if desired.'''
+        print('NitfDes', file=fh)
+
     # Derived classes may want to override this to give a more detailed
     # description of what kind of image this is.
     def __str__(self):
         fh = six.StringIO()
-        print('NitfDes', file=fh)
+        self.str_hook(fh)
         if(self.user_subheader):
             print("User-Defined Subheader: ", file=fh)
             print(self.user_subheader, file=fh)
