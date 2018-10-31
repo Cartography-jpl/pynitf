@@ -10,9 +10,9 @@ from .nitf_text_subheader import NitfTextSubheader
 from .nitf_des_subheader import NitfDesSubheader
 from .nitf_image import (NitfImagePlaceHolder, NitfImageCannotHandle,
                          NitfImageReadNumpy)
+from .nitf_des import nitf_des_read
 from .nitf_tre import read_tre, prepare_tre_write
 from .nitf_tre_engrda import add_engrda_function
-from .nitf_des import read_des_data, read_des_uh_data
 import io,six,copy
 
 class NitfFile(object):
@@ -20,6 +20,7 @@ class NitfFile(object):
     # segments. Right now we only do this for image_segment and text_segment,
     # but we could extend this if desired
     image_segment_hook_obj = []
+    des_segment_hook_obj = []
     text_segment_hook_obj = []
     def __init__(self, file_name = None):
         '''Create a NitfFile for reading or writing. Because it is common, if
@@ -127,7 +128,8 @@ class NitfFile(object):
                 range(self.file_header.numt)]
             self.des_segment = \
                [NitfDesSegment(header_size=self.file_header.ldsh[i],
-                               data_size=self.file_header.ld[i]) for i in
+                              data_size=self.file_header.ld[i],
+                              hook_obj = NitfFile.des_segment_hook_obj) for i in
                 range(self.file_header.numdes)]
             self.res_segment = \
                [NitfResSegment(header_size=self.file_header.lresh[i], 
@@ -486,55 +488,53 @@ class NitfTextSegment(NitfSegment):
 class NitfDesSegment(NitfSegment):
     '''Data extension segment (DES), allows for the addition of different data 
     types with each type encapsulated in its own DES'''
-    def __init__(self, data='', header_size=None, data_size=None, udsh = None):
-        h = NitfDesSubheader()
+    def __init__(self, des=None,
+                 hook_obj = None,
+                 header_size=None, data_size=None):
+        if(des is None):
+            h = NitfDesSubheader()
+        else:
+            h = des.des_subheader
         self.header_size = header_size
         self.data_size = data_size
-        NitfSegment.__init__(self, h, copy.copy(data))
+        if(hook_obj is None):
+            hook_obj = NitfFile.des_segment_hook_obj
+        NitfSegment.__init__(self, h, des, hook_obj = hook_obj)
 
-        if (udsh is not None):
-            self.subheader.desshf = udsh
-            self.subheader.desshl = len(udsh)
+    # Alternative name for data, the des is stored in data attribute
+    @property
+    def des(self):
+        return self.data
 
     def read_from_file(self, fh):
         '''Read from a file'''
         self.subheader.read_from_file(fh)
-        self.data = fh.read(self.data_size)
+        self.data = nitf_des_read(self.subheader, self.header_size,
+                                  self.data_size, fh)
+        
     def __str__(self):
         '''Text description of structure, e.g., something you can print out'''
         fh = six.StringIO()
         print("Sub header:", file=fh)
         print(self.subheader, file=fh)
-        print("Data length %d" % len(self.data), file=fh)
 
         #Special case for TRE_OVERFLOW
         #Because we will print the data out as TREs later so we'll skip
         if (self.subheader.desid.encode("utf-8") == b'TRE_OVERFLOW'):
             return ""
 
-        des = read_des_data(self.subheader.desid.encode("utf-8"), self.data)
-        print(des, file=fh)
-
-        if (self.subheader.desshl > 0):
-            print("User-Defined Subheader: ", file=fh)
-            des_uh = read_des_uh_data(self.subheader.desid.encode("utf-8"), self.subheader.desshf)
-            print(des_uh, file=fh)
+        print(self.des, file=fh)
 
         return fh.getvalue()
-
-    def get_des_object(self):
-        return read_des_data(self.subheader.desid.encode("utf-8"), self.data)
-
-    def get_des_uh_object(self):
-        return read_des_uh_data(self.subheader.desid.encode("utf-8"), self.subheader.desshf)
 
     def write_to_file(self, fh):
         '''Write to a file. The returns (sz_header, sz_data), because this
         information is needed by NitfFile.'''
         start_pos = fh.tell()
+        self.des.write_user_subheader(self.subheader)
         self.subheader.write_to_file(fh)
         header_pos = fh.tell()
-        fh.write(self.data)
+        self.des.write_to_file(fh)
         return (header_pos - start_pos, fh.tell() - header_pos)
 
 class NitfResSegment(NitfPlaceHolder):

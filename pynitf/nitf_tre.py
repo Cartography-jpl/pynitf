@@ -12,6 +12,7 @@ from .nitf_field import _FieldStruct, _FieldLoopStruct, \
     _FieldValueArrayAccess, _create_nitf_field_structure
 import copy
 import io,six
+from .nitf_des import TreOverflow
 
 class Tre(_FieldStruct):
     '''Add a little extra structure unique to Tres'''
@@ -164,8 +165,8 @@ def read_tre(header, des_list, field_list = []):
             des_index = getattr(header, h_ofl)
             if(des_index > 0):
                 # des_index is 1 based, so subtract 1 to get the des
-                des = des_list[getattr(header, h_ofl)-1]
-                tre_list.extend(read_tre_data(des.data))
+                desseg = des_list[getattr(header, h_ofl)-1]
+                tre_list.extend(read_tre_data(desseg.des.data))
             tre_list.extend(read_tre_data(getattr(header, h_data)))
     return tre_list
 
@@ -197,16 +198,11 @@ def prepare_tre_write(tre_list, header, des_list, field_list = [],
         # something we particularly need to break. Instead, work around by
         # delaying the import
         from .nitf_file import NitfDesSegment
-        des = NitfDesSegment()
         h_len, h_offl, h_data = field_list[i]
-        h = des.subheader
-        h.desid = "TRE_OVERFLOW"
-        h.dsver = 1
-        h.dsclas = "U"
-        h.desoflw = str.upper(h_data)
-        h.desitem = seg_index
+        des = TreOverflow(seg_index=seg_index, overflow=h_data)
+        desseg = NitfDesSegment(des=des)
         des.data = des_fh.getvalue()
-        des_list.append(des)
+        des_list.append(desseg)
         setattr(header, h_offl, len(des_list))
     
 def read_tre_data(data):

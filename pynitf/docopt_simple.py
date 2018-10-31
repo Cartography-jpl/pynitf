@@ -74,3 +74,10 @@ def docopt_simple(doc, argv=None, help=True, version=None,
     return DocOptSimple(doc, argv=argv, help=help, version=version, 
                         options_first=options_first)
 
+# Don't export this. We normally get docopt_simple from other modules
+# (e.g., geocal), but we want to have a copy around for stand alone
+# programs. We import this, but not export it. The stand alone programs
+# use full path to get this.
+
+#__all__ = ["docopt_simple"]
+__all__ = [ ]

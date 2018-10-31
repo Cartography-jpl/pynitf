@@ -1,0 +1,62 @@
+#! /usr/bin/env python
+from __future__ import print_function
+import pynitf
+import importlib.util
+import sys
+import logging
+
+version="%prog Oct 31, 2018"
+usage="""Usage: 
+  nitf_diff [options] <file1> <file2>
+  nitf_diff -h | --help
+  nitf_diff -v | --version
+
+This compares two nitf files, and determines if they are the same are not.
+
+In general, there can be all kinds of special cases you want in a compare.
+For example, you might want a particular image segment compared with a 
+tolerance rather than exactly. You might want a TRE compared, but ignore
+certain fields. So we take a python configuration file that can be used
+to specify any special comparison functions. See nitf_diff_support.py for
+information on how to set this up.
+
+Options:
+  -h --help         
+       Print this message
+
+  --config-file=f
+       Give a python configuration file to load to set up special 
+       comparisons.
+
+  --quiet
+       Don't print any messages, just return an overall status code.
+
+  --verbose
+       Give more verbose messages
+
+  -v --version      
+       Print program version
+
+"""
+args = pynitf.docopt_simple.docopt_simple(usage, version=version)
+
+if(args.config_file):
+    spec = importlib.util.spec_from_file_location("config_file",
+                                                  args.config_file)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    sys.modules["config_file"] = module
+
+if(args.verbose):
+    logging.basicConfig(level=logging.DEBUG)
+elif(args.quiet):
+    logging.basicConfig(level=1000)
+else:    
+    logging.basicConfig(level=logging.INFO)
+
+is_same = pynitf.nitf_file_diff(args.file1, args.file2)
+if(not is_same):
+    logging.getLogger("nitf_diff").error("Files differ")
+    sys.exit(1)
+logging.getLogger("nitf_diff").info("Files are the same")
+    

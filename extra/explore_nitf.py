@@ -6,8 +6,8 @@
 import readline
 import shlex
 import pydoc
-from geocal import *
-from geocal.nitf import *
+from pynitf import *
+import pynitf
 
 version="%prog July 7, 2017"
 usage="""Usage:
@@ -181,7 +181,7 @@ def processCommand(line):
     else:
         print('Unknown command: {}'.format(cmd))
 
-a = docopt_simple(usage, version=version)
+a = pynitf.docopt_simple.docopt_simple(usage, version=version)
 f = NitfFile(a.nitf_file)
 
 command = a.args['-c']

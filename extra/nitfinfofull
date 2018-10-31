@@ -4,7 +4,6 @@ import pynitf
 import subprocess
 import os
 import sys
-import docopt_simple
 
 version="%prog Feb 22, 2018"
 usage="""Usage: 
@@ -24,7 +23,7 @@ Options:
        Print program version
 
 """
-args = docopt_simple.docopt_simple(usage, version=version)
+args = pynitf.docopt_simple.docopt_simple(usage, version=version)
 
 f = pynitf.NitfFile(args.input_file)
 print(f)

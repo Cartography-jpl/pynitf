@@ -158,7 +158,6 @@ class NitfImageReadNumpy(NitfImageWithSubset):
 
     def __str__(self):
         if(self.shape[0] == 1):
-            print(self.dtype)
             return "NitfImageReadNumpy %d x %d %s image" % (self.shape[1], self.shape[2], str(self.dtype.newbyteorder("=")))
         return "NitfImageReadNumpy %d x %d x %d %s image" % (self.shape[0], self.shape[1], self.shape[2], str(self.dtype.newbyteorder("=")))
 

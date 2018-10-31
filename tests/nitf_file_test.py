@@ -106,10 +106,7 @@ def create_des(f):
         des.att_q3[n] = 10.1
         des.att_q4[n] = 10.1
 
-    data = six.BytesIO()
-    des.write_to_file(data)
-    de = NitfDesSegment(data=data.getvalue())
-    de.subheader.desid = "CSATTA DES"
+    de = NitfDesSegment(des=des)
     f.des_segment.append(de)
     
 def print_diag(f):
