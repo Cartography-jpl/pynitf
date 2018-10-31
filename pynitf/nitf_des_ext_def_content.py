@@ -120,7 +120,8 @@ class DesEXT_DEF_CONTENT(NitfDes):
     def write_to_file(self, fh):
         '''This is a dummy write operation. We just write self.data_size
         '0''s.'''
-        fh.write(b'\0' * self.data_size)
+        if(self.data_size):
+            fh.write(b'\0' * self.data_size)
 
     def write_user_subheader(self, sh):
         self.content_header.content_length = str(self.data_size).encode('utf-8')

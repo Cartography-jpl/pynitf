@@ -301,7 +301,11 @@ class NitfDesHandleList(object):
     a priority_order to be assigned to the handlers, we look for 
     lower number first. So for example we can but NitfDesPlaceHolder as the
     highest number, and it will be tried after all the other handlers have
-    been tried.'''
+    been tried.
+
+    This is a chain-of-responsibility pattern, with the addition of an
+    ordering based on a priority_order. 
+    '''
     def __init__(self):
         self.handle_list = collections.defaultdict(lambda : set())
 
