@@ -505,6 +505,8 @@ class FieldData(object):
         self.value(parent_obj)[key] = fh.read(sz - self.size_offset)
     def get_print(self, parent_obj,key):
         t = self.get(parent_obj,key)
+        if (t is None):
+            return "Not used"
         if(len(t) == 0):
             return "Not used"
         return "Data length %s" % len(t)
@@ -547,8 +549,6 @@ class NumFieldData(FieldData):
         return unpack(self.format, self.value(parent_obj)[key])[0]
     def get_print(self, parent_obj,key):
         t = self.get(parent_obj,key)
-        if(len(t) == 0):
-            return "Not used"
         return "%s" % t
 
 class IntFieldData(NumFieldData):

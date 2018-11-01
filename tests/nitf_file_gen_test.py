@@ -10,6 +10,7 @@ from pynitf.nitf_tre_piae import *
 from pynitf.nitf_tre_rpc import *
 from pynitf.nitf_tre_geosde import *
 from pynitf.nitf_tre_histoa import *
+from pynitf.nitf_tre_bandsb import *
 from pynitf.nitf_des import *
 from pynitf.nitf_des_csatta import *
 from pynitf.nitf_des_csattb import *
@@ -46,6 +47,40 @@ def createHISTOA():
     t.nipcom[1] = 2
     t.ipcom[1, 0] = "HELLO1"
     t.ipcom[1, 1] = "HELLO2"
+
+    return t
+
+def createBANDSB():
+    t = TreBANDSB()
+
+    t.count = 5
+    t.radiometric_quantity = 'REFLECTANCE'
+    t.radiometric_quantity_unit = 'F'
+    t.cube_scale_factor = 1.0
+    t.cube_additive_factor = 0.0
+    t.row_gsd_nrs = 9999.99
+    t.row_gsd_nrs_unit = 'M'
+    t.col_gsd_ncs = 8888.88
+    t.col_gsd_ncs_unit = 'M'
+    t.spt_resp_row_nom = 7777.77
+    t.spt_resp_unit_row_nom = 'M'
+    t.spt_resp_col_nom = 6666.66
+    t.spt_resp_unit_col_nom = 'M'
+    t.data_fld_1 = b'a' * 48
+    t.existence_mask = 0x00000001
+
+    t.num_aux_b = 2
+    t.num_aux_c = 2
+    for i in range(t.num_aux_b):
+        t.bapf[i] = 'R'
+        t.ubap[i] = 'ABCDEFG'
+        for j in range(t.count):
+            t.apr_band[i, j] = 7
+
+    for i in range(t.num_aux_c):
+        t.capf[i] = 'R'
+        t.ucap[i] = 'ABCDEFG'
+        t.apr_cube[i] = 8
 
     return t
 
@@ -98,6 +133,7 @@ def test_main(isolated_dir):
     ih.imode="P"
     segment3 = NitfImageSegment(img3)
     segment3.tre_list.append(createHISTOA())
+    segment3.tre_list.append(createBANDSB())
     f.image_segment.append(segment3)
 
     # Can add TRES to either the file or image segment level. This automatically
@@ -217,6 +253,10 @@ def test_main(isolated_dir):
     print("Image Data:")
     print(f2.image_segment[0].data.data)
 
+    bandsb = f2.image_segment[2].tre_list[1]
+    assert bandsb.count == 5
+    assert bandsb.existence_mask == 0x00000001
+
     print("Text Data:")
     print(f2.text_segment[0].data)
 
@@ -248,12 +288,11 @@ def test_main(isolated_dir):
         assert ext_uh.content_headers_len == 10
         assert ext_uh.content_headers == b'1234567890'
 
-    print (f2.image_segment[2])
+    print (f2.image_segment[2].tre_list)
 
     reshaped_data = f2.image_segment[2].data.data.reshape(300, 400, 50)
     print(reshaped_data[50,:,:])
 
     # We then print out a description of the file
     print(f2.summary())
-
     print(f2)
