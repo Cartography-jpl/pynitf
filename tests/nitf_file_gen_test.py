@@ -234,8 +234,8 @@ def test_main(isolated_dir):
     # -- EXT_DEF_CONTENT --
     d = DesEXT_DEF_CONTENT()
 
-    d.user_subheader.content_headers_len = 10
-    d.user_subheader.content_headers = b'1234567890'
+    d.user_subheader.content_headers_len = 3
+    d.user_subheader.content_headers = b'1:2'
 
     de3 = NitfDesSegment(des=d)
     f.des_segment.append(de3)
@@ -244,6 +244,8 @@ def test_main(isolated_dir):
 
     # Now we write out to a nitf file
     f.write("basic_nitf.ntf")
+
+    print(os.getcwd())
 
     # We can also read this back in
     f2 = NitfFile("basic_nitf.ntf")
@@ -285,8 +287,8 @@ def test_main(isolated_dir):
     # Come back to this, doesn't currently work
     if(False):
         ext_uh = f2.des_segment[2].des.user_subheader
-        assert ext_uh.content_headers_len == 10
-        assert ext_uh.content_headers == b'1234567890'
+        assert ext_uh.content_headers_len == 3
+        assert ext_uh.content_headers == b'1:2'
 
     print (f2.image_segment[2].tre_list)
 

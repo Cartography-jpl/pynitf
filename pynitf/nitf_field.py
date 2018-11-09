@@ -521,7 +521,7 @@ class StringFieldData(FieldData):
 class NumFieldData(FieldData):
     def set(self,parent_obj,key,v):
         v = pack(self.format, v)
-        super(NumFieldData, self).set(parent_obj,key,v)
+        super().set(parent_obj,key,v)
 
     def value(self, parent_obj):
         if(self.field_name not in parent_obj.value):
@@ -552,14 +552,14 @@ class NumFieldData(FieldData):
         return "%s" % t
 
 class IntFieldData(NumFieldData):
-    def set(self,parent_obj,key,v):
+    def __init__(self, field_name, size_field, ty, loop, options):
         self.format = '>I'
-        super(IntFieldData, self).set(parent_obj,key,v)
+        super().__init__(field_name, size_field, ty, loop, options)
 
 class FloatFieldData(NumFieldData):
-    def set(self,parent_obj,key,v):
+    def __init__(self, field_name, size_field, ty, loop, options):
         self.format = '>f'
-        super(FloatFieldData, self).set(parent_obj,key,v)
+        super().__init__(field_name, size_field, ty, loop, options)
 
 class _create_nitf_field_structure(object):
     # The __dict__ is at class level
