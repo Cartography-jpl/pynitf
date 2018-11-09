@@ -104,8 +104,8 @@ def _handle_type(lis1, lis2, nm, handler, logger):
             logger.debug("Comparing %d tres of %s index %d" % (min(len(lis1[i].tre_list), len(lis2[i].tre_list)), nm, i))
             for j in range(min(len(lis1[i].tre_list),
                                len(lis2[i].tre_list))):
-                status = tre_handle.handle_diff(lis1.tre_list[j],
-                                           lis2.tre_list[j])
+                status = tre_handle.handle_diff(lis1[i].tre_list[j],
+                                           lis2[i].tre_list[j])
                 is_same = is_same and status
     return is_same
     
