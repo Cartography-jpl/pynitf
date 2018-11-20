@@ -1,4 +1,5 @@
 from .nitf_file import *
+from .nitf_field import _FieldLoopStruct
 import logging
 import six, abc, collections
 
@@ -31,6 +32,55 @@ class DefaultHandle(DiffHandle):
         self.logger.debug("obj1: %s" % obj1.summary())
         self.logger.debug("obj2: %s" % obj2.summary())
         return (True, True)
+
+
+class ISegHandle(DiffHandle):
+    def __init__(self, logger=logging.getLogger('nitf_diff')):
+        super().__init__(logger)
+
+    def process_field_value_list(self, type, list1, parent1, list2, parent2):
+        is_same = True
+
+        for index, field in enumerate(list1):
+            if (not isinstance(field, _FieldLoopStruct)):
+                if (field.field_name is not None):
+                    if (field.value(parent1) != list2[index].value(parent2)):
+                        self.logger.error("%s 1 has subheader field %s as %s while %s 2 has %s" %
+                                          (type, field.field_name, field.get_print(parent1, ()),type,  list2[index].get_print(parent2, ())))
+                        is_same = False
+            else:
+                is_same = self.process_field_value_list(type, field.field_value_list, parent1, list2[index].field_value_list, parent2) \
+                          and is_same
+
+        return is_same
+
+    def compare_tres(self, tre1, tre2):
+
+        return self.process_field_value_list('TRE', tre1.field_value_list, tre1, tre2.field_value_list, tre2)
+
+    def handle_diff(self, obj1, obj2):
+        is_same = True
+        self.logger.debug("Using Image Segment Handler")
+        self.logger.debug("obj1: %s" % obj1.summary())
+        self.logger.debug("obj2: %s" % obj2.summary())
+
+        #Check the subheader of the two Image Segments
+        list2 = obj2.subheader.field_value_list
+
+        is_same = self.process_field_value_list('Image', obj1.subheader.field_value_list, obj1.subheader, obj2.subheader.field_value_list, obj2.subheader)
+
+        #TRE list check
+        if (len(obj1.tre_list) != len(obj2.tre_list)):
+            self.logger.error("Image 1 has %d TREs while file 2 has %d" %
+                         (len(obj1.tre_list), len(obj2.tre_list)))
+            is_same = False
+        else:
+            for index, tre in enumerate(obj1.tre_list):
+                #also_same = self.compare_tres(tre, obj2.tre_list[index])
+                is_same = self.compare_tres(tre, obj2.tre_list[index]) \
+                          and is_same
+
+        return (True, is_same)
 
 class DiffHandleList(object):
     '''Small class to handle to list of DiffHandle objects. This is little more
@@ -79,7 +129,7 @@ def register_dseg_handle(handle, priority_order=0):
     dseg_handle.add_handle(handle, priority_order)
 
 register_file_header_handle(DefaultHandle(), priority_order=1000)    
-register_iseg_handle(DefaultHandle(), priority_order=1000)    
+register_iseg_handle(ISegHandle(), priority_order=1000)
 register_tre_handle(DefaultHandle(), priority_order=1000)    
 register_tseg_handle(DefaultHandle(), priority_order=1000)    
 register_dseg_handle(DefaultHandle(), priority_order=1000)    
@@ -104,8 +154,8 @@ def _handle_type(lis1, lis2, nm, handler, logger):
             logger.debug("Comparing %d tres of %s index %d" % (min(len(lis1[i].tre_list), len(lis2[i].tre_list)), nm, i))
             for j in range(min(len(lis1[i].tre_list),
                                len(lis2[i].tre_list))):
-                status = tre_handle.handle_diff(lis1.tre_list[j],
-                                           lis2.tre_list[j])
+                status = tre_handle.handle_diff(lis1[i].tre_list[j],
+                                           lis2[i].tre_list[j])
                 is_same = is_same and status
     return is_same
     

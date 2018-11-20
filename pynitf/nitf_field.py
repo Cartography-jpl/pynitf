@@ -505,6 +505,8 @@ class FieldData(object):
         self.value(parent_obj)[key] = fh.read(sz - self.size_offset)
     def get_print(self, parent_obj,key):
         t = self.get(parent_obj,key)
+        if (t is None):
+            return "Not used"
         if(len(t) == 0):
             return "Not used"
         return "Data length %s" % len(t)
@@ -516,44 +518,24 @@ class StringFieldData(FieldData):
             return "Not used"
         return "%s" % t
 
-class IntFieldData(FieldData):
-    '''def set(self,parent_obj,key,v):
-        if(self.loop is not None):
-            self.loop.check_index(parent_obj, key)
-        if(not self.check_condition(parent_obj, key)):
-            raise RuntimeError("Can't set value for field %s because the condition '%s' isn't met" % (self.field_name, self.condition))
-        self.value(parent_obj)[key] = v
-        f = parent_obj
-        if(len(key) > 0):
-            i1 = key[0]
-        if(len(key) > 1):
-            i2 = key[1]
-        if(self.size_not_updated):
-            sz = self.size_field
-            if(sz != 0):
-                sz -= self.size_offset
-            if(len(v) != sz):
-                raise RuntimeError("FieldData was expected to be exactly %d bytes, but data that we tried to set was instead %d bytes" % (sz, len(v)))
-        else:
-            if(len(v) == 0):
-                exec("%s = 0" % self.size_field)
-            else:
-                exec("%s = %d" % (self.size_field, len(v) +
-                                  self.size_offset))'''
+class NumFieldData(FieldData):
+    def set(self,parent_obj,key,v):
+        v = pack(self.format, v)
+        super().set(parent_obj,key,v)
+
     def value(self, parent_obj):
         if(self.field_name not in parent_obj.value):
             parent_obj.value[self.field_name] = defaultdict(lambda : b'')
         if (DEBUG):
             print(self.field_name)
-            print('IntFieldData.value')
         val = parent_obj.value[self.field_name][0]
         if len(val) == 0:
             #print(parent_obj.value[self.field_name][0])
             return parent_obj.value[self.field_name]
         elif len(val) == 4:
             if (DEBUG):
-                print(unpack('>I', parent_obj.value[self.field_name][0])[0])
-            return unpack('>I', parent_obj.value[self.field_name][0])[0]
+                print(unpack(self.format, parent_obj.value[self.field_name][0])[0])
+            return unpack(self.format, parent_obj.value[self.field_name][0])[0]
         else:
             raise RuntimeError("This data type of length is not supported" % len(val))
 
@@ -564,13 +546,21 @@ class IntFieldData(FieldData):
             return None
         if (DEBUG):
             print(self.value(parent_obj)[key])
-        return unpack('>I', self.value(parent_obj)[key])[0]
+        return unpack(self.format, self.value(parent_obj)[key])[0]
     def get_print(self, parent_obj,key):
         t = self.get(parent_obj,key)
-        if(len(t) == 0):
-            return "Not used"
         return "%s" % t
-        
+
+class IntFieldData(NumFieldData):
+    def __init__(self, field_name, size_field, ty, loop, options):
+        self.format = '>I'
+        super().__init__(field_name, size_field, ty, loop, options)
+
+class FloatFieldData(NumFieldData):
+    def __init__(self, field_name, size_field, ty, loop, options):
+        self.format = '>f'
+        super().__init__(field_name, size_field, ty, loop, options)
+
 class _create_nitf_field_structure(object):
     # The __dict__ is at class level
     def __init__(self):
@@ -701,5 +691,5 @@ def create_nitf_field_structure(name, description, hlp = None):
             pass
     return res
 
-__all__ = ["FieldData", "StringFieldData", "IntFieldData", "hardcoded_value", "NitfLiteral",
+__all__ = ["FieldData", "StringFieldData", "IntFieldData", "FloatFieldData", "hardcoded_value", "NitfLiteral",
            "create_nitf_field_structure"]
