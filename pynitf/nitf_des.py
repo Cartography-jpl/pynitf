@@ -153,20 +153,11 @@ class NitfDesFieldStruct(NitfDes, _FieldStruct):
         if(self.des_subheader.desid != self.__class__.des_tag):
             raise NitfDesCannotHandle()
         
-    def des_bytes(self):
-        '''All of the TRE except for the front two cetag and cel fields'''
-        fh = six.BytesIO()
-        _FieldStruct.write_to_file(self, fh)
-        return fh.getvalue()
-    def read_from_des_bytes(self, bt, nitf_literal = False):
-        fh = six.BytesIO(bt)
-        _FieldStruct.read_from_file(self,fh, nitf_literal)
     def read_from_file(self, fh, nitf_literal = False):
         self.read_user_subheader()
         _FieldStruct.read_from_file(self,fh, nitf_literal)
     def write_to_file(self, fh):
-        t = self.des_bytes()
-        fh.write(t)
+        _FieldStruct.write_to_file(self, fh)
     def str_hook(self, file):
         '''Convenient to have a place to add stuff in __str__ for derived
         classes. This gets called after the DES name is written, but before
@@ -198,6 +189,50 @@ class NitfDesFieldStruct(NitfDes, _FieldStruct):
         res = six.StringIO()
         #print("TRE - %s" % self.tre_tag, file=res)
 
+class NitfDesObjectHandle(NitfDes):
+    '''This is a class where the DES is handled by an object type
+    des_implementation_class in des_implementation_field. This
+    possibly also include user defined subheaders.  See for example
+    DesCSATTB in geocal.
+
+    Note that although you can directly create a class based on this one,
+    there is also the create_nitf_des_structure function that automates 
+    creating this from a table like we do with TREs.
+    '''
+    uh_class = None
+    des_tag = None
+    def __init__(self, des_subheader=None, header_size=None,
+                 user_subheader=None, data_size=None):
+        NitfDes.__init__(self, self.__class__.des_tag,
+                         des_subheader, header_size, data_size,
+                         user_subheader = user_subheader,
+                         user_subheader_class = self.__class__.uh_class)
+        if(self.des_subheader.desid != self.__class__.des_tag):
+            raise NitfDesCannotHandle()
+        
+    def read_from_file(self, fh):
+        self.read_user_subheader()
+        getattr(self, self.des_implementation_field).des_read(fh)
+    def write_to_file(self, fh):
+        getattr(self, self.des_implementation_field).des_write(fh)
+    def str_hook(self, file):
+        '''Convenient to have a place to add stuff in __str__ for derived
+        classes. This gets called after the DES name is written, but before
+        any fields. Default is to do nothing, but derived classes can 
+        override this if desired.'''
+        pass
+    def __str__(self):
+        '''Text description of structure, e.g., something you can print
+        out.'''
+        res = six.StringIO()
+        self.str_hook(res)
+        print("Object associated with DES:", file=fh)
+        print(getattr(self, self.des_implementation_field), file=fh)
+
+    def summary(self):
+        res = six.StringIO()
+        #print("TRE - %s" % self.tre_tag, file=res)
+        
 class NitfDesPlaceHolder(NitfDes):
     '''Implementation that doesn't actually read any data, useful as a
     final place holder if none of our other NitfDes classes can handle
@@ -243,14 +278,17 @@ class TreOverflow(NitfDes):
         out.'''
         return "TreOverflow"
 
-def create_nitf_des_structure(name, desc_data, desc_uh = None, hlp = None):
+def create_nitf_des_structure(name, desc_data, desc_uh = None, hlp = None,
+                              des_implementation_field=None,
+                              des_implementation_class=None):
     '''This is like create_nitf_field_structure, but adds a little
     extra structure for DESs.
 
-    Note that this create DES that fit into the NitfDesFieldStruct format
-    (e.g., DesCSATTB). Not every DES has this form, see for example 
-    DesEXT_DEF_CONTENT. Classes that don't fit this form will generally 
-    derive from NitfDes, and will not call this particular function.
+    Note that this create DES that fit into the NitfDesFieldStruct or
+    NitfDesObjectHandle format (e.g., DesCSATTB). Not every DES has
+    this form, see for example DesEXT_DEF_CONTENT. Classes that don't
+    fit this form will generally derive from NitfDes, and will not
+    call this particular function.
 
     This creates two classes, one that handles the overall DES, and one
     that handles the extra user subheader that might be present. If desc_uh 
@@ -268,14 +306,22 @@ def create_nitf_des_structure(name, desc_data, desc_uh = None, hlp = None):
 
     # 1. First create Des class
     t = _create_nitf_field_structure()
-    des_tag = desc_data.pop(0)
-    d = desc_data
-    res = type(name, (NitfDesFieldStruct,), t.process(d))
+    d = copy.deepcopy(desc_data)
+    des_tag = d.pop(0)
+    if((des_implementation_field and not des_implementation_class) or
+       (not des_implementation_field and des_implementation_class)):
+        raise RuntimeError("Need to supply either none or both of des_implementation_class and des_implementation_field")
+    if(des_implementation_field):
+        res = type(name, (NitfDesObjectHandle,))
+        res.des_implementation_class = des_implementation_class
+        res.des_implementation_field = des_implementation_field
+    else:
+        res = type(name, (NitfDesFieldStruct,), t.process(d))
     res.des_tag = des_tag
 
-    # Stash description, to make available if we want to later override a TRE
-    # (see geocal_nitf_rsm.py in geocal for an example)
-    #res._description = description
+    # Stash description, to make available if we want to later override a DES
+    # (see geocal_nitf_des.py in geocal for an example)
+    res._desc_data = desc_data
 
     if(hlp is not None):
         try:
@@ -292,6 +338,7 @@ def create_nitf_des_structure(name, desc_data, desc_uh = None, hlp = None):
         t2 = _create_nitf_field_structure()
         res2 = type(name+'_UH', (_FieldStruct,), t2.process(desc_uh))
         res.uh_class = res2
+    res._desc_uh = desc_uh
 
     return (res, res2)
 
