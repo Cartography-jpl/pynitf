@@ -212,7 +212,8 @@ class NitfDesObjectHandle(NitfDes):
         
     def read_from_file(self, fh):
         self.read_user_subheader()
-        getattr(self, self.des_implementation_field).des_read(fh)
+        setattr(self, self.des_implementation_field,
+                self.des_implementation_class.des_read(fh))
     def write_to_file(self, fh):
         getattr(self, self.des_implementation_field).des_write(fh)
     def str_hook(self, file):
@@ -226,8 +227,9 @@ class NitfDesObjectHandle(NitfDes):
         out.'''
         res = six.StringIO()
         self.str_hook(res)
-        print("Object associated with DES:", file=fh)
-        print(getattr(self, self.des_implementation_field), file=fh)
+        print("Object associated with DES:", file=res)
+        print(getattr(self, self.des_implementation_field), file=res)
+        return res.getvalue()
 
     def summary(self):
         res = six.StringIO()
@@ -312,7 +314,7 @@ def create_nitf_des_structure(name, desc_data, desc_uh = None, hlp = None,
        (not des_implementation_field and des_implementation_class)):
         raise RuntimeError("Need to supply either none or both of des_implementation_class and des_implementation_field")
     if(des_implementation_field):
-        res = type(name, (NitfDesObjectHandle,))
+        res = type(name, (NitfDesObjectHandle,), {})
         res.des_implementation_class = des_implementation_class
         res.des_implementation_field = des_implementation_field
     else:
@@ -359,6 +361,12 @@ class NitfDesHandleList(object):
     def add_handle(self, cls, priority_order=0):
         self.handle_list[priority_order].add(cls)
 
+    def discard_handle(self, cls):
+        '''Discard any handle of the given class. Ok if this isn't actually
+        in the list of handles.'''
+        for k in sorted(self.handle_list.keys()):
+            self.handle_list[k].discard(cls)
+
     def des_handle(self, subheader, header_size, data_size, fh):
         for k in sorted(self.handle_list.keys()):
             for cls in self.handle_list[k]:
@@ -381,10 +389,15 @@ def nitf_des_read(subheader, header_size, data_size, fh):
 def register_des_class(cls, priority_order=0):
     _hlist.add_handle(cls, priority_order)
 
+def unregister_des_class(cls):
+    '''Remove a handler from the list. This isn't used all that often,
+    but it can be useful in testing.'''
+    _hlist.discard_handle(cls)
+    
 register_des_class(TreOverflow)
 register_des_class(NitfDesPlaceHolder, priority_order=1000)
 
 __all__ = [ "NitfDesCannotHandle", "NitfDes", "NitfDesPlaceHolder",
             "TreOverflow", "create_nitf_des_structure",
-            "nitf_des_read", "register_des_class"]
+            "nitf_des_read", "register_des_class", "unregister_des_class"]
 
