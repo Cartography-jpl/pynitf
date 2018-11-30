@@ -280,6 +280,14 @@ class TreOverflow(NitfDes):
         out.'''
         return "TreOverflow"
 
+def _create_attribute_forward_to_implementation_object(fname):
+    def f(self):
+        t = getattr(self, self.des_implementation_field)
+        if(not hasattr(t, fname)):
+            raise AttributeError("The implementation class %s does not have the field %s" %(self.des_implementation_class.__name__, fname))
+        return getattr(t, fname)
+    return property(f)
+    
 def create_nitf_des_structure(name, desc_data, desc_uh = None, hlp = None,
                               des_implementation_field=None,
                               des_implementation_class=None):
@@ -317,6 +325,9 @@ def create_nitf_des_structure(name, desc_data, desc_uh = None, hlp = None,
         res = type(name, (NitfDesObjectHandle,), {})
         res.des_implementation_class = des_implementation_class
         res.des_implementation_field = des_implementation_field
+        # Forward all the fields to be handled by the implementation object
+        for field in t.process(d)["field_map"].keys():
+            setattr(res, field, _create_attribute_forward_to_implementation_object(field))
     else:
         res = type(name, (NitfDesFieldStruct,), t.process(d))
     res.des_tag = des_tag
