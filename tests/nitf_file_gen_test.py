@@ -189,7 +189,7 @@ def test_main(isolated_dir):
     d.eci_ecf_att = 0
     d.dt_att = 900.5
     d.date_att = 20170501
-    d.t0_att = 235959.100001010
+    d.t0_att = 235959.100001000
     d.num_att = 5
     for n in range(d.num_att):
         d.q1[n] = -0.11111
@@ -220,7 +220,7 @@ def test_main(isolated_dir):
     d.eci_ecf_ephem = 0
     d.dt_ephem = 900.5
     d.date_ephem = 20170501
-    d.t0_ephem = 235959.100001010
+    d.t0_ephem = 235959.100001000
     d.num_ephem = r
     for n in range(r):
         d.ephem_x[n] = n * n
@@ -266,7 +266,7 @@ def test_main(isolated_dir):
     csattb = f2.des_segment[0].des
     assert csattb.dt_att == 900.5
     assert csattb.date_att == 20170501
-    assert csattb.t0_att == 235959.100001010
+    assert csattb.t0_att == 235959.100001000
     csattb_uh = f2.des_segment[0].des.user_subheader
     assert csattb_uh.id == '4385ab47-f3ba-40b7-9520-13d6b7a7f311'
     assert csattb_uh.numais == '010'
@@ -277,7 +277,7 @@ def test_main(isolated_dir):
     csephb = f2.des_segment[1].des
     assert csephb.dt_ephem == 900.5
     assert csephb.date_ephem == 20170501
-    assert csephb.t0_ephem == 235959.100001010
+    assert csephb.t0_ephem == 235959.100001000
     csephb_uh = f2.des_segment[1].des.user_subheader
     assert csephb_uh.id == '4385ab47-f3ba-40b7-9520-13d6b7a7f31b'
     assert csephb_uh.numais == '011'
