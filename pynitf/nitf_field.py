@@ -236,7 +236,7 @@ class _FieldValue(object):
         if(self.field_name is not None):
             if(nitf_literal):
                 self.value(parent_obj)[key] = NitfLiteral(t.rstrip().decode("utf-8"))
-            elif(self.optional and t.rstrip(self.optional_char.encode('utf-8')) == b''):
+            elif(self.optional and t.rstrip(self.optional_char.encode('utf-8') + b' ') == b''):
                 self.value(parent_obj)[key] = None
             elif(self.ty == str):
                 self.value(parent_obj)[key] = t.rstrip().decode("utf-8")
