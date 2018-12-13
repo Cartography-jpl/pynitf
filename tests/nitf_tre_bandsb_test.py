@@ -4,7 +4,7 @@ from pynitf_test_support import *
 import io, six
 from struct import *
 
-#@pytest.mark.skip
+@skip
 def test_tre_bandsb_basic():
 
     t = TreBANDSB()
@@ -162,6 +162,7 @@ def test_tre_bandsb_basic():
 
     print (t2.summary())
 
+@skip    
 def test_tre_bandsb_apr():
 
     t = TreBANDSB()

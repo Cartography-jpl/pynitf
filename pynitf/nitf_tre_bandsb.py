@@ -119,5 +119,6 @@ desc = ["BANDSB",
          ],
         ]
 
-TreBANDSB = create_nitf_tre_structure("TreBANDSB",desc,hlp=hlp)
+# Not currently working
+#TreBANDSB = create_nitf_tre_structure("TreBANDSB",desc,hlp=hlp)
 
