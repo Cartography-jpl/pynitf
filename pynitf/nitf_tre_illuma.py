@@ -18,17 +18,17 @@ The SNIP documentation is currently not available to the public.
 '''
 
 desc = ["ILLUMA",
-        ["sol_az", "Sun Azimuth Angle", 5, float, {'frmt': '%05.1f'}],
-        ["sol_el", "Sun Elevation Angle", 5, float, {'frmt': '%+04.1f'}],
-        ["com_sol_il", "Computed Solar Illumination", 5, float, {'frmt': '%05.1f'}],
-        ["lun_el", "Lunar Elevation Angle", 5, float, {'frmt': '%05.1f'}],
-        ["lun_ph_ang", "Phase Angle of the Moon in Degrees", 6, float, {'frmt': '%+05.1f'}],
-        ["lun_az", "Lunar Azimuth Angle", 5, float, {'frmt': '%05.1f'}],
-        ["com_lun_il", "Computed Lunar Illumination", 5, float, {'frmt': '%05.1f'}],
-        ["com_tot_nat_il", "Computed Total Natural Illumination", 5, float, {'frmt': '%05.1f'}],
-        ["sol_lun_dis_ad", "Solar/Lunar Distance Adjustment", 3, float, {'frmt': '%03.1f'}],
-        ["art_ill_min", "Minimum Artificial Illumination", 5, float, {'frmt': '%05.1f'}],
-        ["art_ill_max", "Maximum Artificial Illumination", 5, float, {'frmt': '%05.1f'}],
+        ["sol_az", "Sun Azimuth Angle", 5, float, {'frmt': '%05.1f', 'optional': True, 'optional_char' : '-'}],
+        ["sol_el", "Sun Elevation Angle", 5, float, {'frmt': '%+04.1f', 'optional': True, 'optional_char' : '-'}],
+        ["com_sol_il", "Computed Solar Illumination", 5, float, {'frmt': '%05.1f', 'optional': True, 'optional_char' : '-'}],
+        ["lun_el", "Lunar Elevation Angle", 5, float, {'frmt': '%05.1f', 'optional': True, 'optional_char' : '-'}],
+        ["lun_ph_ang", "Phase Angle of the Moon in Degrees", 6, float, {'frmt': '%+05.1f', 'optional': True, 'optional_char' : '-'}],
+        ["lun_az", "Lunar Azimuth Angle", 5, float, {'frmt': '%05.1f', 'optional': True, 'optional_char' : '-'}],
+        ["com_lun_il", "Computed Lunar Illumination", 5, float, {'frmt': '%05.1f', 'optional': True, 'optional_char' : '-'}],
+        ["com_tot_nat_il", "Computed Total Natural Illumination", 5, float, {'frmt': '%05.1f', 'optional': True, 'optional_char' : '-'}],
+        ["sol_lun_dis_ad", "Solar/Lunar Distance Adjustment", 3, float, {'frmt': '%03.1f', 'optional': True, 'optional_char' : '-'}],
+        ["art_ill_min", "Minimum Artificial Illumination", 5, float, {'frmt': '%05.1f', 'optional': True, 'optional_char' : '-'}],
+        ["art_ill_max", "Maximum Artificial Illumination", 5, float, {'frmt': '%05.1f', 'optional': True, 'optional_char' : '-'}],
 ]
 
 TreILLUMA = create_nitf_tre_structure("TreILLUMA",desc,hlp=hlp)

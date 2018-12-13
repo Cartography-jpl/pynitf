@@ -96,6 +96,7 @@ class _FieldValue(object):
         self.default = options.get("default", None)
         self.condition = options.get("condition", None)
         self.optional = options.get("optional", False)
+        self.optional_char = options.get("optional_char", " ")
 
     def value(self,parent_obj):
         if(self.field_name is None):
@@ -183,7 +184,7 @@ class _FieldValue(object):
         if(isinstance(t, NitfLiteral)):
             t = ("{:%ds}" % self.size).format(t.value)
         elif(t is None and self.optional):
-            t = ("{:%ds}" % self.size).format("")
+            t = ("{:%ds}" % self.size).format("").replace(" ", self.optional_char)
         else:
             # Otherwise, get the value and do the formatting that has been
             # supplied to us.
@@ -235,7 +236,7 @@ class _FieldValue(object):
         if(self.field_name is not None):
             if(nitf_literal):
                 self.value(parent_obj)[key] = NitfLiteral(t.rstrip().decode("utf-8"))
-            elif(self.optional and t.rstrip() == b''):
+            elif(self.optional and t.rstrip(self.optional_char.encode('utf-8')) == b''):
                 self.value(parent_obj)[key] = None
             elif(self.ty == str):
                 self.value(parent_obj)[key] = t.rstrip().decode("utf-8")
@@ -661,6 +662,9 @@ def create_nitf_field_structure(name, description, hlp = None):
               but might be all spaces which indicates the value is not there.
               If optional is present, we translate all spaces in the NITF
               file to and from the python "None" object
+    optional_char - There are some TREs that use "-----" instead of "    "
+              to indicate missing data. No idea why they don't just use ' ',
+              but if there is a different char you can supply it.
     field_value_class - Most fields can be handled by our internal _FieldValue
               class. However there are some special cases (e.g., IXSHD used
               for image segment level TREs). If we need to change this,
