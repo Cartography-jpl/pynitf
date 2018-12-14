@@ -8,8 +8,7 @@ from .nitf_file_header import NitfFileHeader
 from .nitf_image_subheader import NitfImageSubheader
 from .nitf_text_subheader import NitfTextSubheader
 from .nitf_des_subheader import NitfDesSubheader
-from .nitf_image import (NitfImagePlaceHolder, NitfImageCannotHandle,
-                         NitfImageReadNumpy)
+from .nitf_image import nitf_image_read
 from .nitf_des import nitf_des_read
 from .nitf_tre import read_tre, prepare_tre_write
 from .nitf_tre_engrda import add_engrda_function
@@ -330,16 +329,13 @@ class NitfImageSegment(NitfSegment):
     '''
     def __init__(self, image = None,
                  hook_obj = None,
-                 header_size = None, data_size = None,
-                 nitf_image_handle = [NitfImageReadNumpy,
-                                      NitfImagePlaceHolder]):
+                 header_size = None, data_size = None):
         '''Initialize. You can pass a NitfImage class to use (i.e., you've
         created this for writing), or a list of classes to use to try
         to read an image. This list is tried in order, the first class
         that can handle an image is the one used.'''
         self.header_size = header_size
         self.data_size = data_size
-        self.nitf_image_handle = nitf_image_handle
         if(image is None):
             h = NitfImageSubheader()
         else:
@@ -351,19 +347,8 @@ class NitfImageSegment(NitfSegment):
     def read_from_file(self, fh, segindex=None):
         '''Read from a file'''
         self.subheader.read_from_file(fh)
-        for i,cls in enumerate(self.nitf_image_handle):
-            t = cls(image_subheader=self.subheader,
-                    header_size=self.header_size,
-                    data_size=self.data_size)
-            try:
-                t.read_from_file(fh, segindex)
-                break
-            except NitfImageCannotHandle:
-                if(i < len(self.nitf_image_handle) - 1):
-                    pass
-                else:
-                    raise
-        self.data = t
+        self.data = nitf_image_read(self.subheader, self.header_size,
+                                    self.data_size, fh, segindex)
     def prepare_tre_write(self, des_list, seg_index):
         for ho in self.hook_obj:
             ho.prepare_tre_write_hook(self, des_list, seg_index)

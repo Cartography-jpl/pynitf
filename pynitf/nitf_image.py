@@ -2,6 +2,7 @@ from .nitf_image_subheader import (NitfImageSubheader,
                                    set_default_image_subheader)
 import abc, six
 import numpy as np
+import collections
 
 class NitfImageCannotHandle(RuntimeError):
     '''Exception that indicates we can't read a particular image. Note that
@@ -330,8 +331,61 @@ class NitfRadCalc(object):
         ss = slice(sstart, sstart + d.shape[2])
         d[:,:,:] = self.dn[bs,ls,ss] * self.gain[bs,ls,ss] + self.offset[bs,ls,ss]
 
-            
+class NitfImageHandleList(object):
+    '''Small class to handle to list of image objects. This is little more
+    complicated than just a list of handlers. The extra piece is allowing
+    a priority_order to be assigned to the handlers, we look for 
+    lower number first. So for example we can put NitfImagePlaceHolder as the
+    highest number, and it will be tried after all the other handlers have
+    been tried.
+
+    This is a chain-of-responsibility pattern, with the addition of an
+    ordering based on a priority_order. 
+    '''
+    def __init__(self):
+        self.handle_list = collections.defaultdict(lambda : set())
+
+    def add_handle(self, cls, priority_order=0):
+        self.handle_list[priority_order].add(cls)
+
+    def discard_handle(self, cls):
+        '''Discard any handle of the given class. Ok if this isn't actually
+        in the list of handles.'''
+        for k in sorted(self.handle_list.keys()):
+            self.handle_list[k].discard(cls)
+
+    def image_handle(self, subheader, header_size, data_size, fh, segindex):
+        for k in sorted(self.handle_list.keys()):
+            for cls in self.handle_list[k]:
+                try:
+                    t = cls(image_subheader=subheader,
+                            header_size=header_size,
+                            data_size=data_size)
+                    t.read_from_file(fh, segindex)
+                    return t
+                except NitfImageCannotHandle:
+                    pass
+        raise NitfImageCannotHandle("No handle found for data.")
+
+_hlist = NitfImageHandleList()
+
+
+def nitf_image_read(subheader, header_size, data_size, fh, segindex):
+    return _hlist.image_handle(subheader, header_size, data_size, fh, segindex)
+
+def register_image_class(cls, priority_order=0):
+    _hlist.add_handle(cls, priority_order)
+
+def unregister_image_class(cls):
+    '''Remove a handler from the list. This isn't used all that often,
+    but it can be useful in testing.'''
+    _hlist.discard_handle(cls)
+    
+register_image_class(NitfImageReadNumpy)
+register_image_class(NitfImagePlaceHolder, priority_order=1000)
+        
 __all__ = ["NitfImageCannotHandle", "NitfImage", "NitfImagePlaceHolder",
            "NitfImageReadNumpy", "NitfImageWriteDataOnDemand",
-           "NitfImageWriteNumpy", "NitfRadCalc"]
+           "NitfImageWriteNumpy", "NitfRadCalc",
+           "nitf_image_read", "register_image_class", "unregister_image_class"]
 
