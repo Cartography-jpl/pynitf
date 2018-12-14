@@ -65,13 +65,17 @@ class NitfImage(object):
         return self.image_subheader.iid1
     
     @abc.abstractmethod
-    def read_from_file(self, fh):
+    def read_from_file(self, fh, segindex=None):
         '''Read an image from a file. For larger images a derived class might
         want to not actually read in the data (e.g., you might memory
         map the data or otherwise generate a 'read on demand'), but at
         the end of the read fh should point past the end of the image data
         (e.g., do a fh.seek(start_pos + size of image) or something like 
-        that)'''
+        that)
+        We pass in the 0 based image segment index in the file. Most classes
+        don't care about this, but classes that use external readers (e.g.,
+        GdalMultiBand in GeoCal) can make use of this information.
+        '''
         raise NotImplementedError()
 
     @abc.abstractmethod
@@ -122,7 +126,7 @@ class NitfImagePlaceHolder(NitfImage):
     def __str__(self):
         return "NitfImagePlaceHolder %d bytes of data" % (self.data_size)
 
-    def read_from_file(self, fh):
+    def read_from_file(self, fh, segindex=None):
         '''Read an image from a file. For larger images a derived class might
         want to not actually read in the data (e.g., you might memory
         map the data or otherwise generate a 'read on demand'), but at
@@ -161,14 +165,14 @@ class NitfImageReadNumpy(NitfImageWithSubset):
             return "NitfImageReadNumpy %d x %d %s image" % (self.shape[1], self.shape[2], str(self.dtype.newbyteorder("=")))
         return "NitfImageReadNumpy %d x %d x %d %s image" % (self.shape[0], self.shape[1], self.shape[2], str(self.dtype.newbyteorder("=")))
 
-    def read_from_file(self, fh):
+    def read_from_file(self, fh, segindex=None):
         '''Read from a file'''
         # Check if we can read the data.
         ih = self.image_subheader
-        #if(ih.ic != "NC"):
-        #    raise NitfImageCannotHandle("Can only handle uncompressed images")
-        #if(ih.nbpr != 1 or ih.nbpc != 1):
-        #    raise NitfImageCannotHandle("Cannot handle blocked data")
+        if(ih.ic != "NC"):
+            raise NitfImageCannotHandle("Can only handle uncompressed images")
+        if(ih.nbpr != 1 or ih.nbpc != 1):
+            raise NitfImageCannotHandle("Cannot handle blocked data")
         # We could add support here for pixel or row interleave here if
         # needed, just need to work though juggling the data here.
         if(ih.imode != "B" and ih.imode != "P"):
@@ -237,7 +241,7 @@ class NitfImageWriteDataOnDemand(NitfImageWithSubset):
         self.data_callback = data_callback
         self.image_gen_mode = image_gen_mode
 
-    def read_from_file(self, fh):
+    def read_from_file(self, fh, segindex=None):
         '''Write an image to a file.'''
         raise NotImplementedError("Can't read a NitfImageWriteDataOnDemand")
 

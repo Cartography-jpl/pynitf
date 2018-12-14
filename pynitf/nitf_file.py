@@ -138,8 +138,8 @@ class NitfFile(object):
             for seglist in [self.image_segment, self.graphic_segment, 
                             self.text_segment, self.des_segment, 
                             self.res_segment]:
-                for seg in seglist:
-                    seg.read_from_file(fh)
+                for i, seg in enumerate(seglist):
+                    seg.read_from_file(fh, i)
             self.tre_list = read_tre(self.file_header, self.des_segment,
                                      [["xhdl", "xhdlofl", "xhd"],
                                       ["udhdl", "udhofl", "udhd"]])
@@ -278,8 +278,11 @@ class NitfSegment(object):
         # By default, segment doesn't have any TREs
         pass
     
-    def read_from_file(self, fh):
-        '''Read from a file'''
+    def read_from_file(self, fh, segindex=None):
+        '''Read from a file. Note that we pass in the 0 based segment index 
+        number. Most readers don't care at all about this, but it can be
+        useful for implementing some external code readers (e.g., GDAL
+        can read an image segment by the file name and index)'''
         self.subheader.read_from_file(fh)
         self.data.read_from_file(fh)
 
@@ -306,7 +309,7 @@ class NitfPlaceHolder(NitfSegment):
         print("%s segment, size %d" % (self.type_name, self.sz), file=fh)
         return fh.getvalue()
 
-    def read_from_file(self, fh):
+    def read_from_file(self, fh, segindex=None):
         '''Read from a file'''
         # Just skip over the data
         self.seg_start = fh.tell()
@@ -345,7 +348,7 @@ class NitfImageSegment(NitfSegment):
         if(hook_obj is None):
             hook_obj = NitfFile.image_segment_hook_obj
         NitfSegment.__init__(self, h, image, hook_obj = hook_obj)
-    def read_from_file(self, fh):
+    def read_from_file(self, fh, segindex=None):
         '''Read from a file'''
         self.subheader.read_from_file(fh)
         for i,cls in enumerate(self.nitf_image_handle):
@@ -353,7 +356,7 @@ class NitfImageSegment(NitfSegment):
                     header_size=self.header_size,
                     data_size=self.data_size)
             try:
-                t.read_from_file(fh)
+                t.read_from_file(fh, segindex)
                 break
             except NitfImageCannotHandle:
                 if(i < len(self.nitf_image_handle) - 1):
@@ -425,7 +428,7 @@ class NitfTextSegment(NitfSegment):
             hook_obj = NitfFile.image_segment_hook_obj
         NitfSegment.__init__(self, h, copy.copy(txt), hook_obj = hook_obj)
         self.tre_list = []
-    def read_from_file(self, fh):
+    def read_from_file(self, fh, segindex=None):
         '''Read from a file'''
         self.subheader.read_from_file(fh)
         self.data = fh.read(self.data_size)
@@ -506,7 +509,7 @@ class NitfDesSegment(NitfSegment):
     def des(self):
         return self.data
 
-    def read_from_file(self, fh):
+    def read_from_file(self, fh, segindex=None):
         '''Read from a file'''
         self.subheader.read_from_file(fh)
         self.data = nitf_des_read(self.subheader, self.header_size,

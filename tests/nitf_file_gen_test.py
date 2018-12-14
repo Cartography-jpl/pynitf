@@ -294,8 +294,13 @@ def test_main(isolated_dir):
 
     print (f2.image_segment[2].tre_list)
 
-    reshaped_data = f2.image_segment[2].data.data.reshape(300, 400, 50)
-    print(reshaped_data[50,:,:])
+    # We can't really use NitfImageReadNumpy for blocked data. This special
+    # case of writing by row does work, but general blocking doesn't. We'll
+    # probably add blocking support with some more direct code (e.g.,
+    # GdalMultiBand in GeoCal).
+    if(False):
+        reshaped_data = f2.image_segment[2].data.data.reshape(300, 400, 50)
+        print(reshaped_data[50,:,:])
 
     # We then print out a description of the file
     print(f2.summary())
