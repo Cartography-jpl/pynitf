@@ -384,8 +384,9 @@ def unregister_image_class(cls):
 register_image_class(NitfImageReadNumpy)
 register_image_class(NitfImagePlaceHolder, priority_order=1000)
         
-__all__ = ["NitfImageCannotHandle", "NitfImage", "NitfImagePlaceHolder",
+__all__ = ["NitfImageCannotHandle", "NitfImage", "NitfImageWithSubset",
+           "NitfImagePlaceHolder",
            "NitfImageReadNumpy", "NitfImageWriteDataOnDemand",
-           "NitfImageWriteNumpy", "NitfRadCalc",
+           "NitfImageWriteNumpy", "NitfRadCalc", 
            "nitf_image_read", "register_image_class", "unregister_image_class"]
 
