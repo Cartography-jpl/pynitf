@@ -267,6 +267,9 @@ class _FieldLoopStruct(object):
         else:
             lead = key
         maxi = self.shape(parent_object, lead=lead)
+        # Treat missing data because of a failed condition as size 0
+        if(maxi is None):
+            maxi = 0
         for i in range(maxi):
             for f in self.field_value_list:
                 f.write_to_file(parent_object, lead + (i,), fh)
@@ -276,6 +279,9 @@ class _FieldLoopStruct(object):
         else:
             lead = key
         maxi = self.shape(parent_object, lead=lead)
+        # Treat missing data because of a failed condition as size 0
+        if(maxi is None):
+            maxi = 0
         for i in range(maxi):
             for f in self.field_value_list:
                 f.read_from_file(parent_object, lead + (i,), fh, nitf_literal)
@@ -299,12 +305,16 @@ class _FieldLoopStruct(object):
                 if(f.field_name is None):
                     pass
                 elif(len(self.size) == 1):
+                    if(maxi1 is None):
+                        maxi1=0
                     for i1 in range(maxi1):
                         print(lead + "  " +
                               ("%s[%d]" % (f.field_name, i1)).ljust(maxlen) +
                               ": " + f.get_print(parent_object,(i1,)),
                               file=res)
                 elif(len(self.size) == 2):
+                    if(maxi1 is None):
+                        maxi1=0
                     for i1 in range(maxi1):
                         maxi2 = self.shape(parent_object,lead=(i1,))
                         for i2 in range(maxi2):
@@ -557,11 +567,24 @@ class IntFieldData(NumFieldData):
         self.format = '>I'
         super().__init__(field_name, size_field, ty, loop, options)
 
+    def get_print(self, parent_obj,key):
+        t = self.get(parent_obj,key)
+        if(t is None):
+            return "Not used"
+        return "%d" % t
+        
+
 class FloatFieldData(NumFieldData):
     def __init__(self, field_name, size_field, ty, loop, options):
         self.format = '>f'
         super().__init__(field_name, size_field, ty, loop, options)
 
+    def get_print(self, parent_obj,key):
+        t = self.get(parent_obj,key)
+        if(t is None):
+            return "Not used"
+        return "%f" % t
+        
 class _create_nitf_field_structure(object):
     # The __dict__ is at class level
     def __init__(self):

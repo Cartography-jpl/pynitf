@@ -133,8 +133,7 @@ def test_main(isolated_dir):
     ih.imode="P"
     segment3 = NitfImageSegment(img3)
     segment3.tre_list.append(createHISTOA())
-    if False:
-        segment3.tre_list.append(createBANDSB())
+    segment3.tre_list.append(createBANDSB())
     f.image_segment.append(segment3)
 
     # Can add TRES to either the file or image segment level. This automatically
