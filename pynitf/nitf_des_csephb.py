@@ -28,7 +28,7 @@ desc2 =["CSEPHB",
          ["ephem_y", "Y-Coordinate", 12, float, {"frmt": _eph_format}],
          ["ephem_z", "Z-Coordinate", 12, float, {"frmt": _eph_format}],
         ], #end loop
-        ["reserved_len", "Size of the Reserved Field", 5, int],
+        ["reserved_len", "Size of the Reserved Field", 9, int],
         ["reserved", "Reserved Data Field", "f.reserved_len", None, {'field_value_class' : FieldData}]
        ]
 

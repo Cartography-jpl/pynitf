@@ -28,7 +28,7 @@ desc2 =["CSATTB",
          ["q3", "Quaternion Q3 of Attitude Reference Point", 18, float, {"frmt": _quat_format}],
          ["q4", "Quaternion Q4 of Attitude Reference Point", 18, float, {"frmt": _quat_format}],
         ], #end loop
-        ["reserved_len", "Size of the Reserved Field", 5, int],
+        ["reserved_len", "Size of the Reserved Field", 9, int],
         ["reserved", "Reserved Data Field", "f.reserved_len", None, {'field_value_class' : FieldData}]
        ]
 
