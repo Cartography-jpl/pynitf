@@ -12,7 +12,7 @@ from .nitf_image import nitf_image_read
 from .nitf_des import nitf_des_read
 from .nitf_tre import read_tre, prepare_tre_write
 from .nitf_tre_engrda import add_engrda_function
-import io,six,copy
+import io,six,copy,weakref
 
 class NitfFile(object):
     # List of hook objects to extend the handling in the various types of
@@ -114,25 +114,30 @@ class NitfFile(object):
             self.image_segment = \
                [NitfImageSegment(header_size=self.file_header.lish[i],
                                  data_size=self.file_header.li[i],
-                          hook_obj = NitfFile.image_segment_hook_obj) for i in
+                                 hook_obj = NitfFile.image_segment_hook_obj,
+                                 nitf_file = self) for i in
                 range(self.file_header.numi)]
             self.graphic_segment = \
                [NitfGraphicSegment(header_size=self.file_header.lssh[i],
-                                   data_size=self.file_header.ls[i]) for i in
+                                   data_size=self.file_header.ls[i],
+                                   nitf_file = self) for i in
                 range(self.file_header.nums)]
             self.text_segment = \
                [NitfTextSegment(header_size=self.file_header.ltsh[i],
                                 data_size=self.file_header.lt[i],
-                         hook_obj = NitfFile.text_segment_hook_obj) for i in
+                                hook_obj = NitfFile.text_segment_hook_obj,
+                                nitf_file = self) for i in
                 range(self.file_header.numt)]
             self.des_segment = \
                [NitfDesSegment(header_size=self.file_header.ldsh[i],
                               data_size=self.file_header.ld[i],
-                              hook_obj = NitfFile.des_segment_hook_obj) for i in
+                               hook_obj = NitfFile.des_segment_hook_obj,
+                               nitf_file = self) for i in
                 range(self.file_header.numdes)]
             self.res_segment = \
                [NitfResSegment(header_size=self.file_header.lresh[i], 
-                               data_size=self.file_header.lre[i]) for i in
+                               data_size=self.file_header.lre[i],
+                               nitf_file = self) for i in
                 range(self.file_header.numres)]
             for seglist in [self.image_segment, self.graphic_segment, 
                             self.text_segment, self.des_segment, 
@@ -236,10 +241,16 @@ class NitfSegmentHook(object):
         return False
         
 class NitfSegment(object):
-    def __init__(self, subheader, data, hook_obj = []):
+    def __init__(self, subheader, data, nitf_file = None, hook_obj = []):
         self.subheader = subheader
         self.data = data
         self.hook_obj = hook_obj
+        # Only keep a weak reference. We don't want to keep a NitfFile from
+        # garbage collection just because a NitfSegment points back to it.
+        if(nitf_file is not None):
+            self.nitf_file = weakref.ref(nitf_file)
+        else:
+            self.nitf_file = None
         for ho in self.hook_obj:
             ho.init_hook(self)
 
@@ -296,8 +307,8 @@ class NitfSegment(object):
 
 class NitfPlaceHolder(NitfSegment):
     '''Implementation of NitfSegment that just skips over the data.'''
-    def __init__(self, header_size, data_size, type_name):
-        NitfSegment.__init__(self, None, None)
+    def __init__(self, header_size, data_size, type_name, nitf_file=None):
+        NitfSegment.__init__(self, None, None, nitf_file = nitf_file)
         self.sz = header_size + data_size
         self.type_name = type_name
         self.seg_start = None
@@ -329,7 +340,7 @@ class NitfImageSegment(NitfSegment):
     '''
     def __init__(self, image = None,
                  hook_obj = None,
-                 header_size = None, data_size = None):
+                 header_size = None, data_size = None, nitf_file=None):
         '''Initialize. You can pass a NitfImage class to use (i.e., you've
         created this for writing), or a list of classes to use to try
         to read an image. This list is tried in order, the first class
@@ -343,7 +354,8 @@ class NitfImageSegment(NitfSegment):
         self.tre_list = []
         if(hook_obj is None):
             hook_obj = NitfFile.image_segment_hook_obj
-        NitfSegment.__init__(self, h, image, hook_obj = hook_obj)
+        NitfSegment.__init__(self, h, image, hook_obj = hook_obj,
+                             nitf_file = nitf_file)
     def read_from_file(self, fh, segindex=None):
         '''Read from a file'''
         self.subheader.read_from_file(fh)
@@ -405,13 +417,14 @@ class NitfTextSegment(NitfSegment):
     for you. We encode/decode using utf-8 as needed. You can access the data
     as one or the other using data_as_bytes and data_as_str.'''
     def __init__(self, txt='', header_size=None, data_size=None,
-                 hook_obj = None):
+                 hook_obj = None, nitf_file=None):
         h = NitfTextSubheader()
         self.header_size = header_size
         self.data_size = data_size
         if(hook_obj is None):
             hook_obj = NitfFile.image_segment_hook_obj
-        NitfSegment.__init__(self, h, copy.copy(txt), hook_obj = hook_obj)
+        NitfSegment.__init__(self, h, copy.copy(txt), hook_obj = hook_obj,
+                             nitf_file = nitf_file)
         self.tre_list = []
     def read_from_file(self, fh, segindex=None):
         '''Read from a file'''
@@ -478,7 +491,7 @@ class NitfDesSegment(NitfSegment):
     types with each type encapsulated in its own DES'''
     def __init__(self, des=None,
                  hook_obj = None,
-                 header_size=None, data_size=None):
+                 header_size=None, data_size=None, nitf_file = None):
         if(des is None):
             h = NitfDesSubheader()
         else:
@@ -487,7 +500,8 @@ class NitfDesSegment(NitfSegment):
         self.data_size = data_size
         if(hook_obj is None):
             hook_obj = NitfFile.des_segment_hook_obj
-        NitfSegment.__init__(self, h, des, hook_obj = hook_obj)
+        NitfSegment.__init__(self, h, des, hook_obj = hook_obj,
+                             nitf_file = nitf_file)
 
     # Alternative name for data, the des is stored in data attribute
     @property
