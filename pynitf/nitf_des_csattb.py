@@ -12,7 +12,7 @@ The NITF DES subheader is described in a separate DRAFT document for the SNIP st
 
 _quat_format = "%+18.15lf"
 
-desc2 =["CSATTB DES",
+desc2 =["CSATTB",
         ['qual_flag_att', 'Attitude Data Quality Flag', 1, int],
         ['interp_type_att', 'Interpolation Type', 1, int],
         ['interp_order_att', 'Order of Lagrange Interpolation Polynomials', 1, int, {'condition': 'f.interp_type_att==2'}],
@@ -47,7 +47,7 @@ udsh = [['id', 'Assigned UUID for the DES', 36, str],
 
 (DesCSATTB, DesCSATTB_UH) = create_nitf_des_structure("DesCSATTB", desc2, udsh, hlp=hlp)
 
-DesCSATTB.desid = hardcoded_value("DES CSATTB")
+DesCSATTB.desid = hardcoded_value("CSATTB")
 DesCSATTB.desver = hardcoded_value("01")
 
 def _summary(self):

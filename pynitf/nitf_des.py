@@ -16,6 +16,8 @@ import io,six
 import abc
 import collections
 
+DEBUG = False
+
 class NitfDesCannotHandle(RuntimeError):
     '''Exception that indicates we can't read a particular Des. Note that
     this does *not* mean an error occured - e.g., a corrupt Des. Rather this
@@ -203,12 +205,20 @@ class NitfDesObjectHandle(NitfDes):
     des_tag = None
     def __init__(self, des_subheader=None, header_size=None,
                  user_subheader=None, data_size=None):
+        if(DEBUG):
+            print("In constructor for %s" % self.__class__.des_tag)
         NitfDes.__init__(self, self.__class__.des_tag,
                          des_subheader, header_size, data_size,
                          user_subheader = user_subheader,
                          user_subheader_class = self.__class__.uh_class)
+        if(DEBUG):
+            print("Trying to match %s" % self.des_subheader.desid)
         if(self.des_subheader.desid != self.__class__.des_tag):
+            if(DEBUG):
+                print("Match failed")
             raise NitfDesCannotHandle()
+        if(DEBUG):
+            print("Match succeeded in constructor")
         
     def read_from_file(self, fh):
         self.read_user_subheader()

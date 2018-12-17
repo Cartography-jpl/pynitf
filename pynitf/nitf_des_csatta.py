@@ -15,7 +15,7 @@ The NITF DES subheader is described in Table A-8, starting page 112.
 
 _quat_format = "%08.5lf"
 
-desc2 =["CSATTA DES",
+desc2 =["CSATTA",
         ['att_type', "Type of attitude data being provided", 12, str],
         ['dt_att', "Time interval between attitude reference points", 14, str],
         ['date_att', "Day of First Attitude Reference Point", 8, int],

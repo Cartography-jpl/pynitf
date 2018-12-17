@@ -13,7 +13,7 @@ The NITF DES subheader is described in a separate DRAFT document for the SNIP st
 
 _eph_format = "%+012.2lf"
 
-desc2 =["CSEPHB DES",
+desc2 =["CSEPHB",
         ['qual_flag_eph', 'Ephemeris Data Quality Flag', 1, int],
         ['interp_type_eph', 'Interpolation Type', 1, int],
         ['interp_order_eph', 'Order of Lagrange Interpolation Polynomials', 1, int, {'condition': 'f.interp_type_eph==2'}],
@@ -38,7 +38,7 @@ desc2 =["CSEPHB DES",
 # is used for both
 (DesCSEPHB, DesCSEPHB_UH) = create_nitf_des_structure("DesCSEPHB", desc2, udsh, hlp=hlp)
 
-DesCSEPHB.desid = hardcoded_value("DES CSEPHB")
+DesCSEPHB.desid = hardcoded_value("CSEPHB")
 DesCSEPHB.desver = hardcoded_value("01")
 
 def _summary(self):

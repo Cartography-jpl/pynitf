@@ -263,7 +263,7 @@ def test_main(isolated_dir):
     print("Text Data:")
     print(f2.text_segment[0].data)
 
-    assert f2.des_segment[0].subheader.desid == 'CSATTB DES'
+    assert f2.des_segment[0].subheader.desid == 'CSATTB'
     csattb = f2.des_segment[0].des
     assert csattb.dt_att == 900.5
     assert csattb.date_att == 20170501
@@ -274,7 +274,7 @@ def test_main(isolated_dir):
     print(f2.des_segment[0])
     print(csattb)
 
-    assert f2.des_segment[1].subheader.desid == 'CSEPHB DES'
+    assert f2.des_segment[1].subheader.desid == 'CSEPHB'
     csephb = f2.des_segment[1].des
     assert csephb.dt_ephem == 900.5
     assert csephb.date_ephem == 20170501
