@@ -248,11 +248,17 @@ class NitfSegment(object):
         # Only keep a weak reference. We don't want to keep a NitfFile from
         # garbage collection just because a NitfSegment points back to it.
         if(nitf_file is not None):
-            self.nitf_file = weakref.ref(nitf_file)
+            self._nitf_file = weakref.ref(nitf_file)
         else:
-            self.nitf_file = None
+            self._nitf_file = None
         for ho in self.hook_obj:
             ho.init_hook(self)
+
+    @property
+    def nitf_file(self):
+        if(self._nitf_file is None):
+            return None
+        return self._nitf_file()
 
     def __str__(self):
         '''Text description of structure, e.g., something you can print out'''
