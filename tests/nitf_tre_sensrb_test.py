@@ -261,8 +261,8 @@ def test_tre_sensrb_attitude_quaternion():
 
     fh = six.BytesIO()
     t.write_to_file(fh)
-    #print(fh.getvalue())
-    assert fh.getvalue() == b'SENSRB00146NNNN00000.0000000000.0000000.00000000010.00000000020.0000100000.000000.0000000.0000000.000NNY0000.000100000.000200000.000300000.00040N000000000000'
+    print(fh.getvalue())
+    assert fh.getvalue() == b'SENSRB00146NNNN00000.0000000000.0000000.00000000010.00000000020.0000100000.000000.0000000.0000000.000NNY00.000100000.000200000.000300000.0004000N000000000000'
     fh2 = six.BytesIO(fh.getvalue())
     t2 = TreSENSRB()
     t2.read_from_file(fh2)

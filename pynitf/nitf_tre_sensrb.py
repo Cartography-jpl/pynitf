@@ -21,8 +21,11 @@ _6c_format = "%011.2lf"
 _6d_format = "%08.3lf"
 _6e_format = "%08.3lf"
 _6f_format = "%08.3lf"
-_9a_format = _9b_format = _9c_format = _9d_format = "%010.5f"
-
+_9a_format = _9b_format = _9c_format = _9d_format = "%010.7lf"
+_10a_format = _10b_format = _10c_format = "%09.2lf"
+# No idea why, but there is both a section 9a and a time stamp 9a which are
+# different. This second set is the time stamp
+_ts_9a_format = _ts_9b_format = _ts_9c_format = _ts_9d_format = "%010.5f"
 desc = ["SENSRB",
         #1. General Data
         ["general_data", "General Data", 1, str, {"default" : "N"}],
@@ -124,15 +127,15 @@ desc = ["SENSRB",
         ["icz_down_or_z", "Image Coord Z Unit Vector 3", 10, int, {'condition' : "f.attitude_unit_vectors == 'Y'"}],
         #9. Attitude Quaternion
         ["attitude_quaternion", "Attitude Quaternion", 1, str, {"default" : "N"}],
-        ["attitude_q1", "Attitude Quaternion Vector 1", 10, float, {'condition' : "f.attitude_quaternion == 'Y'", "frmt" : "%010.5f"}],
-        ["attitude_q2", "Attitude Quaternion Vector 2", 10, float, {'condition' : "f.attitude_quaternion == 'Y'", "frmt" : "%010.5f"}],
-        ["attitude_q3", "Attitude Quaternion Vector 3", 10, float, {'condition' : "f.attitude_quaternion == 'Y'", "frmt" : "%010.5f"}],
-        ["attitude_q4", "Attitude Scalar Component", 10, float, {'condition' : "f.attitude_quaternion == 'Y'", "frmt" : "%010.5f"}],
+        ["attitude_q1", "Attitude Quaternion Vector 1", 10, float, {'condition' : "f.attitude_quaternion == 'Y'", "frmt" : _9a_format}],
+        ["attitude_q2", "Attitude Quaternion Vector 2", 10, float, {'condition' : "f.attitude_quaternion == 'Y'", "frmt" : _9b_format}],
+        ["attitude_q3", "Attitude Quaternion Vector 3", 10, float, {'condition' : "f.attitude_quaternion == 'Y'", "frmt" : _9c_format}],
+        ["attitude_q4", "Attitude Scalar Component", 10, float, {'condition' : "f.attitude_quaternion == 'Y'", "frmt" : _9d_format}],
         #10. Sensor Velocity Data
         ["sensor_velocity_data", "Sensor Velocity Data", 1, str, {"default" : "N"}],
-        ["velocity_north_or_x", "Sensor North Velocity", 9, int, {'condition' : "f.sensor_velocity_data == 'Y'"}],
-        ["velocity_east_or_y", "Sensor East Velocity", 9, int, {'condition' : "f.sensor_velocity_data == 'Y'"}],
-        ["velocity_down_or_z", "Sensor Down Velocity", 9, int, {'condition' : "f.sensor_velocity_data == 'Y'"}],
+        ["velocity_north_or_x", "Sensor North Velocity", 9, float, {'condition' : "f.sensor_velocity_data == 'Y'", "frmt" : _10a_format}],
+        ["velocity_east_or_y", "Sensor East Velocity", 9, int, {'condition' : "f.sensor_velocity_data == 'Y'", "frmt" : _10b_format}],
+        ["velocity_down_or_z", "Sensor Down Velocity", 9, int, {'condition' : "f.sensor_velocity_data == 'Y'", "frmt" : _10c_format}],
         #11. Point Set Data
         ["point_set_data", "Point Set Data", 2, int],
         [["loop", "f.point_set_data"],
@@ -175,10 +178,10 @@ desc = ["SENSRB",
           ["time_stamp_value_08g", "Time Stamp Value", 10, int, {'condition' : "f.time_stamp_type[i1] == \"08g\""}],
           ["time_stamp_value_08h", "Time Stamp Value", 10, int, {'condition' : "f.time_stamp_type[i1] == \"08h\""}],
           ["time_stamp_value_08i", "Time Stamp Value", 10, int, {'condition' : "f.time_stamp_type[i1] == \"08i\""}],
-          ["time_stamp_value_09a", "Time Stamp Value", 10, float, {'condition' : "f.time_stamp_type[i1] == \"09a\"", "frmt": _9a_format}],
-          ["time_stamp_value_09b", "Time Stamp Value", 10, float, {'condition' : "f.time_stamp_type[i1] == \"09b\"", "frmt": _9b_format}],
-          ["time_stamp_value_09c", "Time Stamp Value", 10, float, {'condition' : "f.time_stamp_type[i1] == \"09c\"", "frmt": _9c_format}],
-          ["time_stamp_value_09d", "Time Stamp Value", 10, float, {'condition' : "f.time_stamp_type[i1] == \"09d\"", "frmt": _9d_format}],
+          ["time_stamp_value_09a", "Time Stamp Value", 10, float, {'condition' : "f.time_stamp_type[i1] == \"09a\"", "frmt": _ts_9a_format}],
+          ["time_stamp_value_09b", "Time Stamp Value", 10, float, {'condition' : "f.time_stamp_type[i1] == \"09b\"", "frmt": _ts_9b_format}],
+          ["time_stamp_value_09c", "Time Stamp Value", 10, float, {'condition' : "f.time_stamp_type[i1] == \"09c\"", "frmt": _ts_9c_format}],
+          ["time_stamp_value_09d", "Time Stamp Value", 10, float, {'condition' : "f.time_stamp_type[i1] == \"09d\"", "frmt": _ts_9d_format}],
           ["time_stamp_value_10a", "Time Stamp Value", 9, int, {'condition' : "f.time_stamp_type[i1] == \"10a\""}],
           ["time_stamp_value_10b", "Time Stamp Value", 9, int, {'condition' : "f.time_stamp_type[i1] == \"10b\""}],
           ["time_stamp_value_10c", "Time Stamp Value", 9, int, {'condition' : "f.time_stamp_type[i1] == \"10c\""}],
