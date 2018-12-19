@@ -10,7 +10,7 @@ from .nitf_text_subheader import NitfTextSubheader
 from .nitf_des_subheader import NitfDesSubheader
 from .nitf_image import nitf_image_read
 from .nitf_des import nitf_des_read
-from .nitf_tre import read_tre, prepare_tre_write
+from .nitf_tre import read_tre, prepare_tre_write, add_find_tre_function
 from .nitf_tre_engrda import add_engrda_function
 import io,six,copy,weakref
 
@@ -556,6 +556,11 @@ class NitfResSegment(NitfPlaceHolder):
 add_engrda_function(NitfFile)
 add_engrda_function(NitfImageSegment)
 add_engrda_function(NitfTextSegment)
+
+# Add TRE finding functions
+add_find_tre_function(NitfFile)
+add_find_tre_function(NitfImageSegment)
+add_find_tre_function(NitfTextSegment)
 
 __all__ = ["NitfFile", "NitfSegmentHook", "NitfSegment",
            "NitfPlaceHolder", "NitfImageSegment", "NitfGraphicSegment",

@@ -285,8 +285,33 @@ def create_nitf_tre_structure(name, description, hlp = None,
             pass
     _tre_class[tre_tag.encode("utf-8")] = res
     return res
+
+def _find_tre(self, tre_tag):
+    return [t for t in self.tre_list if t.tre_tag == tre_tag]
+
+def _find_one_tre(self, tre_tag):
+    '''Find the given TRE. If not found, return None. If found, return it,
+    if more than one found, return an error'''
+    t = _find_tre(self, tre_tag)
+    if(len(t) == 0):
+        return None
+    if(len(t) == 1):
+        return t[0]
+    raise RuntimeError("Found more than one %s TRE" % tre_tag)
+
+def _find_exactly_one_tre(self, tre_tag):
+    '''Like find_one_tre, but not finding the TRE is treated as an error'''
+    t = _find_one_tre(self, tre_tag)
+    if(t is None):
+        raise RuntimeError("The %s TRE is not found" % tre_tag)
+    return t
+
+def add_find_tre_function(cls):
+    cls.find_tre = _find_tre
+    cls.find_one_tre = _find_one_tre
+    cls.find_exactly_one_tre = _find_exactly_one_tre
     
 __all__ = [ "Tre", "TreObjectImplementation", "TreUnknown", "tre_object",
             "read_tre", "prepare_tre_write", "read_tre_data",
-            "create_nitf_tre_structure"]
+            "create_nitf_tre_structure", "add_find_tre_function"]
 

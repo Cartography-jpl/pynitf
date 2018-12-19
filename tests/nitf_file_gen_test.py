@@ -292,7 +292,10 @@ def test_main(isolated_dir):
         assert ext_uh.content_headers == b'1:2'
 
     print (f2.image_segment[2].tre_list)
-
+    assert f2.image_segment[2].find_one_tre("HISTOA") is not None
+    assert f2.image_segment[2].find_one_tre("BANDSB") is not None
+    assert f2.image_segment[2].find_one_tre("FAKE") is None
+    
     # We can't really use NitfImageReadNumpy for blocked data. This special
     # case of writing by row does work, but general blocking doesn't. We'll
     # probably add blocking support with some more direct code (e.g.,
