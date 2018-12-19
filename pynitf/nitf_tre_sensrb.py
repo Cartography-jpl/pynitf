@@ -134,8 +134,8 @@ desc = ["SENSRB",
         #10. Sensor Velocity Data
         ["sensor_velocity_data", "Sensor Velocity Data", 1, str, {"default" : "N"}],
         ["velocity_north_or_x", "Sensor North Velocity", 9, float, {'condition' : "f.sensor_velocity_data == 'Y'", "frmt" : _10a_format}],
-        ["velocity_east_or_y", "Sensor East Velocity", 9, int, {'condition' : "f.sensor_velocity_data == 'Y'", "frmt" : _10b_format}],
-        ["velocity_down_or_z", "Sensor Down Velocity", 9, int, {'condition' : "f.sensor_velocity_data == 'Y'", "frmt" : _10c_format}],
+        ["velocity_east_or_y", "Sensor East Velocity", 9, float, {'condition' : "f.sensor_velocity_data == 'Y'", "frmt" : _10b_format}],
+        ["velocity_down_or_z", "Sensor Down Velocity", 9, float, {'condition' : "f.sensor_velocity_data == 'Y'", "frmt" : _10c_format}],
         #11. Point Set Data
         ["point_set_data", "Point Set Data", 2, int],
         [["loop", "f.point_set_data"],
