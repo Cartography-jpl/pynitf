@@ -1,12 +1,12 @@
 from setuptools import setup
 
 setup(name='pynitf',
-      version='0.56',
+      version='0.57',
       description='This is a package for reading and writing NITF',
       url='https://github.jpl.nasa.gov/Cartography/pynitf',
       author='Mike Smyth <Mike.M.Smyth@jpl.nasa.gov>, Philip Yoon <Philip.J.Yoon@jpl.nasa.gov>',
       author_email='Mike.M.Smyth@jpl.nasa.gov',
-      license='Copyright 2018, California Institute of Technology. ALL RIGHTS RESERVED. U.S. Government Sponsorship acknowledged.',
+      license='Copyright 2019, California Institute of Technology. ALL RIGHTS RESERVED. U.S. Government Sponsorship acknowledged.',
       packages=['pynitf'],
       scripts=["extra/nitf_diff", "extra/nitfinfofull",
                "extra/explore_nitf.py"],
