@@ -245,6 +245,72 @@ def test_tre_bandsb_snip_sample():
     t.read_from_file(fh2)
     print(t)
 
+def test_tre_bandsb_minimum():
+    '''Minimum set of fields in SNIP v0.1'''
+    t = TreBANDSB()
+
+    t.count = 5
+    t.radiometric_quantity = 'REFLECTANCE'
+    t.radiometric_quantity_unit = 'F'
+    t.cube_scale_factor = 1.0
+    t.cube_additive_factor = 0.0
+    t.row_gsd_nrs = 9999.99
+    t.row_gsd_nrs_unit = 'M'
+    t.col_gsd_ncs = 8888.88
+    t.col_gsd_ncs_unit = 'M'
+    t.spt_resp_row_nom = 7777.77
+    t.spt_resp_unit_row_nom = 'M'
+    t.spt_resp_col_nom = 6666.66
+    t.spt_resp_unit_col_nom = 'M'
+    t.data_fld_1 = b'a' * 48
+    t.existence_mask = 0x99800000
+    t.radiometric_adjustment_surface = 'FOCAL PLANE'
+    t.atmospheric_adjustment_altitude = 0.0
+    t.wave_length_unit = 'U'
+
+    for i in range(t.count):
+        t.bandid[i] = str(i)
+        t.bad_band[i] = 1
+        t.cwave[i] = 10000.0
+        t.fwhm[i] = 10000.0
+
+    print(t)
+
+    fh = six.BytesIO()
+    t.write_to_file(fh)
+    print(fh.getvalue())
+    assert fh.getvalue() == b'BANDSB0047600005REFLECTANCE             F?\x80\x00\x00\x00\x00\x00\x009999.99M8888.88M7777.77M6666.66Maaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\x99\x80\x00\x00FOCAL PLANE             \x00\x00\x00\x00U0                                                 110000.010000.01                                                 110000.010000.02                                                 110000.010000.03                                                 110000.010000.04                                                 110000.010000.0'
+
+    fh2 = six.BytesIO(fh.getvalue())
+    t2 = TreBANDSB()
+    t2.read_from_file(fh2)
+
+    assert t2.count == 5
+    assert t2.radiometric_quantity == 'REFLECTANCE'
+    assert t2.radiometric_quantity_unit == 'F'
+    assert t2.cube_scale_factor == 1
+    assert t2.cube_additive_factor == 0
+    assert t2.row_gsd_nrs == str(9999.99)
+    assert t2.row_gsd_nrs_unit == 'M'
+    assert t2.col_gsd_ncs == str(8888.88)
+    assert t2.col_gsd_ncs_unit == 'M'
+    assert t2.spt_resp_row_nom == str(7777.77)
+    assert t2.spt_resp_unit_row_nom == 'M'
+    assert t2.spt_resp_col_nom == str(6666.66)
+    assert t2.spt_resp_unit_col_nom == 'M'
+    # t.data_fld_1 ==
+    assert t2.existence_mask == 0x99800000
+    assert t2.radiometric_adjustment_surface == 'FOCAL PLANE'
+    assert t2.atmospheric_adjustment_altitude == 0
+    # t.data_fld_2 ==
+    assert t2.wave_length_unit == 'U'
+    for i in range(t2.count):
+        assert t2.bandid[i] == str(i)
+        assert t2.bad_band[i] == 1
+        assert t2.cwave[i] == 10000.0
+        assert t2.fwhm[i] == 10000.0
+
+    print(t2.summary())
     
     
     
