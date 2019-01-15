@@ -39,6 +39,7 @@ class NitfImage(object):
         self.image_subheader = image_subheader
         self.header_size = header_size
         self.data_size = data_size
+        self.data_start = None
         # Derived classes should fill in information
 
     # Derived classes may want to override this to give a more detailed
@@ -122,7 +123,6 @@ class NitfImagePlaceHolder(NitfImage):
     def __init__(self, image_subheader = None, header_size = None,
                  data_size = None):
         NitfImage.__init__(self,image_subheader, header_size, data_size)
-        self.data_start = None
         
     def __str__(self):
         return "NitfImagePlaceHolder %d bytes of data" % (self.data_size)
@@ -168,6 +168,10 @@ class NitfImageReadNumpy(NitfImageWithSubset):
 
     def read_from_file(self, fh, segindex=None):
         '''Read from a file'''
+
+        # Save the data start location in the file because it will come in handy later
+        self.data_start = fh.tell()
+
         # Check if we can read the data.
         ih = self.image_subheader
         if(ih.ic != "NC"):
