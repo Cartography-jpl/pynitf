@@ -184,7 +184,7 @@ def test_tre_sensrb_sensor_array():
     fh = six.BytesIO()
     t.write_to_file(fh)
     #print(fh.getvalue())
-    assert fh.getvalue() == b'SENSRB00183NYsome detection      00001000000010000001.1000001.1000001.2000001.3000001.300YNN00000.0000000000.0000000.00000000010.00000000020.0000100000.000000.0000000.0000000.000NNNN000000000000'
+    assert fh.getvalue() == b'SENSRB00183NYsome detection      00001000000010001.1000001.1000001.2000000001.3000001.300YNN00000.0000000000.0000000.00000000010.00000000020.0000100000.000000.0000000.0000000.000NNNN000000000000'
     fh2 = six.BytesIO(fh.getvalue())
     t2 = TreSENSRB()
     t2.read_from_file(fh2)
@@ -212,20 +212,20 @@ def test_tre_sensrb_sensor_calibration_data():
     t.calibration_unit = "mm"
     t.principal_point_offset_x = +1.0
     t.principal_point_offset_y = -1.0
-    t.radial_distort_1 = "1e2"
-    t.radial_distort_2 = "2e2"
-    t.radial_distort_3 = "3e2"
-    t.radial_distort_limit = "+000001.0"
-    t.decent_distort_1 = "1e3"
-    t.decent_distort_2 = "2.1e2"
-    t.affinity_distort_1 = "3.7e5"
-    t.affinity_distort_2 = "6.4e2"
-    t.calibration_date = 20170505
+    t.radial_distort_1 = 1e2
+    t.radial_distort_2 = 2e2
+    t.radial_distort_3 = 3e2
+    t.radial_distort_limit = 1.0
+    t.decent_distort_1 = 1e3
+    t.decent_distort_2 = 2.1e2
+    t.affinity_distort_1 = 3.7e5
+    t.affinity_distort_2 = 6.4e2
+    t.calibration_date = "20170505"
 
     fh = six.BytesIO()
     t.write_to_file(fh)
     #print(fh.getvalue())
-    assert fh.getvalue() == b'SENSRB00227NNYmm01.000000-1.0000001e2         2e2         3e2         +000001.01e3         2.1e2       3.7e5       6.4e2       20170505N00000.0000000000.0000000.00000000010.00000000020.0000100000.000000.0000000.0000000.000NNNN000000000000'
+    assert fh.getvalue() == b'SENSRB00227NNYmm01.000000-1.0000001.000000e+022.000000e+023.000000e+0201.0000001.000000e+032.100000e+023.700000e+056.400000e+0220170505N00000.0000000000.0000000.00000000010.00000000020.0000100000.000000.0000000.0000000.000NNNN000000000000'
     fh2 = six.BytesIO(fh.getvalue())
     t2 = TreSENSRB()
     t2.read_from_file(fh2)
@@ -233,15 +233,15 @@ def test_tre_sensrb_sensor_calibration_data():
     assert t.calibration_unit == "mm"
     assert t.principal_point_offset_x == +1.0
     assert t.principal_point_offset_y == -1.0
-    assert t.radial_distort_1 == "1e2"
-    assert t.radial_distort_2 == "2e2"
-    assert t.radial_distort_3 == "3e2"
-    assert t.radial_distort_limit == "+000001.0"
-    assert t.decent_distort_1 == "1e3"
-    assert t.decent_distort_2 == "2.1e2"
-    assert t.affinity_distort_1 == "3.7e5"
-    assert t.affinity_distort_2 == "6.4e2"
-    assert t.calibration_date == 20170505
+    assert t.radial_distort_1 == 1e2
+    assert t.radial_distort_2 == 2e2
+    assert t.radial_distort_3 == 3e2
+    assert t.radial_distort_limit == 1.0
+    assert t.decent_distort_1 == 1e3
+    assert t.decent_distort_2 == 2.1e2
+    assert t.affinity_distort_1 == 3.7e5
+    assert t.affinity_distort_2 == 6.4e2
+    assert t.calibration_date == "20170505"
 
 def test_tre_sensrb_attitude_quaternion():
     '''Basic test of sensrb, sensor_attitude_quaternion part only'''
