@@ -135,11 +135,24 @@ class NitfImagePlaceHolder(NitfImage):
         (e.g., do a fh.seek(start_pos + size of image) or something like 
         that)'''
         self.data_start = fh.tell()
+        self.fh_in_name = fh.name
         fh.seek(self.data_size, 1)
 
     def write_to_file(self, fh):
         '''Write an image to a file.'''
-        raise NotImplementedError("Can't write a NitfImagePlaceHolder")
+        bytes_left = self.data_size
+        buffer_size = 1024*1024
+        with open(self.fh_in_name, 'rb') as fh_in:
+            fh_in.seek(self.data_start)
+            while(bytes_left > 0):
+                if bytes_left < buffer_size:
+                    d = fh_in.read(bytes_left)
+                else:
+                    d = fh_in.read(buffer_size)
+                fh.write(d)
+
+                #This may go negative on the last loop but that's fine
+                bytes_left = bytes_left - buffer_size
 
 class NitfImageReadNumpy(NitfImageWithSubset):
     '''Implementation of NitfImage that reads data into a numpy array. We 
@@ -169,8 +182,9 @@ class NitfImageReadNumpy(NitfImageWithSubset):
     def read_from_file(self, fh, segindex=None):
         '''Read from a file'''
 
-        # Save the data start location in the file because it will come in handy later
+        # Save the file handle and data start location in the file because it will come in handy later
         self.data_start = fh.tell()
+        self.fh_in_name = fh.name
 
         # Check if we can read the data.
         ih = self.image_subheader
@@ -196,7 +210,19 @@ class NitfImageReadNumpy(NitfImageWithSubset):
 
     def write_to_file(self, fh):
         '''Write an image to a file.'''
-        raise NotImplementedError("Can't write a NitfImageReadNumpy")
+        bytes_left = self.data_size
+        buffer_size = 1024*1024
+        with open(self.fh_in_name, 'rb') as fh_in:
+            fh_in.seek(self.data_start)
+            while(bytes_left > 0):
+                if bytes_left < buffer_size:
+                    d = fh_in.read(bytes_left)
+                else:
+                    d = fh_in.read(buffer_size)
+                fh.write(d)
+
+                #This may go negative on the last loop but that's fine
+                bytes_left = bytes_left - buffer_size
 
 class NitfImageWriteDataOnDemand(NitfImageWithSubset):
 
