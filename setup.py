@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='pynitf',
-      version='0.57',
+      version='0.58',
       description='This is a package for reading and writing NITF',
       url='https://github.jpl.nasa.gov/Cartography/pynitf',
       author='Mike Smyth <Mike.M.Smyth@jpl.nasa.gov>, Philip Yoon <Philip.J.Yoon@jpl.nasa.gov>',

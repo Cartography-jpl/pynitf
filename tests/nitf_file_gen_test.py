@@ -259,6 +259,7 @@ def test_main(isolated_dir):
     # -- EXT_DEF_CONTENT --
     d = DesEXT_h5()
     h_f = h5py.File("mytestfile.hdf5", "w")
+    h_f.close()
     d.attach_file("mytestfile.hdf5")
 
     de3 = NitfDesSegment(des=d)
