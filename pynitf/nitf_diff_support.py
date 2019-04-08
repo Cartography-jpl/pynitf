@@ -44,7 +44,12 @@ class ISegHandle(DiffHandle):
         for index, field in enumerate(list1):
             if (not isinstance(field, _FieldLoopStruct)):
                 if (field.field_name is not None):
-                    if (field.value(parent1) != list2[index].value(parent2)):
+                    if hasattr(field, 'eq_fun') and field.eq_fun != None:
+                        this_is_same = field.eq_fun[0](field.value(parent1)[()], list2[index].value(parent2)[()], *field.eq_fun[1:])
+                    else:
+                        this_is_same = field.value(parent1) == list2[index].value(parent2)
+
+                    if not this_is_same:
                         self.logger.error("%s 1 has subheader field %s as %s while %s 2 has %s" %
                                           (type, field.field_name, field.get_print(parent1, ()),type,  list2[index].get_print(parent2, ())))
                         is_same = False
@@ -65,8 +70,6 @@ class ISegHandle(DiffHandle):
         self.logger.debug("obj2: %s" % obj2.summary())
 
         #Check the subheader of the two Image Segments
-        list2 = obj2.subheader.field_value_list
-
         is_same = self.process_field_value_list('Image', obj1.subheader.field_value_list, obj1.subheader, obj2.subheader.field_value_list, obj2.subheader)
 
         #TRE list check

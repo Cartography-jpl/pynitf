@@ -6,6 +6,7 @@ from pynitf.nitf_tre_rpc import *
 from pynitf.nitf_tre_geosde import *
 from pynitf.nitf_des_csatta import *
 from pynitf.nitf_image import *
+from pynitf.nitf_image_subheader import *
 from pynitf.nitf_tre import *
 from pynitf_test_support import *
 from pynitf.nitf_diff_support import *
@@ -17,12 +18,15 @@ import numpy as np
 import logging
 
 # Do these in a few places, so collect in one spot.
-def create_image_seg(f):
+def create_image_seg(f, iid1 = ''):
     img = NitfImageWriteNumpy(9, 10, np.uint8)
     for i in range(9):
         for j in range(10):
             img[0, i,j] = i * 10 + j
-    f.image_segment.append(NitfImageSegment(img))
+    image_seg = NitfImageSegment(img)
+    subheader = image_seg.subheader
+    subheader.iid1 = iid1
+    f.image_segment.append(image_seg)
 
 def create_tre(f):
     t = TreUSE00A()
@@ -91,15 +95,22 @@ def test_nitf_diff(isolated_dir):
     # write
     
     f = NitfFile()
-    create_image_seg(f)
+    create_image_seg(f, 'An IID1')
     create_tre(f)
     create_tre2(f)
     create_text_segment(f)
     create_des(f)
+
+    f2 = NitfFile()
+    # This exercises the nitf_image_subheader eq_string_ignore_case function.
+    create_image_seg(f2, 'an iid1')
+    create_tre(f2)
+    create_tre2(f2)
+    create_text_segment(f2)
+    create_des(f2)
+
     f.write("basic_nitf.ntf")
-    f.write("basic2_nitf.ntf")
+    f2.write("basic2_nitf.ntf")
     logger=logging.getLogger("nitf_diff")
     logging.basicConfig(level=logging.DEBUG)
     assert nitf_file_diff("basic_nitf.ntf", "basic2_nitf.ntf")
-    
-    
