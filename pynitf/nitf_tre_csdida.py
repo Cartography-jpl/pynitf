@@ -13,25 +13,24 @@ There is a table in the main body on page vii that gives the a pointer for
 where in the document a particular TRE is defined.
 '''
 
-'''_lat_frmt = '%+09.5f'
-_long_frmt = '%+010.5f'
-_ht_frmt = '%+08.1f'
-
 desc = ["CSDIDA",
-        ["predict_corners", "predicted corners flag", 1, str],
-        ["ulcnr_lat", "lat UL", 9, float, {'frmt': _lat_frmt}],
-        ["ulcnr_long", "long UL", 10, float, {'frmt': _long_frmt}],
-        ["ulcnr_ht", "height UL", 8, float, {'frmt': _ht_frmt}],
-        ["urcnr_lat", "lat UR", 9, float, {'frmt': _lat_frmt}],
-        ["urcnr_long", "long UR", 10, float, {'frmt': _long_frmt}],
-        ["urcnr_ht", "height UR", 8, float, {'frmt': _ht_frmt}],
-        ["lrcnr_lat", "lat LR", 9, float, {'frmt': _lat_frmt}],
-        ["lrcnr_long", "long LR", 10, float, {'frmt': _long_frmt}],
-        ["lrcnr_ht", "height LR", 8, float, {'frmt': _ht_frmt}],
-        ["llcnr_lat", "lat LL", 9, float, {'frmt': _lat_frmt}],
-        ["llcnr_long", "long LL", 10, float, {'frmt': _long_frmt}],
-        ["llcnr_ht", "height LL", 8, float, {'frmt': _ht_frmt}],
+        ["day", "Day of Dataset Collection", 2, int],
+        ["month", "Month of Dataset Collection", 3, str],
+        ["year", "Year of Dataset Collection", 4, int],
+        ["platform_code", "Platform Identification", 2, str],
+        ["vehicle_id", "Vehicle Number", 2, int],
+        ["pass_", "Pass Number", 2, int],
+        ["operation", "Operation Number", 3, int],
+        ["sensor_id", "Sensor ID", 2, str],
+        ["product_id", "Product ID", 2, str],
+        ["reserved_", "Fill", 4, str, {'default' : '0000'}],
+        ["time", "Image Start Time", 14, int],
+        ["process_time", "Process Completion Time", 14, int],
+        ["reserved", "Fill", 2, int, {'default' : 0}],
+        ["reserved", "Fill", 2, int, {'default' : 1}],
+        ["reserved", "Fill", 1, str, {'default' : 'N'}],
+        ["reserved", "Fill", 1, str, {'default' : 'N'}],
+        ["software_version_number", "Software version used", 10, str],
 ]
 
-TreCSCRNA = create_nitf_tre_structure("TreCSCRNA",desc,hlp=hlp)
-'''
+TreCSDIDA = create_nitf_tre_structure("TreCSDIDA",desc,hlp=hlp)
