@@ -11,6 +11,7 @@ from pynitf.nitf_tre_rpc import *
 from pynitf.nitf_tre_geosde import *
 from pynitf.nitf_tre_histoa import *
 from pynitf.nitf_tre_bandsb import *
+from pynitf.nitf_tre_engrda import *
 from pynitf.nitf_des import *
 from pynitf.nitf_des_csatta import *
 from pynitf.nitf_des_csattb import *
@@ -21,6 +22,8 @@ import copy
 import json
 import six
 import numpy as np
+import hashlib
+import h5py
 
 def createHISTOA():
 
@@ -84,6 +87,23 @@ def createBANDSB():
 
     return t
 
+def createENGRDA():
+
+    t = TreENGRDA()
+
+    # Set some values
+    t.resrc = "My_sensor"
+    t.recnt = 3
+    t.englbl[0] = b"TEMP1"
+    t.engmtxc[0] = 1
+    t.engmtxr[0] = 1
+    t.engtyp[0] = "I"
+    t.engdts[0] = 2
+    t.engdatu[0] = "tC"
+    t.engdata[0] = b'\x01\x25'
+
+    return t
+
 def write_zero(d, bstart, lstart, sstart):
     d[:,:] = 0
 
@@ -96,6 +116,10 @@ def write_by_row_p(d, bstart, lstart, sstart):
 def test_main(isolated_dir):
     # Create the file. We don't supply a name yet, that comes when we actually
     # write
+
+    nitf_1 = 'basic_nitf.ntf'
+    nitf_2 = 'basic_nitf2.ntf'
+    nitf_3 = 'basic_nitf3.ntf'
 
     f = NitfFile()
 
@@ -119,6 +143,7 @@ def test_main(isolated_dir):
                                       image_gen_mode=NitfImageWriteDataOnDemand.IMAGE_GEN_MODE_BAND)
     segment2 = NitfImageSegment(img2)
     segment2.tre_list.append(createHISTOA())
+    segment2.tre_list.append(createENGRDA())
     f.image_segment.append(segment2)
 
     # Write by column
@@ -232,10 +257,10 @@ def test_main(isolated_dir):
     f.des_segment.append(de3)
 
     # -- EXT_DEF_CONTENT --
-    d = DesEXT_DEF_CONTENT()
-
-    d.user_subheader.content_headers_len = 3
-    d.user_subheader.content_headers = b'1:2'
+    d = DesEXT_h5()
+    h_f = h5py.File("mytestfile.hdf5", "w")
+    h_f.close()
+    d.attach_file("mytestfile.hdf5")
 
     de3 = NitfDesSegment(des=d)
     f.des_segment.append(de3)
@@ -243,12 +268,12 @@ def test_main(isolated_dir):
     #print (f)
 
     # Now we write out to a nitf file
-    f.write("basic_nitf.ntf")
+    f.write(nitf_1)
 
     print(os.getcwd())
 
     # We can also read this back in
-    f2 = NitfFile("basic_nitf.ntf")
+    f2 = NitfFile(nitf_1)
 
     # And the actual data (not normally done since most images are too large to
     # print the values
@@ -305,5 +330,15 @@ def test_main(isolated_dir):
         print(reshaped_data[50,:,:])
 
     # We then print out a description of the file
-    print(f2.summary())
-    print(f2)
+    #print(f2.summary())
+    #print(f2)
+
+    # Write back the file. Two files should be identical
+    f2.write("basic_nitf2.ntf")
+    md5_1 = hashlib.md5(open(nitf_1,'rb').read()).hexdigest()
+    md5_2 = hashlib.md5(open(nitf_2,'rb').read()).hexdigest()
+    assert md5_1 == md5_2
+
+    # Write back the file that we just read in after removing an image
+    f2.image_segment.remove(f2.image_segment[1])
+    f2.write(nitf_3)

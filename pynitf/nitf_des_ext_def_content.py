@@ -204,6 +204,8 @@ class DesEXT_h5(DesEXT_DEF_CONTENT):
         if(self.file):
             with open(self.file, "rb") as fhin:
                 shutil.copyfileobj(fhin, fh)
+        elif (self.data is not None):
+            fh.write(self.data)
     
 register_des_class(DesEXT_DEF_CONTENT, priority_order=500)
 register_des_class(DesEXT_h5)

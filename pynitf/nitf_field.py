@@ -97,6 +97,7 @@ class _FieldValue(object):
         self.condition = options.get("condition", None)
         self.optional = options.get("optional", False)
         self.optional_char = options.get("optional_char", " ")
+        self.eq_fun = options.get("eq_fun", None)
 
     def value(self,parent_obj):
         if(self.field_name is None):
@@ -696,6 +697,14 @@ def create_nitf_field_structure(name, description, hlp = None):
               and get_print function because these are the things we call. 
               Note that we have a generic FieldData class here, which might 
               be sufficient.
+    eq_fun  - Function used for testing equality. This is assumed to take at
+              least two values for comparison, but may accept other values,
+              for example a floating-point comparison tolerance. This was
+              added so that nitf_diff_support could use equality definitions
+              provided by particular subheader and TRE fields. An example is
+              the NitfImageSubheader field iid1 that uses a case-ignoring
+              string comparing function. This causes the nitf_diff_support
+              ISegHandle class to ignore case while comparing iid1 fields.
 
     The 'frmt' can be a format string (e.g., "%03d" for a 3 digit integer),
     or it can be a function that takes a value and returns a string - useful

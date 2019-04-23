@@ -10,9 +10,11 @@ cryptic, but these are documented in detail in the NITF 2.10 documentation
 The NITF image subheader is described in Table A-3, starting page 78.
 '''
 
+def eq_string_ignore_case(s1, s2):
+    return s1.casefold() == s2.casefold()
     
 desc = [['im', "", 2, str],
-        ['iid1', "", 10, str],
+        ['iid1', "", 10, str, {'eq_fun' : (eq_string_ignore_case,)}],
         ['idatim', "", 14, str],
         ['tgtid', "", 17, str],
         ['iid2', "", 80, str],
