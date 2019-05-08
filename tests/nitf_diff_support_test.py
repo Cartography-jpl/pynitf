@@ -59,24 +59,24 @@ def create_tre2(f):
     t.sun_az = 131.3
     f.tre_list.append(t)
     
-def create_text_segment(f):
+def create_text_segment(f, first_name = 'Guido', textid = 'ID12345'):
     d = {
-        'first_name': 'Guido',
+        'first_name': first_name,
         'second_name': 'Rossum',
         'titles': ['BDFL', 'Developer'],
     }
     ts = NitfTextSegment(txt = json.dumps(d))
-    ts.subheader.textid = 'ID12345'
+    ts.subheader.textid = textid
     ts.subheader.txtalvl = 0
     ts.subheader.txtitl = 'sample title'
     f.text_segment.append(ts)
 
-def create_des(f):
+def create_des(f, date_att = 20170501, desid = 'ID424242'):
     des = DesCSATTA()
     des.dsclas = 'U'
     des.att_type = 'ORIGINAL'
     des.dt_att = '900.5000000000'
-    des.date_att = 20170501
+    des.date_att = date_att
     des.t0_att = '235959.100001'
     des.num_att = 5
     for n in range(des.num_att):
@@ -86,6 +86,7 @@ def create_des(f):
         des.att_q4[n] = 10.1
 
     de = NitfDesSegment(des=des)
+    de.subheader.desid = desid
     f.des_segment.append(de)
     
 def test_nitf_diff(isolated_dir):
@@ -105,17 +106,19 @@ def test_nitf_diff(isolated_dir):
     # tre is written as part of the xhd. Incidentally, USE00A is an
     # image TRE, but it works fine here for testing file TRE
     # differencing.
-    #create_tre(f, 42)
+    #create_tre(f, atn = 42)
     create_tre(f)
 
     create_tre2(f)
 
-    iseg = create_image_seg(f, 'An IID1')
-    #create_tre(iseg, 43)
+    iseg = create_image_seg(f, iid1 = 'An IID1')
+    #create_tre(iseg, atn = 43)
     create_tre(iseg)
 
     create_text_segment(f)
 
+    # Using the alternate desid of 42 breaks the diff, as it should.
+    #create_des(f, desid = 42)
     create_des(f)
 
     f2 = NitfFile()
