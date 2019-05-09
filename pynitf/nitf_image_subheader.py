@@ -14,7 +14,7 @@ def eq_string_ignore_case(s1, s2):
     return s1.casefold() == s2.casefold()
     
 desc = [['im', "", 2, str],
-        ['iid1', "", 10, str, {'eq_fun' : (eq_string_ignore_case,)}],
+        ['iid1', "", 10, str, {'eq_fun' : (eq_string_ignore_case,), 'name' : 'image.iid1'}],
         ['idatim', "", 14, str],
         ['tgtid', "", 17, str],
         ['iid2', "", 80, str],

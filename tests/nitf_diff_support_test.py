@@ -134,8 +134,15 @@ def test_nitf_diff(isolated_dir):
 
     f.write("basic_nitf.ntf")
     f2.write("basic2_nitf.ntf")
+
     logger=logging.getLogger("nitf_diff")
     # This doesn't seem to have the desired effect, so I created
     # pytest.ini to set the logging level - wlb
     logging.basicConfig(level=logging.DEBUG)
+
     assert nitf_file_diff("basic_nitf.ntf", "basic2_nitf.ntf")
+
+    # This excludes image header field iid1 from comparison
+    #assert nitf_file_diff("basic_nitf.ntf", "basic2_nitf.ntf", exclude=['image.iid1'])
+    # This compares only image header field iid1
+    #assert nitf_file_diff("basic_nitf.ntf", "basic2_nitf.ntf", include=['image.iid1'])

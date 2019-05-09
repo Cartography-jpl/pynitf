@@ -98,6 +98,7 @@ class _FieldValue(object):
         self.optional = options.get("optional", False)
         self.optional_char = options.get("optional_char", " ")
         self.eq_fun = options.get("eq_fun", None)
+        self.name = options.get("name", None)
 
     def value(self,parent_obj):
         if(self.field_name is None):
@@ -705,6 +706,13 @@ def create_nitf_field_structure(name, description, hlp = None):
               the NitfImageSubheader field iid1 that uses a case-ignoring
               string comparing function. This causes the nitf_diff_support
               ISegHandle class to ignore case while comparing iid1 fields.
+              The value of eq_fun should be a tuple with the first element
+              being the name of the function, and any remaining elements
+              being extra parms passed to the function, after the two items
+              begin compared.
+    name    - Name used to identify the field for include/exclude list use.
+              nitf_diff_support.nitf_file_diff accepts optional include and
+              exclude lists that may contain these names.
 
     The 'frmt' can be a format string (e.g., "%03d" for a 3 digit integer),
     or it can be a function that takes a value and returns a string - useful

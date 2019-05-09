@@ -11,6 +11,25 @@ class DiffHandle(object):
     def __init__(self, logger=logging.getLogger('nitf_diff')):
         self.logger = logger
 
+    exclude = None
+    include = None
+
+    @classmethod
+    def set_exclude(cls, exclude):
+        cls.exclude = exclude
+
+    @classmethod
+    def get_exclude(cls):
+        return cls.exclude
+
+    @classmethod
+    def set_include(cls, include):
+        cls.include = include
+
+    @classmethod
+    def get_include(cls):
+        return cls.include
+
     def handle_diff(self, obj1, obj2):
         '''Handle the difference between 2 objects. Note that many of
         the handles can't handle a particular object. We use a chain of
@@ -30,6 +49,21 @@ class DiffHandle(object):
         for index, field in enumerate(list1):
             if (not isinstance(field, _FieldLoopStruct)):
                 if (field.field_name is not None):
+
+                    if hasattr(field, 'name') and field.name != None:
+                        exclude = DiffHandle.get_exclude()
+                        if exclude != None:
+                            if field.name in exclude:
+                                self.logger.debug('excluding ' + field.field_name)
+                                continue
+
+                    include = DiffHandle.get_include()
+                    if include != None:
+                        if not hasattr(field, 'name') or \
+                           field.name == None or not field.name in include:
+                            self.logger.debug('not including ' + field.field_name)
+                            continue
+
                     if hasattr(field, 'eq_fun') and field.eq_fun != None:
                         this_is_same = field.eq_fun[0](field.value(parent1)[()], 
                                                        list2[index].value(parent2)[()], 
@@ -246,12 +280,20 @@ def _handle_type(lis1, lis2, nm, handler, logger):
                 is_same = is_same and status
     return is_same
     
-def nitf_file_diff(f1_name, f2_name):
+def nitf_file_diff(f1_name, f2_name, exclude = None, include = None):
     '''Compare 2 NITF files. This returns an overall status of True
-    if the files compare the same, false otherwise.
+    if the files compare the same, false otherwise. The exclude and
+    include lists of names like 'image.iid1' are used to control
+    which items are compared. The names are defined in, e.g.
+    image.iid1 in nitf_image_subheader.desc. See also
+    nitf_field.create_nitf_field_structure.
 
     We print out messages to the logger 'nitf_diff'.
     '''
+
+    DiffHandle.set_exclude(exclude)
+    DiffHandle.set_include(include)
+
     logger=logging.getLogger('nitf_diff')
     f1 = NitfFile(f1_name)
     f2 = NitfFile(f2_name)
