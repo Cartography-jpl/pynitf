@@ -4,7 +4,7 @@ from pynitf.nitf_tre_csepha import *
 from pynitf.nitf_tre_piae import *
 from pynitf.nitf_tre_rpc import *
 from pynitf.nitf_tre_geosde import *
-from pynitf.nitf_des_csatta import *
+from pynitf.nitf_des_csattb import *
 from pynitf.nitf_image import *
 from pynitf.nitf_image_subheader import *
 from pynitf.nitf_tre import *
@@ -71,19 +71,22 @@ def create_text_segment(f, first_name = 'Guido', textid = 'ID12345'):
     ts.subheader.txtitl = 'sample title'
     f.text_segment.append(ts)
 
-def create_des(f, date_att = 20170501, desid = 'ID424242'):
-    des = DesCSATTA()
-    des.dsclas = 'U'
-    des.att_type = 'ORIGINAL'
-    des.dt_att = '900.5000000000'
-    des.date_att = date_att
-    des.t0_att = '235959.100001'
+def create_des(f, date_att = 20170501, desid = 'ID424242', q = 0.1):
+    des = DesCSATTB()
+    des.qual_flag_att = 1
+    des.interp_type_att = 1
+    des.att_type = 1
+    des.eci_ecf_att = 0
+    des.dt_att = 900.5
+    des.date_att = 20170501
+    des.t0_att = 235959.100001000
     des.num_att = 5
     for n in range(des.num_att):
-        des.att_q1[n] = 10.1
-        des.att_q2[n] = 10.1
-        des.att_q3[n] = 10.1
-        des.att_q4[n] = 10.1
+        des.q1[n] = q
+        des.q2[n] = q
+        des.q3[n] = q
+        des.q4[n] = q
+    des.reserved_len = 0
 
     de = NitfDesSegment(des=des)
     de.subheader.desid = desid
@@ -117,9 +120,9 @@ def test_nitf_diff(isolated_dir):
 
     create_text_segment(f)
 
-    # Using the alternate desid of 42 breaks the diff, as it should.
-    #create_des(f, desid = 42)
-    create_des(f)
+    # Using the alternate desid of to break the diff, as it should.
+    create_des(f, q = 9.9)
+    #create_des(f)
 
     f2 = NitfFile()
     create_tre(f2)
@@ -140,7 +143,7 @@ def test_nitf_diff(isolated_dir):
     # pytest.ini to set the logging level - wlb
     logging.basicConfig(level=logging.DEBUG)
 
-    assert nitf_file_diff("basic_nitf.ntf", "basic2_nitf.ntf")
+    assert nitf_file_diff("basic_nitf.ntf", "basic2_nitf.ntf")# == False
 
     # This excludes image header field iid1 from comparison
     #assert nitf_file_diff("basic_nitf.ntf", "basic2_nitf.ntf", exclude=['image.iid1'])

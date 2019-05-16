@@ -187,7 +187,7 @@ class DSegHandle(DiffHandle):
         self.logger.debug("obj2: %s" % obj2.summary())
 
         # Compare the subheaders of the two DES Segments
-        is_same = self.process_field_value_list("DES",
+        is_same = self.process_field_value_list("DES_SH",
                                                 obj1.subheader.field_value_list, 
                                                 obj1.subheader,
                                                 obj2.subheader.field_value_list, 
@@ -197,7 +197,25 @@ class DSegHandle(DiffHandle):
         # _handle_type() checks all segments for tre_lists, so we
         # don't need to do it here.
 
+
+        #Compare User-Defined Subheaders
+        # Compare the subheaders of the two DES Segments
+        #self.logger.debug(str(dir(obj1.des)))
+        #self.logger.debug(str(dir(obj1.des.user_subheader)))
+        #is_same = self.process_field_value_list("DES_UH",
+        #                                        obj1.des.user_subheader,
+        #                                        obj1.des,
+        #                                        obj2.des.user_subheader,
+        #                                        obj2.des)
+
         # TODO: compare DES payloads
+        #is_same = False
+        #self.logger.debug(str(dir(obj1.data)))
+        #is_same = self.process_field_value_list("DES_DATA",
+        #                                        obj1.des.field_value_list,
+        #                                        obj1.des,
+        #                                        obj2.des.field_value_list,
+        #                                        obj2.des)
 
         self.logger.debug("DSegHandle returning>>> %s" % is_same)
         return (True, is_same)
