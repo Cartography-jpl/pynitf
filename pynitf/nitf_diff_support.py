@@ -49,18 +49,19 @@ class DiffHandle(object):
         for index, field in enumerate(list1):
             if (not isinstance(field, _FieldLoopStruct)):
                 if (field.field_name is not None):
-
+                    compare_name = field.field_name
                     if hasattr(field, 'name') and field.name != None:
-                        exclude = DiffHandle.get_exclude()
-                        if exclude != None:
-                            if field.name in exclude:
-                                self.logger.debug('excluding ' + field.field_name)
-                                continue
+                        compare_name = field.name
+                        
+                    exclude = DiffHandle.get_exclude()
+                    if exclude != None:
+                        if compare_name in exclude:
+                            self.logger.debug('excluding ' + field.field_name)
+                            continue
 
                     include = DiffHandle.get_include()
                     if include != None:
-                        if not hasattr(field, 'name') or \
-                           field.name == None or not field.name in include:
+                        if not compare_name in include:
                             self.logger.debug('not including ' + field.field_name)
                             continue
 

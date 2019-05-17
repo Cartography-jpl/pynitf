@@ -710,9 +710,11 @@ def create_nitf_field_structure(name, description, hlp = None):
               being the name of the function, and any remaining elements
               being extra parms passed to the function, after the two items
               begin compared.
-    name    - Name used to identify the field for include/exclude list use.
-              nitf_diff_support.nitf_file_diff accepts optional include and
-              exclude lists that may contain these names.
+    name    - Name used to identify the field for include/exclude lists
+              optionally used by nitf_diff_support.nitf_file_diff.
+              If name is not provided, field_name is used instead. This 
+              alternate name is available to solve any possible name 
+              collisions among various segment headers and TRE fields.
 
     The 'frmt' can be a format string (e.g., "%03d" for a 3 digit integer),
     or it can be a function that takes a value and returns a string - useful
