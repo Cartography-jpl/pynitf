@@ -3,7 +3,7 @@ from .nitf_field import *
 from .nitf_tre import *
 import six
 
-hlp = '''This is the MIMCSA TRE, History version A.
+hlp = '''This is the MIMCSA TRE, Motion Imagery Collection Summary.
 
 The field names can be pretty cryptic, but are documented in detail in
 the NITF TRE documentation (NGA.STND.0044_1.3_MIE4NITF Adjudicated v3.pdf), 
@@ -12,7 +12,7 @@ available at https://nsgreg.nga.mil/doc/view?i=4754
 There is a table in the main body on page vii that gives the a pointer for
 where in the document a particular TRE is defined.
 
-MIMCSA is documented at L-10.
+MIMCSA is documented at in Table 11.
 '''
 desc = ["MIMCSA",
         ["layer_id", "Layer ID", 36, str],
