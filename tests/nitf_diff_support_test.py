@@ -71,8 +71,16 @@ def create_text_segment(f, first_name = 'Guido', textid = 'ID12345'):
     ts.subheader.txtitl = 'sample title'
     f.text_segment.append(ts)
 
-def create_des(f, date_att = 20170501, desid = 'ID424242', q = 0.1):
-    des = DesCSATTB()
+def create_des(f, date_att = 20170501, q = 0.1):
+
+    ds = DesCSATTB_UH()
+    ds.id = '4385ab47-f3ba-40b7-9520-13d6b7a7f311'
+    ds.numais = '010'
+    for i in range(int(ds.numais)):
+        ds.aisdlvl[i] = 5 + i
+    ds.reservedsubh_len = 0
+
+    des = DesCSATTB(user_subheader=ds)
     des.qual_flag_att = 1
     des.interp_type_att = 1
     des.att_type = 1
@@ -89,7 +97,6 @@ def create_des(f, date_att = 20170501, desid = 'ID424242', q = 0.1):
     des.reserved_len = 0
 
     de = NitfDesSegment(des=des)
-    de.subheader.desid = desid
     f.des_segment.append(de)
     
 def test_nitf_diff(isolated_dir):
@@ -143,7 +150,7 @@ def test_nitf_diff(isolated_dir):
     # pytest.ini to set the logging level - wlb
     logging.basicConfig(level=logging.DEBUG)
 
-    assert nitf_file_diff("basic_nitf.ntf", "basic2_nitf.ntf")# == False
+    assert nitf_file_diff("basic_nitf.ntf", "basic2_nitf.ntf") == False
 
     # This excludes image header field iid1 from comparison
     #assert nitf_file_diff("basic_nitf.ntf", "basic2_nitf.ntf", exclude=['image.iid1'])
