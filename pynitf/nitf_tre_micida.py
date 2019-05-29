@@ -15,7 +15,7 @@ where in the document a particular TRE is defined.
 MICIDA is documented at in Table 13.
 '''
 desc = ["MICIDA",
-        ["miis_core_id_version", "MISB ST 1204 Version Number", 2, int],
+        ["miis_core_id_version", "MISB ST 1204 Version Number", 2, int, {"frmt": "%02d"}],
         ["num_camera_ids", "Number of MIIS Core Identifiers", 3, int],
         [["loop", "f.num_camera_ids"],
          ["cameras_id", "Camera UUID", 36, str],
