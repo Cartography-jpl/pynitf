@@ -550,7 +550,7 @@ class NumFieldData(FieldData):
                 print(unpack(self.format, parent_obj.value[self.field_name][0])[0])
             return unpack(self.format, parent_obj.value[self.field_name][0])[0]
         else:
-            raise RuntimeError("This data type of length is not supported" % len(val))
+            raise RuntimeError("This data type of length %d is not supported" % len(val))
 
     def get(self,parent_obj,key):
         if(self.loop is not None):
