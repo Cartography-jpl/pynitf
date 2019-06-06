@@ -216,10 +216,13 @@ def read_tre_data(data):
             break
         if(len(tre_name) != 6):
             raise RuntimeError("Not enough data to get TRE name.")
-        fh.seek(st)
-        t = tre_object(tre_name)
-        t.read_from_file(fh)
-        res.append(t)
+        try:
+            fh.seek(st)
+            t = tre_object(tre_name)
+            t.read_from_file(fh)
+            res.append(t)
+        except:
+            raise Exception("Error while reading TRE " + str(tre_name))
     return res
     
 def create_nitf_tre_structure(name, description, hlp = None,
