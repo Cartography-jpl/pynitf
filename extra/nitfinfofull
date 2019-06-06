@@ -5,7 +5,7 @@ import subprocess
 import os
 import sys
 
-version="%prog Feb 22, 2018"
+version="%prog June 6, 2019"
 usage="""Usage: 
   nitfinfofull [options] <input_file>
   nitfinfofull -h | --help
@@ -19,11 +19,17 @@ Options:
   -h --help         
        Print this message
 
+  --debug
+       Turn on debugging statements in pynitf
+
   -v --version      
        Print program version
 
 """
 args = pynitf.docopt_simple.docopt_simple(usage, version=version)
 
+if(args.debug):
+    pynitf.nitf_field.DEBUG = True
+    pynitf.nitf_des.DEBUG = True
 f = pynitf.NitfFile(args.input_file)
 print(f)
