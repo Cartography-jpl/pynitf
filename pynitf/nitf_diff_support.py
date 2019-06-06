@@ -177,7 +177,12 @@ class TSegHandle(DiffHandle):
         return (True, is_same)
 
 class DSegHandle(DiffHandle):
-    '''Handler for data extension segments.'''
+    '''Handler for data extension segments.
+
+    Note for a special DES (e.g. one handled by a C++ class) it can be
+    useful to define "handle_diff". If this is present, we pass off the 
+    difference to this function (which should return True if objects are 
+    the same, False otherwise)'''
 
     def __init__(self, logger=logging.getLogger('nitf_diff')):
         super().__init__(logger)
@@ -186,6 +191,8 @@ class DSegHandle(DiffHandle):
         self.logger.debug("Using DES Handler")
         self.logger.debug("obj1: %s" % obj1.summary())
         self.logger.debug("obj2: %s" % obj2.summary())
+        if hasattr(obj1, 'handle_diff'):
+            return (True, obj1.handle_diff(obj2))
 
         # Compare the subheaders of the two DES Segments
         is_same = self.process_field_value_list("DES_SH",
@@ -211,11 +218,14 @@ class DSegHandle(DiffHandle):
 
         # TODO: compare DES payloads
         #self.logger.debug(str(dir(obj1.data)))
-        is_same = self.process_field_value_list("DES_DATA",
-                                                obj1.des.field_value_list,
-                                                obj1.des,
-                                                obj2.des.field_value_list,
-                                                obj2.des) and is_same
+        if hasattr(obj1.des, 'handle_diff'):
+            is_same = obj1.des.handle_diff(obj2.des) and is_same
+        else:
+            is_same = self.process_field_value_list("DES_DATA",
+                                                    obj1.des.field_value_list,
+                                                    obj1.des,
+                                                    obj2.des.field_value_list,
+                                                    obj2.des) and is_same
 
         self.logger.debug("DSegHandle returning>>> %s" % is_same)
         return (True, is_same)
