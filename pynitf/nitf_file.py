@@ -38,6 +38,16 @@ class NitfFile(object):
         self.tre_list = []
         if(file_name is not None):
             self.read(file_name)
+
+            # TODO: Perhaps the above line should be in debug mode and the below block in normal
+            # TODO: That way we can skip over any parsing errors and still show rest of NITF in normal mode
+            # TODO: but break at the spot that parsing error occurs if we're in debug mode
+            #try:
+            #    self.read(file_name)
+            #except Exception as ex:
+            #    print("Incurred exception while opening file "+file_name)
+            #    print(ex)
+
     def __str__(self):
         '''Text description of structure, e.g., something you can print out'''
         res = six.StringIO()

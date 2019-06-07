@@ -2,6 +2,7 @@ from __future__ import print_function
 from .nitf_field import *
 from .nitf_tre import *
 import six
+from struct import *
 
 hlp = '''This is the MTIMSA TRE, Motion Imagery File
 
@@ -22,13 +23,13 @@ desc = ["MTIMSA",
         ["nominal_frame_rate", "Nominal Frame Rate", 13, float],
         ["reference_frame_num", "Absolute Frame Number", 9, int],
         ["base_timestamp", "Base Timestamp", 24, str],
-        ["dt_multiplier", "Frame Delta Time", 8, int],
-        ["dt_size", "Size of DT Values (bytes)", 1, int],
-        ["number_frames", "Number of Frames", 4, int],
-        ["number_dt", "Number of DELTA_TIME Values", 4, int],
+        ["dt_multiplier", "Frame Delta Time", 8, None, {'field_value_class' : IntFieldData, 'size_not_updated' : True, 'signed' : False}],
+        ["dt_size", "Size of DT Values (bytes)", 1, None, {'field_value_class' : IntFieldData, 'size_not_updated' : True, 'signed' : False}],
+        ["number_frames", "Number of Frames", 4, None, {'field_value_class' : IntFieldData, 'size_not_updated' : True, 'signed' : False}],
+        ["number_dt", "Number of DELTA_TIME Values", 4, None, {'field_value_class' : IntFieldData, 'size_not_updated' : True, 'signed' : False}],
         [["loop", "f.number_dt"],
          ["dt", "Number of Delta Time Units", "f.dt_size", None,
-          {'field_value_class' : IntFieldData, 'size_not_updated' : True}],
+          {'field_value_class' : IntFieldData, 'size_not_updated' : True, 'signed' : False}],
         ],
 ]
 

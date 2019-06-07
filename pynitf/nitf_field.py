@@ -566,15 +566,51 @@ class NumFieldData(FieldData):
 
 class IntFieldData(NumFieldData):
     def __init__(self, field_name, size_field, ty, loop, options):
-        self.format = '>I'
+        self.print_format = '%d'
+        self.signed = options.get("signed", False)
         super().__init__(field_name, size_field, ty, loop, options)
+
+    def set_format(self, parent_obj):
+        f = parent_obj
+        if type(self.size_field) is int:
+            sz = self.size_field
+        elif type(self.size_field) is str:
+            sz = eval(self.size_field)
+        else:
+            raise Exception("I don't know how to handle this type of size_field")
+
+        if (sz is 1 and self.signed is False):
+            self.format = '>B'
+        elif (sz is 1 and self.signed is True):
+            self.format = '>b'
+        elif (sz is 2 and self.signed is False):
+            self.format = '>H'
+        elif (sz is 2 and self.signed is True):
+            self.format = '>h'
+        elif (sz is 4 and self.signed is False):
+            self.format = '>I'
+        elif (sz is 4 and self.signed is True):
+            self.format = '>i'
+        elif (sz is 8 and self.signed is False):
+            self.format = '>Q'
+        elif (sz is 8 and self.signed is True):
+            self.format = '>q'
+        else:
+            raise Exception("Can't determine number format")
+
+    def set(self,parent_obj,key,v):
+        self.set_format(parent_obj)
+        super().set(parent_obj,key,v)
+
+    def get(self,parent_obj,key):
+        self.set_format(parent_obj)
+        return super().get(parent_obj,key)
 
     def get_print(self, parent_obj,key):
         t = self.get(parent_obj,key)
         if(t is None):
             return "Not used"
-        return "%d" % t
-        
+        return self.print_format % t
 
 class FloatFieldData(NumFieldData):
     def __init__(self, field_name, size_field, ty, loop, options):
