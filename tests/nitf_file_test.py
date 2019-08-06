@@ -235,120 +235,57 @@ def test_tre_overflow_write(isolated_dir):
     check_tre2([tre for tre in f2.image_segment[0].tre_list if tre.tre_tag == "USE00A"][0])
     print_diag(f2)
 
-@require_raid
-def test_read_quickbird():
-    # This is a large file, which we don't want to depend on. Run this
-    # test if we happen to find the data, but skip otherwise.
-    fname = "/raid21/quickbird/05NOV23034644-P1BS-005545406180_01_P001.NTF"
-    fname2 = "/opt/nitf_files/NitfSamples/quickbird/05NOV23034644-P1BS-005545406180_01_P001.NTF"
-    if(os.path.exists(fname)):
-        f = NitfFile(fname)
-        print(f)
-    elif (os.path.exists(fname2)):
-        f = NitfFile(fname2)
-        print(f.summary())
-        print(f)
+def test_read_quickbird(nitf_sample_quickbird):
+    f = NitfFile(nitf_sample_quickbird)
+    print(f.summary())
+    print(f)
 
-@require_raid
-def test_read_worldview():
-    '''Test reading a worldview NITF file.'''
-    # This is a large file, which we don't want to depend on. Run this
-    # test if we happen to find the data, but skip otherwise.
-    fname = "/raid23/worldview/nagoya/12JAN23015358-P1BS-052654848010_01_P003.NTF"
-    fname2 = "/opt/nitf_files/NitfSamples/wv2/12JAN23015358-P1BS-052654848010_01_P003.NTF"
-    if(os.path.exists(fname)):
-        f = NitfFile(fname)
-        print(f)
-    elif (os.path.exists(fname2)):
-        f = NitfFile(fname2)
-        print(f.summary())
-        print(f)
+def test_read_worldview(nitf_sample_wv2):
+    f = NitfFile(nitf_sample_wv2)
+    print(f.summary())
+    print(f)
 
-@require_raid
-def test_read_ikonos():
-    '''Test reading a ikonos NITF file.'''
-    # This is a large file, which we don't want to depend on. Run this
-    # test if we happen to find the data, but skip otherwise.
-    fname = "/raid20/11DEC11IK0101000po_755166_pan_0000000.ntf"
-    fname2 = "/opt/nitf_files/NitfSamples/ikonos/11DEC11IK0101000po_755166_pan_0000000.ntf"
-    if(os.path.exists(fname)):
-        f = NitfFile(fname)
-        print(f)
-    elif (os.path.exists(fname2)):
-        f = NitfFile(fname2)
-        print(f.summary())
-        print(f)
+def test_read_ikonos(nitf_sample_ikonos):
+    f = NitfFile(nitf_sample_ikonos)
+    print(f.summary())
+    print(f)
 
-@require_raid
-def test_copy_quickbird():
+# Test reading the reference SNIP sample file
+def test_read_rip(nitf_sample_rip):
+    f = NitfFile(nitf_sample_rip)
+    print(f.summary())
+    print(f)
+    
+def test_copy_quickbird(nitf_sample_quickbird):
     #Test copying a quickbird NITF file. It creates a copy of the file and then
     #reads it back and compares the str() result to that of the original file
-    # This is a large file, which we don't want to depend on. Run this
-    # test if we happen to find the data, but skip otherwise.
-    fname = "/raid21/quickbird/05NOV23034644-P1BS-005545406180_01_P001.NTF"
-    fname2 = "/opt/nitf_files/NitfSamples/quickbird/05NOV23034644-P1BS-005545406180_01_P001.NTF"
-    fname_copy = "quickbird_copy.ntf"
-
-    if(os.path.exists(fname)):
-        filename = fname
-    elif (os.path.exists(fname2)):
-        filename = fname2
-    else:
-        raise SkipTest
-    f = NitfFile(filename)
+    f = NitfFile(nitf_sample_quickbird)
     originalOutput = str(f)
+    fname_copy = "quickbird_copy.ntf"
     f.write(fname_copy)
     copyOutput = str(NitfFile(fname_copy))
-    os.remove(fname_copy)
-
     assert originalOutput == copyOutput
 
-@require_raid    
 @pytest.mark.skip(reason="We're writing out a duplicate TRE for some reason for this file.")
-def test_copy_worldview():
+def test_copy_worldview(nitf_sample_wv2):
     #Test copying a worldview NITF file. It creates a copy of the file and then
     #reads it back and compares the str() result to that of the original file
-    # This is a large file, which we don't want to depend on. Run this
-    # test if we happen to find the data, but skip otherwise.
-    fname = "/raid23/worldview/nagoya/12JAN23015358-P1BS-052654848010_01_P003.NTF"
-    fname2 = "/opt/nitf_files/NitfSamples/wv2/12JAN23015358-P1BS-052654848010_01_P003.NTF"
-    fname_copy = "worldview_copy.ntf"
-
-    if (os.path.exists(fname)):
-        filename = fname
-    elif (os.path.exists(fname2)):
-        filename = fname2
-    f = NitfFile(filename)
-    print(f)
+    f = NitfFile(nitf_sample_wv2)
     originalOutput = str(f)
+    fname_copy = "worldview_copy.ntf"
     f.write(fname_copy)
     copyOutput = str(NitfFile(fname_copy))
-    #os.remove(fname_copy)
 
     assert originalOutput == copyOutput
 
-@require_raid    
-def test_copy_ikonos():
+def test_copy_ikonos(nitf_sample_ikonos):
     #Test copying a ikonos NITF file. It creates a copy of the file and then
     #reads it back and compares the str() result to that of the original file
-    # This is a large file, which we don't want to depend on. Run this
-    # test if we happen to find the data, but skip otherwise.
-    fname = "/raid20/11DEC11IK0101000po_755166_pan_0000000.ntf"
-    fname2 = "/opt/nitf_files/NitfSamples/ikonos/11DEC11IK0101000po_755166_pan_0000000.ntf"
-    fname_copy = "ikonos_copy.ntf"
-
-    if (os.path.exists(fname)):
-        filename = fname
-    elif (os.path.exists(fname2)):
-        filename = fname2
-    else:
-        raise SkipTest
-    f = NitfFile(filename)
+    f = NitfFile(nitf_sample_ikonos)
     originalOutput = str(f)
+    fname_copy = "ikonos_copy.ntf"
     f.write(fname_copy)
     copyOutput = str(NitfFile(fname_copy))
-    os.remove(fname_copy)
-
     assert originalOutput == copyOutput
 
 def test_full_file(isolated_dir):

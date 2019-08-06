@@ -75,12 +75,46 @@ def isolated_dir(tmpdir):
     finally:
         os.chdir(curdir)
 
-# Have tests that require /raid be available. We generally skip these if not
+# Have tests that require NITF sample files be available. We skip these if not
 # available, tests are nice to make sure things don't break but not essential.
 # Things that really matter have small test data sets put into unit_test_data,
 # but we do want the option of running larger tests when available
-require_raid = pytest.mark.skipif(not os.path.exists("/raid1"),
-                                  reason = "require /raid* test data to run")
+
+@pytest.yield_fixture(scope="function")
+def nitf_sample_files(isolated_dir):
+    if(os.path.exists("/raid1/smyth/NitfSamples/")):
+        return "/raid1/smyth/NitfSamples/"
+    elif(os.path.exists("/opt/nitf_files/NitfSamples/")):
+        return "/opt/nitf_files/NitfSamples/"
+    pytest.skip("Require NitfSamples test data to run")
+
+@pytest.yield_fixture(scope="function")
+def nitf_sample_quickbird(nitf_sample_files):
+    fname = nitf_sample_files + "quickbird/05NOV23034644-P1BS-005545406180_01_P001.NTF"
+    if(os.path.exists(fname)):
+        return fname
+    pytest.skip("Required file %s not found, so skipping test" % fname)
+
+@pytest.yield_fixture(scope="function")
+def nitf_sample_wv2(nitf_sample_files):
+    fname = nitf_sample_files + "wv2/12JAN23015358-P1BS-052654848010_01_P003.NTF"
+    if(os.path.exists(fname)):
+        return fname
+    pytest.skip("Required file %s not found, so skipping test" % fname)
+
+@pytest.yield_fixture(scope="function")
+def nitf_sample_ikonos(nitf_sample_files):
+    fname = nitf_sample_files + "ikonos/11DEC11IK0101000po_755166_pan_0000000.ntf"
+    if(os.path.exists(fname)):
+        return fname
+    pytest.skip("Required file %s not found, so skipping test" % fname)
+
+@pytest.yield_fixture(scope="function")
+def nitf_sample_rip(nitf_sample_files):
+    fname = nitf_sample_files + "rip/07APR2005_Hyperion_331405N0442002E_SWIR172_001_L1R.ntf"
+    if(os.path.exists(fname)):
+        return fname
+    pytest.skip("Required file %s not found, so skipping test" % fname)
     
 require_h5py = pytest.mark.skipif(not have_h5py,
       reason="need to have h5py available to run.")
