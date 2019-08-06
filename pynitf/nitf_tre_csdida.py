@@ -34,3 +34,5 @@ desc = ["CSDIDA",
 ]
 
 TreCSDIDA = create_nitf_tre_structure("TreCSDIDA",desc,hlp=hlp)
+
+__all__ = [ "TreCSDIDA" ]

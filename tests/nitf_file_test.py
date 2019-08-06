@@ -1,6 +1,7 @@
 from pynitf.nitf_file import *
 from pynitf.nitf_tre_csde import *
 from pynitf.nitf_tre_csepha import *
+from pynitf.nitf_tre_csexrb import *
 from pynitf.nitf_tre_piae import *
 from pynitf.nitf_tre_rpc import *
 from pynitf.nitf_tre_geosde import *
@@ -17,8 +18,8 @@ import six
 import numpy as np
 
 # Turn on debug messages
-#pynitf.nitf_field.DEBUG = True
-#pynitf.nitf_des.DEBUG = True
+pynitf.nitf_field.DEBUG = True
+pynitf.nitf_des.DEBUG = True
 
 # Do these in a few places, so collect in one spot.
 def create_image_seg(f):
