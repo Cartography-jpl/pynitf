@@ -79,12 +79,8 @@ def isolated_dir(tmpdir):
 # available, tests are nice to make sure things don't break but not essential.
 # Things that really matter have small test data sets put into unit_test_data,
 # but we do want the option of running larger tests when available
-#require_raid = pytest.mark.skipif(not os.path.exists("/raid1"),
-#                                  reason = "require /raid* test data to run")
-# Temporary, /raid is down.
-require_raid = pytest.mark.skipif(True,
+require_raid = pytest.mark.skipif(not os.path.exists("/raid1"),
                                   reason = "require /raid* test data to run")
-
     
 require_h5py = pytest.mark.skipif(not have_h5py,
       reason="need to have h5py available to run.")
