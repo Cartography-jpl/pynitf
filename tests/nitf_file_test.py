@@ -8,11 +8,17 @@ from pynitf.nitf_des_csatta import *
 from pynitf.nitf_image import *
 from pynitf.nitf_tre import *
 from pynitf_test_support import *
+import pynitf.nitf_field
+import pynitf.nitf_des
 import subprocess
 import os
 import json
 import six
 import numpy as np
+
+# Turn on debug messages
+#pynitf.nitf_field.DEBUG = True
+#pynitf.nitf_des.DEBUG = True
 
 # Do these in a few places, so collect in one spot.
 def create_image_seg(f):

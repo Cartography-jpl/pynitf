@@ -144,22 +144,32 @@ class _FieldValue(object):
             self.loop.check_index(parent_obj, key)
         if(not self.check_condition(parent_obj, key)):
             return None
-        if(hasattr(parent_obj, self.field_name + "_value")):
-            if(self.loop is None):
-                return getattr(parent_obj, self.field_name + "_value")()
+        try:
+            v = None
+            if(hasattr(parent_obj, self.field_name + "_value")):
+                if(self.loop is None):
+                    return getattr(parent_obj, self.field_name + "_value")()
+                else:
+                    return getattr(parent_obj, self.field_name + "_value")(*key)
+            v = self.value(parent_obj)[key]
+            if(self.optional and v is None):
+                return None
+            if(no_type_conversion):
+                return v
+            if(isinstance(v, NitfLiteral)):
+                v = v.value
+            if(self.ty == str):
+                return self.ty(v).rstrip()
             else:
-                return getattr(parent_obj, self.field_name + "_value")(*key)
-        v = self.value(parent_obj)[key]
-        if(self.optional and v is None):
-            return None
-        if(no_type_conversion):
-            return v
-        if(isinstance(v, NitfLiteral)):
-            v = v.value
-        if(self.ty == str):
-            return self.ty(v).rstrip()
-        else:
-            return self.ty(v)
+                return self.ty(v)
+        except Exception as e:
+            if sys.version_info > (3,):
+                if(self.loop is None):
+                    raise RuntimeError("Error occurred getting '%s' from '%s'. Value '%s'" % (self.field_name, type(parent_obj).__name__, v)) from e
+                else:
+                    raise RuntimeError("Error occurred getting '%s[%s]' from '%s'. Value '%s'" % (self.field_name, key, type(parent_obj).__name__, v)) from e
+            else:
+                raise
     def set(self,parent_obj,key,v):
         if(self.field_name is None):
             raise RuntimeError("Can't set a reserved field")

@@ -24,7 +24,7 @@ def test_tre_csdida():
     fh = six.BytesIO()
     t.write_to_file(fh)
     print(fh.getvalue())
-    assert fh.getvalue() == b'CSDIDA0007012MAY2019AB1103341CDEF000020190709231159201907092312590000001.0.0     '
+    assert fh.getvalue() == b'CSDIDA0007012MAY2019AB1103341CDEF000020190709231159201907092312590001NN1.0.0     '
 
     fh2 = six.BytesIO(fh.getvalue())
     t2 = TreCSDIDA()
