@@ -6,6 +6,7 @@ from pynitf.nitf_tre_piae import *
 from pynitf.nitf_tre_rpc import *
 from pynitf.nitf_tre_geosde import *
 from pynitf.nitf_des_csatta import *
+from pynitf.nitf_des_cssfab import *
 from pynitf.nitf_image import *
 from pynitf.nitf_tre import *
 from pynitf_test_support import *

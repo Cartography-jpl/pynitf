@@ -142,9 +142,13 @@ class NitfDesFieldStruct(NitfDes, _FieldStruct):
     Note that although you can directly create a class based on this one,
     there is also the create_nitf_des_structure function that automates 
     creating this from a table like we do with TREs.
+
+    The TRE may or may not be followed by data. If it isn't, then we report
+    an error if all the data isn't read.
     '''
     uh_class = None
     des_tag = None
+    data_after_allowed = None
     def __init__(self, des_subheader=None, header_size=None,
                  user_subheader=None, data_size=None):
         NitfDes.__init__(self, self.__class__.des_tag,
@@ -154,10 +158,20 @@ class NitfDesFieldStruct(NitfDes, _FieldStruct):
         _FieldStruct.__init__(self)
         if(self.des_subheader.desid != self.__class__.des_tag):
             raise NitfDesCannotHandle()
+        self.data_start = None
+        self.data_after_tre_size = None
         
     def read_from_file(self, fh, nitf_literal = False):
         self.read_user_subheader()
+        t = fh.tell()
         _FieldStruct.read_from_file(self,fh, nitf_literal)
+        self.data_start = fh.tell()
+        self.data_after_tre_size = self.data_size - (self.data_start - t)
+        if(self.data_after_tre_size != 0):
+            if(not self.data_after_allowed):
+                raise RuntimeError("DES %s TRE length was expected to be %d but was actually %d" % (self.des_tag, self.data_size, (self.data_start - t)))
+            fh.seek(self.data_after_tre_size, 1)
+        
     def write_to_file(self, fh):
         _FieldStruct.write_to_file(self, fh)
     def str_hook(self, file):
@@ -300,7 +314,8 @@ def _create_attribute_forward_to_implementation_object(fname):
     
 def create_nitf_des_structure(name, desc_data, desc_uh = None, hlp = None,
                               des_implementation_field=None,
-                              des_implementation_class=None):
+                              des_implementation_class=None,
+                              data_after_allowed=False):
     '''This is like create_nitf_field_structure, but adds a little
     extra structure for DESs.
 
@@ -340,6 +355,7 @@ def create_nitf_des_structure(name, desc_data, desc_uh = None, hlp = None,
             setattr(res, field, _create_attribute_forward_to_implementation_object(field))
     else:
         res = type(name, (NitfDesFieldStruct,), t.process(d))
+        res.data_after_allowed = data_after_allowed
     res.des_tag = des_tag
 
     # Stash description, to make available if we want to later override a DES
@@ -369,7 +385,7 @@ class NitfDesHandleList(object):
     '''Small class to handle to list of DES objects. This is little more
     complicated than just a list of handlers. The extra piece is allowing
     a priority_order to be assigned to the handlers, we look for 
-    lower number first. So for example we can but NitfDesPlaceHolder as the
+    lower number first. So for example we can put NitfDesPlaceHolder as the
     highest number, and it will be tried after all the other handlers have
     been tried.
 
