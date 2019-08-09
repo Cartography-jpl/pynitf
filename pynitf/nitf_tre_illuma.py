@@ -31,5 +31,5 @@ desc = ["ILLUMA",
         ["art_ill_max", "Maximum Artificial Illumination", 5, float, {'frmt': '%05.1f', 'optional': True, 'optional_char' : '-'}],
 ]
 
-TreILLUMA = create_nitf_tre_structure("TreILLUMA",desc,hlp=hlp)
+#TreILLUMA = create_nitf_tre_structure("TreILLUMA",desc,hlp=hlp)
 

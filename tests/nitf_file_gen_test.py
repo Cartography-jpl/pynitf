@@ -111,7 +111,8 @@ def write_by_row_p(d, bstart, lstart, sstart):
     #print("sstart", sstart)
     for a in range(d.shape[0]):
         for b in range(d.shape[1]):
-            d[a, b] = sstart * 3
+            #print(a*20+b*30)
+            d[a, b] = a*20+b*30
 
 def test_main(isolated_dir):
     # Create the file. We don't supply a name yet, that comes when we actually
