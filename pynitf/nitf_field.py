@@ -130,6 +130,8 @@ class _FieldValue(object):
             i1 = key[0]
         if(len(key) > 1):
             i2 = key[1]
+        if(len(key) > 2):
+            i3 = key[2]
         if(DEBUG):
             print("Condition: " + self.condition)
             print("eval: " + str(eval(self.condition)))
@@ -262,16 +264,18 @@ class _FieldLoopStruct(object):
     # The __dict__ is at class level
     def __init__(self, size):
         self.size = size
-        # I think we only ever have 2 levels of nesting. We check for this,
+        # I think we only ever have 3 levels of nesting. We check for this,
         # in case we run into something else at some point. We could
         # extend this if needed, but we'll wait until we have to
-        if(len(self.size) > 2):
-            raise RuntimeError("We only support 2 levels of nesting now")
+        if(len(self.size) > 3):
+            raise RuntimeError("We only support 3 levels of nesting now")
         self.field_value_list = []
     def shape(self, parent_object, lead=()):
         f = parent_object
         if(len(lead) >= 1):
             i1 = lead[0]
+        if(len(lead) >= 2):
+            i2 = lead[1]
         return eval(self.size[len(lead)])
     def write_to_file(self, parent_object, key, fh):
         if(key is None):
@@ -334,6 +338,18 @@ class _FieldLoopStruct(object):
                                   ("%s[%d, %d]" % (f.field_name, i1, i2)).ljust(maxlen) +
                                   ": " +  f.get_print(parent_object,(i1,i2)),
                                   file=res)
+                elif(len(self.size) == 3):
+                    if(maxi1 is None):
+                        maxi1=0
+                    for i1 in range(maxi1):
+                        maxi2 = self.shape(parent_object,lead=(i1,))
+                        for i2 in range(maxi2):
+                            maxi3 = self.shape(parent_object,lead=(i1,i2))
+                            for i3 in range(maxi3):
+                                print(lead + "  " +
+                                      ("%s[%d, %d, %d]" % (f.field_name, i1, i2, i3)).ljust(maxlen) +
+                                      ": " +  f.get_print(parent_object,(i1,i2, i3)),
+                                      file=res)
             else:
                 print(f.desc(parent_object), file=res)
         return res.getvalue()
@@ -439,6 +455,8 @@ class FieldData(object):
             i1 = key[0]
         if(len(key) > 1):
             i2 = key[1]
+        if(len(key) > 2):
+            i3 = key[2]
         if(DEBUG):
             print("Condition: " + self.condition)
             print("eval: " + str(eval(self.condition)))
@@ -464,6 +482,8 @@ class FieldData(object):
             i1 = key[0]
         if(len(key) > 1):
             i2 = key[1]
+        if(len(key) > 2):
+            i3 = key[2]
         if(self.size_not_updated):
             if (type(self.size_field) == int):
                 sz = self.size_field
@@ -492,6 +512,8 @@ class FieldData(object):
                 i1 = key[0]
             if(len(key) > 1):
                 i2 = key[1]
+            if(len(key) > 2):
+                i3 = key[2]
             if (type(self.size_field) == int):
                 sz = self.size_field
             else:
@@ -516,6 +538,8 @@ class FieldData(object):
             i1 = key[0]
         if(len(key) > 1):
             i2 = key[1]
+        if(len(key) > 2):
+            i3 = key[2]
         if (type(self.size_field) == int):
             sz = self.size_field
         else:

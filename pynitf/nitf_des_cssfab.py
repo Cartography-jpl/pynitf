@@ -59,8 +59,27 @@ desc2 =["CSSFAB",
           12, float,{'frmt' : "%+012.5lf"}],
          ["delta_line", "Delta Lines of the Corresponding Line of Successive Blocks",
           11, float,{'frmt' : "%011.5lf"}],
+         ['num_fa_blocks_line', "Number of Field Alignment Blocks in the Line Direction", 3, int, {'frmt' : "%03d"}],
+         ["number_fir_samp", "First Sample Number of the First Block of Field Alignment Data",
+          12, float,{'frmt' : "%+012.5lf"}],
+         ["delta_samp", "Delta Samples of the Corresponding Line of Successive Blocks",
+          11, float,{'frmt' : "%011.5lf"}],
+         ['num_fa_blocks_samp', "Number of Field Alignment Blocks in the Sample Direction", 3, int, {'frmt' : "%03d"}],
+         [["loop", "f.num_fa_blocks_line[i1]"],
+          [["loop", "f.num_fa_blocks_samp[i1]"],
+           ["fa_x1", "X-coordinate of the first of the four alignment coordinated for block jk of the nth frame field angle set", 11, float, {'frmt' : "%+11.7lf"}],
+           ["fa_y1", "Y-coordinate of the first of the four alignment coordinated for block jk of the nth frame field angle set", 11, float, {'frmt' : "%+11.7lf"}],
+           ["fa_x2", "X-coordinate of the second of the four alignment coordinated for block jk of the nth frame field angle set", 11, float, {'frmt' : "%+11.7lf"}],
+           ["fa_y2", "Y-coordinate of the second of the four alignment coordinated for block jk of the nth frame field angle set", 11, float, {'frmt' : "%+11.7lf"}],
+           ["fa_x3", "X-coordinate of the third of the four alignment coordinated for block jk of the nth frame field angle set", 11, float, {'frmt' : "%+11.7lf"}],
+           ["fa_y3", "Y-coordinate of the third of the four alignment coordinated for block jk of the nth frame field angle set", 11, float, {'frmt' : "%+11.7lf"}],
+           ["fa_x4", "X-coordinate of the fourth of the four alignment coordinated for block jk of the nth frame field angle set", 11, float, {'frmt' : "%+11.7lf"}],
+           ["fa_y4", "Y-coordinate of the fourth of the four alignment coordinated for block jk of the nth frame field angle set", 11, float, {'frmt' : "%+11.7lf"}],
+          ],
          ],
-       ]
+        ],
+]
+        
 
 #print (desc2)
 

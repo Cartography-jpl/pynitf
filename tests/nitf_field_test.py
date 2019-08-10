@@ -138,6 +138,74 @@ def test_nested_loop():
     t2.read_from_file(fh2)
     assert str(t) == str(t2)
 
+def test_nested_loop2():
+    # The "mark1" through "mark3" make it easier to look at the write out
+    # of the TRE and make sure things are going into the correct spot, and
+    # that we are reading this correctly.
+    TestField = create_nitf_field_structure("TestField",
+        [["fhdr", "", 4, str, {"default" : "NITF"}],
+         ["numi", "", 3, int],
+         [["loop", "f.numi"],
+          ["mark1", "", 5, str, {"default":"mark1"}],
+          ['lish', "", 6, int],
+          ["numj", "", 3, int],
+          [["loop", "f.numj[i1]"],
+           ["mark2", "", 5,str, {"default":"mark2"}],
+           ["numk", "", 3, int],
+           [["loop", "f.numk[i1,i2]"],
+            ["mark3", "", 5, str, {"default":"mark3"}],
+            ['li', "", 10, int],
+            ],
+           ],
+         ],            
+        ])
+    t = TestField()
+    t.numi = 2
+    t.numj[0] = 2
+    t.numj[1] = 4
+    t.numk[0,0] = 3
+    t.numk[0,1] = 3
+    t.numk[1,0] = 4
+    t.numk[1,1] = 4
+    t.numk[1,2] = 4
+    t.numk[1,3] = 4
+    t.li[0,1,1] = 10
+    t.li[1,3,1] = 20
+    assert t.li[0,1,1] == 10
+    assert t.li[1,3,1] == 20
+    with pytest.raises(IndexError):
+        t.li[0,4,0]
+    with pytest.raises(IndexError):
+        t.li[2,1,1]
+    val = 10
+    for i1 in range(t.numi):
+        for i2 in range(t.numj[i1]):
+            for i3 in range(t.numk[i1,i2]):
+                t.li[i1,i2,i3] = val
+                val += 1
+    val = 10
+    for i1 in range(t.numi):
+        for i2 in range(t.numj[i1]):
+            for i3 in range(t.numk[i1,i2]):
+                assert t.li[i1,i2,i3] == val
+                val += 1
+    fh = six.BytesIO()
+    t.write_to_file(fh)
+    assert fh.getvalue() == b'NITF002mark1000000002mark2003mark30000000010mark30000000011mark30000000012mark2003mark30000000013mark30000000014mark30000000015mark1000000004mark2004mark30000000016mark30000000017mark30000000018mark30000000019mark2004mark30000000020mark30000000021mark30000000022mark30000000023mark2004mark30000000024mark30000000025mark30000000026mark30000000027mark2004mark30000000028mark30000000029mark30000000030mark30000000031'
+    fh2 = six.BytesIO(fh.getvalue())
+    t2 = TestField()
+    t2.read_from_file(fh2)
+    fh2 = six.BytesIO()
+    t2.write_to_file(fh2)
+    val = 10
+    for i1 in range(t.numi):
+        for i2 in range(t.numj[i1]):
+            for i3 in range(t.numk[i1,i2]):
+                assert t2.li[i1,i2,i3] == val
+                val += 1
+    assert str(t) == str(t2)
+    #print(t)
+    
 def test_conditional():
     TestField = create_nitf_field_structure("TestField",
         [["fhdr", "", 4, str, {"default" : "NITF"}],
