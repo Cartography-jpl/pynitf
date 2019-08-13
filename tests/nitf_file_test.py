@@ -19,8 +19,8 @@ import six
 import numpy as np
 
 # Turn on debug messages
-pynitf.nitf_field.DEBUG = True
-pynitf.nitf_des.DEBUG = True
+#pynitf.nitf_field.DEBUG = True
+#pynitf.nitf_des.DEBUG = True
 
 # Do these in a few places, so collect in one spot.
 def create_image_seg(f):
