@@ -192,6 +192,9 @@ class NitfDesFieldStruct(NitfDes, _FieldStruct):
             maxlen = 10
         res = six.StringIO()
         self.str_hook(res)
+        if(self.user_subheader):
+            print("User-Defined Subheader: ", file=res)
+            print(self.user_subheader, file=res)
         for f in self.field_value_list:
             if(not isinstance(f, _FieldLoopStruct)):
                 if(f.field_name is not None):
@@ -251,6 +254,9 @@ class NitfDesObjectHandle(NitfDes):
         out.'''
         res = six.StringIO()
         self.str_hook(res)
+        if(self.user_subheader):
+            print("User-Defined Subheader: ", file=res)
+            print(self.user_subheader, file=res)
         print("Object associated with DES:", file=res)
         print(getattr(self, self.des_implementation_field), file=res)
         return res.getvalue()
