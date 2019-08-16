@@ -278,6 +278,33 @@ class NitfDesPlaceHolder(NitfDes):
         '''Write an DES to a file.'''
         raise NotImplementedError("Can't write a NitfDesPlaceHolder")
 
+class NitfDesCopy(NitfDes):
+    '''Implementation that reads from one file and just copies to the other.
+    Not normally registered, but can be useful to use for some test cases (e.g.
+    want to copy over an unimplemented DES'''
+    def __init__(self, des_subheader=None, header_size=None, data_size=None):
+        NitfDes.__init__(self,"",des_subheader, header_size, data_size)
+        self.data = None
+        self.data_uh = None
+
+    def __str__(self):
+        return "NitfDesCopy %d bytes of data" % (len(self.data))
+        
+    def read_from_file(self, fh, nitf_literal = False):
+        if(self.des_subheader.desshl > 0):
+            self.data_uh = self.des_subheader.desshf
+        self.data = fh.read(self.data_size)
+
+    def write_user_subheader(self, sh):
+        if(self.data_uh):
+            sh.desshf = self.data_uh
+            
+    def write_to_file(self, fh):
+        '''Write an DES to a file.'''
+        if(self.data is None): 
+            raise RuntimeError("Can only write data after we have read it in NitdDesCopy")
+        fh.write(self.data)
+    
 class TreOverflow(NitfDes):
     '''DES used to handle TRE overflow.'''
     def __init__(self, des_subheader=None, header_size=None, data_size=None,
@@ -433,8 +460,11 @@ def unregister_des_class(cls):
     
 register_des_class(TreOverflow)
 register_des_class(NitfDesPlaceHolder, priority_order=1000)
+# Don't normally use, but you can add this if desired
+#register_des_class(NitfDesCopy, priority_order=999)
 
 __all__ = [ "NitfDesCannotHandle", "NitfDes", "NitfDesPlaceHolder",
+            "NitfDesCopy",
             "TreOverflow", "create_nitf_des_structure",
             "nitf_des_read", "register_des_class", "unregister_des_class"]
 
