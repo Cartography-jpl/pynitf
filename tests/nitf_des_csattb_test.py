@@ -1,6 +1,6 @@
 from pynitf.nitf_des import *
 from pynitf.nitf_des_csattb import *
-from pynitf.nitf_file import NitfDesSegment
+from pynitf.nitf_file import NitfDesSegment, NitfFile
 from pynitf_test_support import *
 import io, six
 
@@ -74,3 +74,38 @@ def test_des_csattb_basic():
     assert d2.reserved_len == 0
 
     print (d2.summary())
+
+def test_des_csattb_uuid_func(isolated_dir):
+    d1 = DesCSATTB()
+    dseg1 = NitfDesSegment(des=d1);
+    d2 = DesCSATTB()
+    dseg2 = NitfDesSegment(des=d2);
+    d3 = DesCSATTB()
+    dseg3 = NitfDesSegment(des=d3);
+    dseg1.des.generate_uuid_if_needed()
+    dseg2.des.generate_uuid_if_needed()
+    dseg3.des.generate_uuid_if_needed()
+    id1 = dseg1.des.id
+    id2 = dseg2.des.id
+    id3 = dseg3.des.id
+    dseg1.des.generate_uuid_if_needed()
+    assert id1 == dseg1.des.id
+    dseg1.des.add_display_level(1)
+    dseg1.des.add_display_level(5)
+    dseg1.des.add_display_level(1)
+    dseg1.des.add_assoc_elem(dseg2.des)
+    dseg1.des.add_assoc_elem(dseg3.des)
+    f = NitfFile()
+    f.des_segment.append(dseg1)
+    f.des_segment.append(dseg2)
+    f.des_segment.append(dseg3)
+    f.write("test.ntf")
+    f2 = NitfFile("test.ntf")
+    assert(f2.des_segment[0].des.id == id1)
+    assert(f2.des_segment[1].des.id == id2)
+    assert(f2.des_segment[2].des.id == id3)
+    assert(f2.des_segment[0].des.aisdlvl == [1,5])
+    assert(f2.des_segment[0].des.assoc_elem_id == [id2, id3])
+    assert(f2.des_segment[0].des.assoc_elem(f2) == [f2.des_segment[1].des, f2.des_segment[2].des])
+    
+    

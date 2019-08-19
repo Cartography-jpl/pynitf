@@ -1,6 +1,8 @@
 from __future__ import print_function
 from .nitf_field import *
 from .nitf_des import *
+import time
+import uuid
 import six
 
 hlp = '''This is a NITF CSATTB DES. The field names can be pretty
@@ -57,5 +59,85 @@ def _summary(self):
 
 DesCSATTB.summary = _summary
 
+# Some support routines for working with the user header.
+
+def _id(self):
+    return self.user_subheader.id
+
+def _aisdlvl(self):
+    return list(self.user_subheader.aisdlvl)
+
+def _assoc_elem_id(self):
+    return list(self.user_subheader.assoc_elem_id)
+
+def _generate_uuid_if_needed(self):
+    '''Generate a unique UUID if we don't already have one.'''
+    if(self.user_subheader.id == ""):
+        self.user_subheader.id = str(uuid.uuid1())
+        # Sleep is just a simple way to avoid calling uuid1 too close in
+        # time. Since time is one of the components in generating the uuid,
+        # if we call too close in time we get the same uuid.
+        time.sleep(0.01)
+
+def _add_display_level(self, lvl):
+    '''Add a display level. For convenience, we allow this to be added
+    multiple times, it only gets written to the DES once
+    '''
+    for i in range(int(self.user_subheader.numais)):
+        if(self.user_subheader.aisdlvl[i] == lvl):
+            return
+    self.user_subheader.numais = "%03d" % (int(self.user_subheader.numais) + 1)
+    self.user_subheader.aisdlvl[int(self.user_subheader.numais) - 1] = lvl
+
+def _add_assoc_elem_id(self, id):
+    '''Add a display level. For convenience, we allow this to be added
+    multiple times, it only gets written to the DES once
+    '''
+    for i in range(self.user_subheader.num_assoc_elem):
+        if(self.user_subheader.assoc_elem_id[i] == id):
+            return
+    self.user_subheader.num_assoc_elem += 1
+    self.user_subheader.assoc_elem_id[self.user_subheader.num_assoc_elem - 1] = id
+
+def _add_assoc_elem(self, f):
+    if(hasattr(f, "id")):
+        if(hasattr(f, "generate_uuid_if_needed")):
+            f.generate_uuid_if_needed()
+        self.add_assoc_elem_id(f.id)
+    else:
+        raise RuntimeError("Don't know how to add the associated element")
+
+def _assoc_elem(self, f):
+    '''Find the associated elements in the given NitfFile f. Right now it
+    is not clear if we should treat missing associated elements as an
+    error or not. So right now we just return a "None" where we don't have
+    an associated element'''
+    # Put results in a hash. This lets us sort everything at the end so
+    # this is in the same order as assoc_elem_id. Not sure if order matters,
+    # but for now we'll preserve this
+    res = {}
+    asid = self.assoc_elem_id
+    for dseg in f.des_segment:
+        if(hasattr(dseg.des, "id")):
+            if(dseg.des.id in asid):
+                res[dseg.des.id] = dseg.des
+    for iseg in f.image_segment:
+        for tre in iseg.find_tre("CSEXRB"):
+            if(tre.image_uuid in asid):
+                res[tre.image_uuid] = tre
+    r = [ res.get(id) for id in asid]
+    return r
+
+def add_uuid_des_function(cls):
+    cls.id = property(_id)
+    cls.aisdlvl = property(_aisdlvl)
+    cls.assoc_elem_id = property(_assoc_elem_id)
+    cls.generate_uuid_if_needed = _generate_uuid_if_needed
+    cls.add_display_level = _add_display_level
+    cls.add_assoc_elem_id = _add_assoc_elem_id
+    cls.add_assoc_elem = _add_assoc_elem
+    cls.assoc_elem = _assoc_elem
+
+add_uuid_des_function(DesCSATTB)    
 register_des_class(DesCSATTB)
-__all__ = ["DesCSATTB", "DesCSATTB_UH"]
+__all__ = ["DesCSATTB", "DesCSATTB_UH", "add_uuid_des_function"]

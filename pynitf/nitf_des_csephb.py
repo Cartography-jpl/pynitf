@@ -1,7 +1,7 @@
 from __future__ import print_function
 from .nitf_field import *
 from .nitf_des import *
-from .nitf_des_csattb import udsh
+from .nitf_des_csattb import udsh, add_uuid_des_function
 import six
 
 hlp = '''This is a NITF CSEPHB DES. The field names can be pretty
@@ -48,6 +48,7 @@ def _summary(self):
 
 DesCSEPHB.summary = _summary
 
+add_uuid_des_function(DesCSEPHB)    
 register_des_class(DesCSEPHB)
 
 __all__ = ["DesCSEPHB", "DesCSEPHB_UH"]
