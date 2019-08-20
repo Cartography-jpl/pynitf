@@ -117,4 +117,23 @@ desc = ["CSEXRB",
 
 TreCSEXRB = create_nitf_tre_structure("TreCSEXRB",desc,hlp=hlp)
 
+def _assoc_elem(self, f):
+    '''Find the associated elements in the given NitfFile f. Right now it
+    is not clear if we should treat missing associated elements as an
+    error or not. So right now we just return a "None" where we don't have
+    an associated element'''
+    # Put results in a hash. This lets us sort everything at the end so
+    # this is in the same order as assoc_elem_id. Not sure if order matters,
+    # but for now we'll preserve this
+    res = {}
+    asid = list(self.assoc_des_id)
+    for dseg in f.des_segment:
+        if(hasattr(dseg.des, "id")):
+            if(dseg.des.id in asid):
+                res[dseg.des.id] = dseg.des
+    r = [ res.get(id) for id in asid]
+    return r
+    
+TreCSEXRB.assoc_elem = _assoc_elem
+
 __all__ = [ "TreCSEXRB" ]
