@@ -163,8 +163,20 @@ class NitfFile(object):
                 for seg in self.image_segment:
                     seg.read_tre(self.des_segment)
 
+    def clear_tre_overflow(self):
+        '''Special handling for the TRE overflow DES. We create these as
+        needed for the TREs that we already have stored various places.
+        Clear out any that might be present from a previous write, we
+        only want TRE overflows that we create as writing.'''
+        self.des_segment = [dseg for dseg in self.des_segment
+                            if(dseg.subheader.desid.encode("utf-8") !=
+                               b'TRE_OVERFLOW')]
+        
     def write(self, file_name):
         '''Write to the given file'''
+        self.des_segment = [dseg for dseg in self.des_segment
+                            if(dseg.subheader.desid.encode("utf-8") !=
+                               b'TRE_OVERFLOW')]
         with open(file_name, 'wb') as fh:
             h = self.file_header
             prepare_tre_write(self.tre_list, h, self.des_segment,
@@ -197,6 +209,12 @@ class NitfFile(object):
                     h.update_field(fh, fds, ds, (i,))
             # Now we have to update the file length
             h.update_field(fh, "fl", fh.tell())
+        # Special handling for the TRE overflow DES. We create these as
+        # needed for the TREs that we already have stored various places.
+        # Clear out any that generated during our write
+        self.des_segment = [dseg for dseg in self.des_segment
+                            if(dseg.subheader.desid.encode("utf-8") !=
+                               b'TRE_OVERFLOW')]
             
     def iseg_by_idlvl(self, idlvl):
         '''Return the image segment with a idlvl matching the given id'''

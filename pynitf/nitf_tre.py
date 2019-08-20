@@ -191,6 +191,11 @@ def prepare_tre_write(tre_list, header, des_list, field_list = [],
             des_fh.write(t)
     for i in range(len(field_list)):
         h_len, h_offl, h_data = field_list[i]
+        if(getattr(header, h_len) > 0):
+            # Clear out any overflow TREs that may have been present
+            # from earlier write. We recreate these, so we don't want
+            # them
+            setattr(header, h_offl, 0)
         if(len(head_fh[i].getvalue()) > 0):
             setattr(header, h_data, head_fh[i].getvalue())
     if(len(des_fh.getvalue()) > 0):
@@ -198,7 +203,10 @@ def prepare_tre_write(tre_list, header, des_list, field_list = [],
         # something we particularly need to break. Instead, work around by
         # delaying the import
         from .nitf_file import NitfDesSegment
-        h_len, h_offl, h_data = field_list[i]
+        # We could in principle have multiple overflow TREs, one for
+        # each row in the field_list. For now, we restrict this to only
+        # the first row
+        h_len, h_offl, h_data = field_list[0]
         des = TreOverflow(seg_index=seg_index, overflow=h_data)
         desseg = NitfDesSegment(des=des)
         des.data = des_fh.getvalue()
