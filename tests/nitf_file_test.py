@@ -118,8 +118,8 @@ def create_des(f):
     f.des_segment.append(de)
     
 def print_diag(f):
-    # Print out diagnostic information, useful to make sure the file
-    # we generate is valid.
+    '''Print out diagnostic information, useful to make sure the file
+    we generate is valid.'''
     if(True):
         print(f)
         # Don't fail if the command does exist, but if we have it run
@@ -252,15 +252,17 @@ def test_read_ikonos(nitf_sample_ikonos):
     print(f.summary())
     print(f)
 
-# Test reading the reference SNIP sample file
 def test_read_rip(nitf_sample_rip):
+    '''Test reading the reference SNIP sample file'''
     f = NitfFile(nitf_sample_rip)
     print(f.summary())
     print(f)
     
 def test_copy_quickbird(nitf_sample_quickbird):
-    #Test copying a quickbird NITF file. It creates a copy of the file and then
-    #reads it back and compares the str() result to that of the original file
+    '''Test copying a quickbird NITF file. It creates a copy of the file
+    and then reads it back and compares the str() result to that of
+    the original file
+    '''
     f = NitfFile(nitf_sample_quickbird)
     originalOutput = str(f)
     fname_copy = "quickbird_copy.ntf"
@@ -270,19 +272,30 @@ def test_copy_quickbird(nitf_sample_quickbird):
 
 @pytest.mark.skip(reason="We're writing out a duplicate TRE for some reason for this file.")
 def test_copy_worldview(nitf_sample_wv2):
-    #Test copying a worldview NITF file. It creates a copy of the file and then
-    #reads it back and compares the str() result to that of the original file
-    f = NitfFile(nitf_sample_wv2)
-    originalOutput = str(f)
-    fname_copy = "worldview_copy.ntf"
-    f.write(fname_copy)
-    copyOutput = str(NitfFile(fname_copy))
-
-    assert originalOutput == copyOutput
+    '''Test copying a worldview NITF file. It creates a copy of the file
+    and then reads it back and compares the str() result to that of
+    the original file
+    '''
+    # Some of the DESs aren't implemented yet. Just copy these over for
+    # now, so we can test everything we do have.
+    try:
+        pynitf.register_des_class(pynitf.NitfDesCopy, priority_order=999)
+        f = NitfFile(nitf_sample_wv2)
+        originalOutput = str(f)
+        fname_copy = "worldview_copy.ntf"
+        f.write(fname_copy)
+        copyOutput = str(NitfFile(fname_copy))
+        f2 = NitfFile(fname_copy)
+        assert originalOutput == copyOutput
+    finally:
+        # Remove, so this doesn't affect other tests
+        pynitf.unregister_des_class(pynitf.NitfDesCopy)
 
 def test_copy_ikonos(nitf_sample_ikonos):
-    #Test copying a ikonos NITF file. It creates a copy of the file and then
-    #reads it back and compares the str() result to that of the original file
+    '''Test copying a ikonos NITF file. It creates a copy of the file and
+    then reads it back and compares the str() result to that of the
+    original file
+    '''
     f = NitfFile(nitf_sample_ikonos)
     originalOutput = str(f)
     fname_copy = "ikonos_copy.ntf"
@@ -290,6 +303,18 @@ def test_copy_ikonos(nitf_sample_ikonos):
     copyOutput = str(NitfFile(fname_copy))
     assert originalOutput == copyOutput
 
+def test_copy_rip(nitf_sample_rip):
+    '''Test copying a ikonos NITF file. It creates a copy of the file and
+    then reads it back and compares the str() result to that of the
+    original file
+    '''
+    f = NitfFile(nitf_sample_rip)
+    originalOutput = str(f)
+    fname_copy = "rip_copy.ntf"
+    f.write(fname_copy)
+    copyOutput = str(NitfFile(fname_copy))
+    assert originalOutput == copyOutput
+    
 def test_full_file(isolated_dir):
     '''This create an end to end NITF file, this was at least initially the
     same as basic_nitf_example.py but as a unit test.'''
