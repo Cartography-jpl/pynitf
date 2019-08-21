@@ -12,6 +12,7 @@ from .nitf_image import nitf_image_read
 from .nitf_des import nitf_des_read
 from .nitf_tre import read_tre, prepare_tre_write, add_find_tre_function
 from .nitf_tre_engrda import add_engrda_function
+from .nitf_security import security_unclassified
 import io,six,copy,weakref
 
 class NitfFile(object):
@@ -21,7 +22,7 @@ class NitfFile(object):
     image_segment_hook_obj = []
     des_segment_hook_obj = []
     text_segment_hook_obj = []
-    def __init__(self, file_name = None):
+    def __init__(self, file_name = None, security = security_unclassified):
         '''Create a NitfFile for reading or writing. Because it is common, if
         you give a file_name we read from that file to populate the Nitf 
         structure. Otherwise we start with a default file (a file header, but
@@ -38,6 +39,8 @@ class NitfFile(object):
         self.tre_list = []
         if(file_name is not None):
             self.read(file_name)
+        if(file_name is None):
+            self.security = security
 
             # TODO: Perhaps the above line should be in debug mode and the below block in normal
             # TODO: That way we can skip over any parsing errors and still show rest of NITF in normal mode
@@ -229,6 +232,16 @@ class NitfFile(object):
             raise RuntimeError("More than one match found to iid1='%s'" % iid1)
         return t[0]
 
+    @property
+    def security(self):
+        '''NitfSecurity for file.'''
+        return self.file_header.security
+
+    @security.setter
+    def security(self, v):
+        '''Set NitfSecurity for file.'''
+        self.file_header.security = v
+
 class NitfSegmentHook(object):
     '''To allow special handling of TREs etc. we allow a hook_list of
     these objects to be passed to NitfSegment. These then are called in
@@ -399,6 +412,16 @@ class NitfImageSegment(NitfSegment):
         for ho in self.hook_obj:
             ho.read_tre_hook(self, des_list)
 
+    @property
+    def security(self):
+        '''NitfSecurity for Image.'''
+        return self.subheader.security
+
+    @security.setter
+    def security(self, v):
+        '''Set NitfSecurity for Image.'''
+        self.subheader.security = v
+
     def __str__(self):
         '''Text description of structure, e.g., something you can print out'''
         fh = six.StringIO()
@@ -442,7 +465,8 @@ class NitfTextSegment(NitfSegment):
     for you. We encode/decode using utf-8 as needed. You can access the data
     as one or the other using data_as_bytes and data_as_str.'''
     def __init__(self, txt='', header_size=None, data_size=None,
-                 hook_obj = None, nitf_file=None):
+                 hook_obj = None, nitf_file=None,
+                 security=security_unclassified):
         h = NitfTextSubheader()
         self.header_size = header_size
         self.data_size = data_size
@@ -451,6 +475,8 @@ class NitfTextSegment(NitfSegment):
         NitfSegment.__init__(self, h, copy.copy(txt), hook_obj = hook_obj,
                              nitf_file = nitf_file)
         self.tre_list = []
+        self.security = security
+        
     def read_from_file(self, fh, segindex=None):
         '''Read from a file'''
         self.subheader.read_from_file(fh)
@@ -510,7 +536,18 @@ class NitfTextSegment(NitfSegment):
         header_pos = fh.tell()
         fh.write(self.data_as_bytes)
         return (header_pos - start_pos, fh.tell() - header_pos)
-   
+
+    @property
+    def security(self):
+        '''NitfSecurity for Text.'''
+        return self.subheader.security
+
+    @security.setter
+    def security(self, v):
+        '''Set NitfSecurity for Text.'''
+        self.subheader.security = v
+
+    
 class NitfDesSegment(NitfSegment):
     '''Data extension segment (DES), allows for the addition of different data 
     types with each type encapsulated in its own DES'''
@@ -528,6 +565,16 @@ class NitfDesSegment(NitfSegment):
         NitfSegment.__init__(self, h, des, hook_obj = hook_obj,
                              nitf_file = nitf_file)
 
+    @property
+    def security(self):
+        '''NitfSecurity for DES.'''
+        return self.subheader.security
+
+    @security.setter
+    def security(self, v):
+        '''Set NitfSecurity for DES.'''
+        self.subheader.security = v
+        
     # Alternative name for data, the des is stored in data attribute
     @property
     def des(self):

@@ -11,6 +11,7 @@ from __future__ import print_function
 from .nitf_field import FieldData, _FieldStruct, _FieldLoopStruct, \
     _FieldValueArrayAccess, _create_nitf_field_structure, create_nitf_field_structure
 from .nitf_des_subheader import NitfDesSubheader
+from .nitf_security import security_unclassified
 import copy
 import io,six
 import abc
@@ -52,7 +53,8 @@ class NitfDes(object):
     def __init__(self, des_id=None,
                  des_subheader=None, header_size=None, data_size=None,
                  user_subheader=None,
-                 user_subheader_class=None):
+                 user_subheader_class=None,
+                 security = security_unclassified):
         if(des_subheader is not None):
             self.des_subheader = des_subheader
         else:
@@ -60,7 +62,7 @@ class NitfDes(object):
             if(des_id is not None):
                 h.desid = des_id
             h.dsver = 1
-            h.dsclas = "U"
+            h.security = security
             self.des_subheader = h
         self.header_size = header_size
         self.data_size = data_size
@@ -131,6 +133,17 @@ class NitfDes(object):
     def write_to_file(self, fh):
         '''Write an DES to a file.'''
         raise NotImplementedError()
+
+    @property
+    def security(self):
+        '''NitfSecurity for DES.'''
+        return self.des_subheader.security
+
+    @security.setter
+    def security(self, v):
+        '''Set NitfSecurity for DES.'''
+        self.des_subheader.security = v
+
     
 class NitfDesFieldStruct(NitfDes, _FieldStruct):
     '''There is a class of DES that are essentially like big TREs. The data

@@ -24,8 +24,10 @@ import filecmp
 #pynitf.nitf_des.DEBUG = True
 
 # Do these in a few places, so collect in one spot.
-def create_image_seg(f):
+def create_image_seg(f, security = None):
     img = NitfImageWriteNumpy(9, 10, np.uint8)
+    if(security):
+        img.security = security
     for i in range(9):
         for j in range(10):
             img[0, i,j] = i * 10 + j
@@ -89,7 +91,7 @@ def check_tre2(t):
     assert_almost_equal(t.sun_el, 68.5)
     assert_almost_equal(t.sun_az, 131.3)
 
-def create_text_segment(f):
+def create_text_segment(f, security = None):
     d = {
         'first_name': 'Guido',
         'second_name': 'Rossum',
@@ -99,11 +101,14 @@ def create_text_segment(f):
     ts.subheader.textid = 'ID12345'
     ts.subheader.txtalvl = 0
     ts.subheader.txtitl = 'sample title'
+    if(security):
+        ts.security = security
     f.text_segment.append(ts)
 
-def create_des(f):
+def create_des(f, security):
     des = DesCSATTA()
-    des.dsclas = 'U'
+    if(security):
+        des.security = security
     des.att_type = 'ORIGINAL'
     des.dt_att = '900.5000000000'
     des.date_att = 20170501
@@ -378,6 +383,32 @@ def test_full_file(isolated_dir):
     create_tre2(f)
     create_text_segment(f)
     create_des(f)
+    print(f)
+    f.write("basic_nitf.ntf")
+    f2 = NitfFile("basic_nitf.ntf")
+    print(f2)
+    print("Image Data:")
+    print(f2.image_segment[0].data.data)
+
+    print("Text Data:")
+    print(f2.text_segment[0].data)        
+
+def test_full_file_security(isolated_dir):
+    '''This create an end to end NITF file, this was at least initially the
+    same as basic_nitf_example.py but as a unit test.
+
+    This variation sets the NitfSecurity to a fake security, so we can test
+    reading and writing this.'''
+
+    # Create the file. We don't supply a name yet, that comes when we actually
+    # write
+    
+    f = NitfFile(security=security_fake)
+    create_image_seg(f, security=security_fake)
+    create_tre(f)
+    create_tre2(f)
+    create_text_segment(f, security=security_fake)
+    create_des(f, security=security_fake)
     print(f)
     f.write("basic_nitf.ntf")
     f2 = NitfFile("basic_nitf.ntf")

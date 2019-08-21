@@ -1,5 +1,6 @@
 from __future__ import print_function
 from .nitf_field import *
+from .nitf_security import NitfSecurity
 import six
 
 hlp = '''This is a NITF text subheader. The field names can be pretty
@@ -53,5 +54,13 @@ def _summary(self):
     return res.getvalue()
 
 NitfTextSubheader.summary = _summary
+
+def _get_security(self):
+    return NitfSecurity.get_security(self, "t")
+
+def _set_security(self, s):
+    s.set_security(self, "t")
+
+NitfTextSubheader.security = property(_get_security, _set_security)
 
 __all__ = ["NitfTextSubheader"]

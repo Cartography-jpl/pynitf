@@ -1,6 +1,7 @@
 # This contains support routines for unit tests.
 import numpy as np
 from numpy.testing import assert_almost_equal, assert_approx_equal
+from pynitf.nitf_security import NitfSecurity
 from unittest import SkipTest
 import os
 import sys
@@ -18,6 +19,28 @@ except ImportError:
 
 # Location of test data that is part of source
 unit_test_data = os.path.abspath(os.path.dirname(__file__) + "/unit_test_data/") + "/"
+
+# Fake security object, just so we can test setting and reading
+security_fake = NitfSecurity()
+security_fake.classification = "T"
+security_fake.classification_system = "US"
+security_fake.codewords = "BOO"
+security_fake.control_and_handling = "UO"
+security_fake.release_instructions = "US UG"
+security_fake.declassification_type = "DD"
+security_fake.declassification_date = "30000101"
+security_fake.declassification_exemption = "X251"
+security_fake.downgrade =  "S"
+security_fake.downgrade_date = "25000101"
+security_fake.classification_text = "Fake classification"
+security_fake.classification_authority_type = "D"
+security_fake.classification_authority = "X-File"
+security_fake.classification_reason = "X"
+security_fake.security_source_date = "19000101"
+security_fake.security_control_number = "1234"
+security_fake.copy_number = 2
+security_fake.number_of_copies = 5
+security_fake.encryption = 1
 
 # Short hand for marking as unconditional skipping. Good for tests we
 # don't normally run, but might want to comment out for a specific debugging

@@ -1,5 +1,6 @@
 from __future__ import print_function
 from .nitf_field import *
+from .nitf_security import NitfSecurity
 
 import six
 
@@ -9,32 +10,32 @@ cryptic, but these are documented in detail in the NITF 2.10 documentation
 
 The NITF File header is described in Table A-1, starting page 66.
 '''
-desc = [['fhdr', "", 4, str],
-        ['fver', "", 5, str],
-        ['clevel', "", 2, int, {"default" : 3}],
-        ['stype', "", 4, str],
-        ['ostaid', "", 10, str],
-        ['fdt', "", 14, str],
-        ['ftitle', "", 80, str],
-        ['fsclas', "", 1, str, {"default" : 'U'}],
-        ['fsclsy', "", 2, str],
-        ['fscode', "", 11, str],
-        ['fsctlh', "", 2, str],
-        ['fsrel', "", 20, str],
-        ['fsdctp', "", 2, str],
-        ['fsdcdt', "", 8, str],
-        ['fsdcxm', "", 4, str],
-        ['fsdg', "", 1, str],
-        ['fsdgdt', "", 8, str],
-        ['fscltx', "", 43, str],
-        ['fscatp', "", 1, str],
-        ['fscaut', "", 40, str],
-        ['fscrsn', "", 1, str],
-        ['fssrdt', "", 8, str],
-        ['fsctln', "", 15, str],
-        ['fscop', "", 5, int],
-        ['fscpys', "", 5, int],
-        ['encryp', "", 1, int],
+desc = [['fhdr', "File Profile Name", 4, str],
+        ['fver', "File Version", 5, str],
+        ['clevel', "Complexity Level", 2, int, {"default" : 3}],
+        ['stype', "Standard Type", 4, str],
+        ['ostaid', "Originating Station ID", 10, str],
+        ['fdt', "File Data and Time", 14, str],
+        ['ftitle', "File Title", 80, str],
+        ['fsclas', "File Security Classification", 1, str, {"default" : 'U'}],
+        ['fsclsy', "File Classification Security System", 2, str],
+        ['fscode', "File Codewords", 11, str],
+        ['fsctlh', "File Control and Handling", 2, str],
+        ['fsrel', "File Releasing Instructions", 20, str],
+        ['fsdctp', "File Declassification Type", 2, str],
+        ['fsdcdt', "File Declassification Date", 8, str],
+        ['fsdcxm', "File Declassification Exemption", 4, str],
+        ['fsdg', "File Downgrade", 1, str],
+        ['fsdgdt', "File Downgrade Date", 8, str],
+        ['fscltx', "File Classification Text", 43, str],
+        ['fscatp', "File Classification Authority Type", 1, str],
+        ['fscaut', "File Classification Authority", 40, str],
+        ['fscrsn', "File Classification Reason", 1, str],
+        ['fssrdt', "File Security Source  Date", 8, str],
+        ['fsctln', "File Security Control Number", 15, str],
+        ['fscop', "File Copy Number", 5, int],
+        ['fscpys', "File Number of Copies", 5, int],
+        ['encryp', "Encryption", 1, int],
         ['fbkgc', "", 3, bytes, {"default" : b'\x00\x00\x00'}],
         ['oname', "", 24, str],
         ['ophone', "", 18, str],
@@ -77,6 +78,14 @@ NitfFileHeader.fver_value = hardcoded_value("02.10")
 NitfFileHeader.stype_value = hardcoded_value("BF01")
 # Will want this calculated
 NitfFileHeader.fdt_value = hardcoded_value("20021216151629")
+
+def _get_security(self):
+    return NitfSecurity.get_security(self, "f")
+
+def _set_security(self, s):
+    s.set_security(self, "f")
+
+NitfFileHeader.security = property(_get_security, _set_security)
 
 def summary(self):
     res = six.StringIO()

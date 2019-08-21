@@ -1,5 +1,6 @@
 from .nitf_image_subheader import (NitfImageSubheader,
                                    set_default_image_subheader)
+from .nitf_security import security_unclassified
 import abc, six
 import numpy as np
 import collections
@@ -84,6 +85,17 @@ class NitfImage(object):
     def write_to_file(self, fh):
         '''Write an image to a file.'''
         raise NotImplementedError()
+
+    @property
+    def security(self):
+        '''NitfSecurity for Image.'''
+        return self.image_subheader.security
+
+    @security.setter
+    def security(self, v):
+        '''Set NitfSecurity for Image.'''
+        self.image_subheader.security = v
+
 
 class NitfImageWithSubset(NitfImage):
     '''It is common for a NitfImage to allow reading a subset of the data. 
@@ -244,7 +256,8 @@ class NitfImageWriteDataOnDemand(NitfImageWithSubset):
                  irep="MONO",
                  icat="VIS",
                  idlvl = 0,
-                 image_gen_mode=IMAGE_GEN_MODE_ALL):
+                 image_gen_mode=IMAGE_GEN_MODE_ALL,
+                 security=security_unclassified):
         '''If generate_by_band==True, we call data_to_write a single band 
         at a time, otherwise we do everything at once. Depending on how
         the data is generated or its size this can be more or less efficient.
@@ -269,6 +282,7 @@ class NitfImageWriteDataOnDemand(NitfImageWithSubset):
                                     numbands=numbands, iid1=iid1, iid2=iid2,
                                     idatim=idatim, irep=irep, icat=icat,
                                     idlvl=idlvl)
+        self.security = security
         self.data_callback = data_callback
         self.image_gen_mode = image_gen_mode
 
