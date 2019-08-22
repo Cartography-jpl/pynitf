@@ -1,6 +1,8 @@
 from __future__ import print_function
 from .nitf_field import *
 from .nitf_tre import *
+import time
+import uuid
 import six
 
 hlp = '''This is the CSEXRB TRE. 
@@ -133,7 +135,17 @@ def _assoc_elem(self, f):
                 res[dseg.des.id] = dseg.des
     r = [ res.get(id) for id in asid]
     return r
-    
+
+def _generate_uuid_if_needed(self):
+    '''Generate a unique UUID if we don't already have one.'''
+    if(self.image_uuid == ""):
+        self.image_uuid = str(uuid.uuid1())
+        # Sleep is just a simple way to avoid calling uuid1 too close in
+        # time. Since time is one of the components in generating the uuid,
+        # if we call too close in time we get the same uuid.
+        time.sleep(0.01)
+
 TreCSEXRB.assoc_elem = _assoc_elem
+TreCSEXRB.generate_uuid_if_needed = _generate_uuid_if_needed
 
 __all__ = [ "TreCSEXRB" ]
