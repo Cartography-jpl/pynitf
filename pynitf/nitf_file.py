@@ -15,6 +15,16 @@ from .nitf_tre_engrda import add_engrda_function
 from .nitf_security import security_unclassified
 import io,six,copy,weakref
 
+class ListNitfFileReference(list):
+    '''Useful to add nitf_file to various NitfSegment as they get added
+    to a NitfFile, so we override append'''
+    def __init__(self, f):
+        list.__init__(self)
+        self.nitf_file = weakref.ref(f)
+    def append(self, v):
+        list.append(self, v)
+        v._nitf_file = self.nitf_file
+        
 class NitfFile(object):
     # List of hook objects to extend the handling in the various types of
     # segments. Right now we only do this for image_segment and text_segment,
@@ -29,11 +39,11 @@ class NitfFile(object):
         no segments) - which you can then populate before calling write'''
         self.file_header = NitfFileHeader()
         # This is the order things appear in the file
-        self.image_segment = []
-        self.graphic_segment = []
-        self.text_segment = []
-        self.des_segment = []
-        self.res_segment = []
+        self.image_segment = ListNitfFileReference(self)
+        self.graphic_segment = ListNitfFileReference(self)
+        self.text_segment = ListNitfFileReference(self)
+        self.des_segment = ListNitfFileReference(self)
+        self.res_segment = ListNitfFileReference(self)
         # These are the file level TREs. There can also be TREs at the
         # image segment level
         self.tre_list = []

@@ -105,7 +105,7 @@ def create_text_segment(f, security = None):
         ts.security = security
     f.text_segment.append(ts)
 
-def create_des(f, security):
+def create_des(f, security = None):
     des = DesCSATTA()
     if(security):
         des.security = security
