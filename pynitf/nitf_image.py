@@ -63,6 +63,10 @@ class NitfImage(object):
     def idlvl(self):
         return self.image_subheader.idlvl
 
+    @idlvl.setter
+    def idlvl(self, lvl):
+        self.image_subheader.idlvl = lvl
+    
     @property
     def iid1(self):
         return self.image_subheader.iid1

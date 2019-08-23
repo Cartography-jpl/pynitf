@@ -459,6 +459,10 @@ class NitfImageSegment(NitfSegment):
     def idlvl(self):
         return self.subheader.idlvl
 
+    @idlvl.setter
+    def idlvl(self, lvl):
+        self.subheader.idlvl = lvl
+
     @property
     def iid1(self):
         return self.subheader.iid1

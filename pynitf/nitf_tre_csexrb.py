@@ -145,7 +145,30 @@ def _generate_uuid_if_needed(self):
         # if we call too close in time we get the same uuid.
         time.sleep(0.01)
 
+def _add_assoc_elem_id(self, id):
+    '''Add a associated element. For convenience, we allow this to be added
+    multiple times, it only gets written to the TRE once
+    '''
+    if id in list(self.assoc_des_id):
+        return
+    self.num_assoc_des += 1
+    self.assoc_des_id[self.num_assoc_des - 1] = id
+
+def _add_assoc_elem(self, f):
+    if(hasattr(f, "id")):
+        if(hasattr(f, "generate_uuid_if_needed")):
+            f.generate_uuid_if_needed()
+        self.add_assoc_elem_id(f.id)
+    else:
+        raise RuntimeError("Don't know how to add the associated element")
+
+def _id(self):
+    return self.image_uuid
+    
 TreCSEXRB.assoc_elem = _assoc_elem
 TreCSEXRB.generate_uuid_if_needed = _generate_uuid_if_needed
+TreCSEXRB.add_assoc_elem_id = _add_assoc_elem_id
+TreCSEXRB.add_assoc_elem = _add_assoc_elem
+TreCSEXRB.id = property(_id)
 
 __all__ = [ "TreCSEXRB" ]

@@ -64,6 +64,9 @@ DesCSATTB.summary = _summary
 def _id(self):
     return self.user_subheader.id
 
+def _id_set(self,v):
+    self.user_subheader.id = v
+    
 def _aisdlvl(self):
     return list(self.user_subheader.aisdlvl)
 
@@ -90,8 +93,8 @@ def _add_display_level(self, lvl):
     self.user_subheader.aisdlvl[int(self.user_subheader.numais) - 1] = lvl
 
 def _add_assoc_elem_id(self, id):
-    '''Add a display level. For convenience, we allow this to be added
-    multiple times, it only gets written to the DES once
+    '''Add a associated element. For convenience, we allow this to be added
+    multiple times, it only gets written to the DES once.
     '''
     for i in range(self.user_subheader.num_assoc_elem):
         if(self.user_subheader.assoc_elem_id[i] == id):
@@ -129,7 +132,7 @@ def _assoc_elem(self, f):
     return r
 
 def add_uuid_des_function(cls):
-    cls.id = property(_id)
+    cls.id = property(_id, _id_set)
     cls.aisdlvl = property(_aisdlvl)
     cls.assoc_elem_id = property(_assoc_elem_id)
     cls.generate_uuid_if_needed = _generate_uuid_if_needed
