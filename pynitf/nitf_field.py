@@ -347,8 +347,12 @@ class _FieldLoopStruct(object):
                         maxi1=0
                     for i1 in range(maxi1):
                         maxi2 = self.shape(parent_object,lead=(i1,))
+                        if(maxi2 is None):
+                            maxi2 = 0
                         for i2 in range(maxi2):
                             maxi3 = self.shape(parent_object,lead=(i1,i2))
+                            if(maxi3 is None):
+                                maxi3 = 0
                             for i3 in range(maxi3):
                                 print(lead + "  " +
                                       ("%s[%d, %d, %d]" % (f.field_name, i1, i2, i3)).ljust(maxlen) +
@@ -359,10 +363,16 @@ class _FieldLoopStruct(object):
                         maxi1=0
                     for i1 in range(maxi1):
                         maxi2 = self.shape(parent_object,lead=(i1,))
+                        if(maxi2 is None):
+                            maxi2 = 0
                         for i2 in range(maxi2):
                             maxi3 = self.shape(parent_object,lead=(i1,i2))
+                            if(maxi3 is None):
+                                maxi3 = 0
                             for i3 in range(maxi3):
                                 maxi4 = self.shape(parent_object,lead=(i1,i2, i3))
+                                if(maxi4 is None):
+                                    maxi4 = 0
                                 for i4 in range(maxi4):
                                     print(lead + "  " +
                                           ("%s[%d, %d, %d, %d]" % (f.field_name, i1, i2, i3, i4)).ljust(maxlen) +

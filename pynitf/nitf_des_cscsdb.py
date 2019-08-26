@@ -16,11 +16,129 @@ _quat_format = "%+18.15lf"
 desc2 =["CSCSDB",
         ['cov_version_date', 'Covariance Version Date', 8, str],
         ['core_sets', "Number of Core Sets", 1, int],
-#        [['loop', 'f.core_sets'],
-#         ["ref_frame_position", "Reference Frame for Position Coordinate Syste of the nth Core Set", 1, int],
-#         ["ref_frame_attitude", "Reference Frame for Attitude Coordinate Syste of the nth Core Set", 1, int],
-#         ["num_groups", "Number of Interdependent Sensor Error Parameter Groups of the nth Core Set", 1, int],
-#         ]
+        [['loop', 'f.core_sets'],
+         ["ref_frame_position", "Reference Frame for Position Coordinate Syste of the nth Core Set", 1, int],
+         ["ref_frame_attitude", "Reference Frame for Attitude Coordinate Syste of the nth Core Set", 1, int],
+         ["num_groups", "Number of Interdependent Sensor Error Parameter Groups of the nth Core Set", 1, int],
+         [['loop', 'f.num_groups[i1]'],
+          ["corr_ref_date", "Date of last De-Correlation Event for the jth Correlated Parameter Group of the nth Core Set", 8, str],
+          ["corr_ref_time", "UTC Timestamp of the Last De-Correlation Event fo the jth Correlated Parameter Group of the nth Core set", 16, float, {"frmt": "%016.9lf"}],
+          ["num_adj_parm", "Number of Adjustable Parameters in the jth Correlated Parameter Group of the nth Core Set", 1, int],
+          [['loop', "f.num_adj_parm[i1,i2]"],
+           ["adj_parm_id", "Identity of the kth Fundamental Adjustable Parameters", 1, int],
+          ], # End f.num_adj_parm[i1,i2]
+          ["basic_sub_alloc", "Flag Indicating Sub-Allocation of Fundamental Adjustable Parameters in the jth Group to Basic Adjustable Parameters", 1, int],
+          [['loop', "int((f.num_adj_parm[i1,i2] / 2) * (f.num_adj_parm[i1,i2]+1))",
+            {"condition" : "f.basic_sub_alloc[i1,i2] == 1"}],
+           ["errcov_c1", "Individual Error Covariance Terms", 21, float,
+            {"frmt": "%+15.14le"}],
+           ], # End int((f.num_adj_parm[i1,i2] / 2) * (f.num_adj_parm[i1,i2]+1))
+          ["basic_pf_flag", "Flag to Identify if SPDCF of Type \"PF\" is Provided for the jth Correlated Parameter Group", 1, int,
+           {"condition" : "f.basic_sub_alloc[i1,i2] == 1"}],
+          ["num_basic_pf", "Number of the \"PF\" Typed SDPCF Being Provided in the jth group", 2, int,
+           {"condition" : "f.basic_sub_alloc[i1,i2] == 1 and f.basic_pf_flag[i1, i2] == 1"}],
+          [["loop", "f.num_basic_pf[i1,i2]", {"condition" : "f.basic_sub_alloc[i1,i2] == 1 and f.basic_pf_flag[i1, i2] == 1"}],
+           ["basic_pf_spdcf", "Identifier of the kth Basic SPDCF of Platform Type of the jth Correlated Parameter Group", 2, int],
+           ["num_pairings_basic_pf", "Number of Sensor Pairing to Which the kth SDPCF of Platform Type Applies", 2, int],
+           [["loop", "f.num_pairings_basic_pf[i1,i2,i3]"],
+            ["basic_pf_sdpcf_sensor", "Identifier of the Other Sensor to Which this SPDCF Applies", 6, str],
+            ], # End f.num_pairings_basic_pf[i1,i2,i3]
+          ], # End f.num_basic_pf[i1,i2]
+
+          ["basic_pl_flag", "Flag to Identify if SPDCF of Type \"PL\" is Provided for the jth Correlated Parameter Group", 1, int,
+           {"condition" : "f.basic_sub_alloc[i1,i2] == 1"}],
+          ["num_basic_pl", "Number of the \"PL\" Typed SDPCF Being Provided in the jth group", 2, int,
+           {"condition" : "f.basic_sub_alloc[i1,i2] == 1 and f.basic_pl_flag[i1, i2] == 1"}],
+          [["loop", "f.num_basic_pl[i1,i2]", {"condition" : "f.basic_sub_alloc[i1,i2] == 1 and f.basic_pl_flag[i1, i2] == 1"}],
+           ["basic_pl_spdcf", "Identifier of the kth Basic SPDCF of Platform Type of the jth Correlated Parameter Group", 2, int],
+           ["num_pairings_basic_pl", "Number of Sensor Pairing to Which the kth SDPCF of Platform Type Applies", 2, int],
+           [["loop", "f.num_pairings_basic_pl[i1,i2,i3]"],
+            ["basic_pl_sdpcf_sensor", "Identifier of the Other Sensor to Which this SPDCF Applies", 6, str],
+            ], # End f.num_pairings_basic_pl[i1,i2,i3]
+          ], # End f.num_basic_pl[i1,i2]
+          ["basic_sr_flag", "Flag to Identify if SPDCF of Type \"SR\" is Provided for the jth Correlated Parameter Group", 1, int,
+           {"condition" : "f.basic_sub_alloc[i1,i2] == 1"}],
+          ["basic_sr_spdcf", "Identifier of the Basic SDPCF of Sensor Type fo the jth Correlatated Parameter Group", 2, int,
+           {"condition" : "f.basic_sub_alloc[i1,i2] == 1 and f.basic_sr_flag[i1,i2] == 1"}],
+          ["post_sub_alloc", "Flag Indicating Sub-Allocation to Correction Posts for the jth Correlated Parameter Group", 1, int],
+          ["post_start_date", "Date of First Post", 8, str,
+           {"condition" : "f.post_sub_alloc[i1,i2] == 1"}],
+          ["post_start_time", "Time of First Post", 15, float,
+           {"condition" : "f.post_sub_alloc[i1,i2] == 1",
+            "frmt" : "%15.9lf"}],
+          ["post_dt", "Time between Posts", 13, float,
+           {"condition" : "f.post_sub_alloc[i1,i2] == 1",
+            "frmt" : "%13.9lf"}],
+          ["num_posts", "Number of Posts", 3, int,
+           {"condition" : "f.post_sub_alloc[i1,i2] == 1"}],
+          ["common_posts_cov", "Common Correction Posts Error Covariance Flag",
+           1, int,
+           {"condition" : "f.post_sub_alloc[i1,i2] == 1"}],
+          [['loop', "int((f.num_adj_parm[i1,i2] / 2) * (f.num_adj_parm[i1,i2]+1)) if (f.post_sub_alloc[i1,i2] == 1 and f.common_posts_cov[i1,i2] == 1) else 0"],
+           ["errcov_c2", "Individual Error Covariance Terms", 21, float,
+            {"frmt": "%+15.14le"}],
+           ], # End int((f.num_adj_parm[i1,i2] / 2) * (f.num_adj_parm[i1,i2]+1))
+          [['loop', "f.num_posts[i1,i2] if (f.post_sub_alloc[i1,i2] == 1 and f.common_posts_cov[i1,i2] == 0) else 0"],
+            [['loop', "int((f.num_adj_parm[i1,i2] / 2) * (f.num_adj_parm[i1,i2]+1)) if (f.post_sub_alloc[i1,i2] == 1 and f.common_posts_cov[i1,i2] == 0) else 0"],
+             # Called errcov_c2 in documentation, but we can't handle duplicate
+             # names in our code. So give this a different name
+             ["errcov_c2_1", "Individual Error Covariance Terms", 21, float,
+              {"frmt": "%+15.14le"}],
+            ], # End int((f.num_adj_parm[i1,i2] / 2) * (f.num_adj_parm[i1,i2]+1))
+          ], # End f.num_posts[i1,i2]
+          ["post_interp", "Post Interpolation Method", 1, int,
+           {"condition" : "f.post_sub_alloc[i1,i2] == 1"}],
+          ["post_pf_flag", "Flag to identify if a Post SPDCF of Type \"PF\" is Provided", 1, int, {"condition" : "f.post_sub_alloc[i1,i2] == 1"}],
+          ["num_post_pf", "Number of \"PF\" Type Post SPDCF Being Provided", 1, int, {"condition" : "f.post_sub_alloc[i1,i2] == 1 and f.post_pf_flag[i1,i2] == 1"}],
+          [["loop", "f.num_post_pf[i1,i2]"],
+           ["post_pf_spdcf", "Identifier of the kth Post SPDCF of Platform Type for the jth Correlated Parameter Group", 2, int, {"condition" : "f.post_sub_alloc[i1,i2] == 1 and f.post_pf_flag[i1,i2] == 1"}],
+           ["num_pairings_post_pf", "Number of Sensor Pairings to Which the kth Post SPDCF of Platform Type Applies", 2, int, {"condition" : "f.post_sub_alloc[i1,i2] == 1 and f.post_pf_flag[i1,i2] == 1"}],
+           [["loop", "f.num_pairings_post_pf[i1,i2,i3]"],
+            ["post_pf_spdcf_sensor", "Identifier of Other Sensos to With the Post SDPCF Applies", 6, str],
+            ], # End f.num_pairings_post_pf[i1,i2,i3]
+           ], #End f.num_post_pf[i1,i2]
+          ["post_pl_flag", "Flag to identify if a Post SPDCF of Type \"PL\" is Provided", 1, int, {"condition" : "f.post_sub_alloc[i1,i2] == 1"}],
+          ["num_post_pl", "Number of \"PL\" Type Post SPDCF Being Provided", 1, int, {"condition" : "f.post_sub_alloc[i1,i2] == 1 and f.post_pl_flag[i1,i2] == 1"}],
+          [["loop", "f.num_post_pl[i1,i2]"],
+           ["post_pl_spdcf", "Identifier of the kth Post SPDCF of Platform Type for the jth Correlated Parameter Group", 2, int, {"condition" : "f.post_sub_alloc[i1,i2] == 1 and f.post_pl_flag[i1,i2] == 1"}],
+           ["num_pairings_post_pl", "Number of Sensor Pairings to Which the kth Post SPDCF of Platform Type Applies", 2, int, {"condition" : "f.post_sub_alloc[i1,i2] == 1 and f.post_pl_flag[i1,i2] == 1"}],
+           [["loop", "f.num_pairings_post_pl[i1,i2,i3]"],
+            ["post_pl_spdcf_sensor", "Identifier of Other Sensos to With the Post SDPCF Applies", 6, str],
+            ], # End f.num_pairings_post_pl[i1,i2,i3]
+           ], #End f.num_post_pl[i1,i2]
+          ["post_sr_flag", "Flag to identify if a Post SPDCF of Type \"SR\" is Provided", 1, int, {"condition" : "f.post_sub_alloc[i1,i2] == 1"}],
+          ["post_sr_spdcf", "Identifier of the kth Post SPDCF of Platform Type for the jth Correlated Parameter Group", 2, int, {"condition" : "f.post_sub_alloc[i1,i2] == 1 and f.post_sr_flag[i1,i2] == 1"}],
+          ["post_corr", "Intr-Image Correlation Only Flag", 1, int, {"condition" : "f.post_sub_alloc[i1,i2] == 1 and f.post_sr_flag[i1,i2] == 1"}],
+         ], # End f.num_groups[i1]
+        ], # End f.core_sets
+        ["io_cal_ap", "IO Calibration Adjustable Parameter Flag", 1, int],
+        ["num_sets_cal_ap", "Number of Sets of Calibration Adjustable Parameters", 2, int, {"condition" : "f.io_cal_ap == 1"}],
+        [["loop", "f.num_sets_cal_ap"],
+         ["focal_length_cal", "Focal Length Associated with the nth Set of Calibration Adjustable Parameters", 11, float, {"frmt" : "%11.8lf"}],
+         ], # End f.num_sets_cal_ap
+        ["ncal_cpg", "Number of Correlated Parameter Groups", 2, int,{"condition" : "f.io_cal_ap == 1"}],
+#        [["loop", "f.ncal_cpg"],
+#         ["corr_ref_date_io", "Date of Last De-Correlation Event for the nth Correlated Parameter Group", 8, str],
+# Bunch left         
+        ["ts_cal_ap", "Time Synch Calibration Adjustable Parameter Flag", 1, int],
+# Bunch left
+        ["ue_flag", "Unmodeled Error Flag", 1, int],
+        ["line_dimension", "Number of Grid Points in the Line Dimension", 3, int, {"condition" : "f.ue_flag == 1"}],
+        ["sample_dimension", "Number of Grid Points in the Sample Dimension", 2, int, {"condition" : "f.ue_flag == 1"}],
+        [["loop", "f.line_dimension"],
+         [["loop", "f.sample_dimension"],
+           ["urr", "Unmodeled Error Covariance Element (1,1)", 21, float,
+            {"frmt": "%+15.14le"}],
+           ["urc", "Unmodeled Error Covariance Element (1,2)", 21, float,
+            {"frmt": "%+15.14le"}],
+           ["ucc", "Unmodeled Error Covariance Element (2,2)", 21, float,
+            {"frmt": "%+15.14le"}],
+            ], # End loop f.sample_dimension
+         ], # End loop f.line_dimension
+        ["line_spdcf", "SPDCF Identifier for the Unmodeled Error in the Line Direction", 2, int, {"condition" : "f.ue_flag == 1"}],
+        ["sample_spdcf", "SPDCF Identifier for the Unmodeled Error in the Sample Direction", 2, int, {"condition" : "f.ue_flag == 1"}],
+        ["spdcf_flag", "SPDCF Flag", 1, int],
+         
 ]        
 
 #print (desc2)
