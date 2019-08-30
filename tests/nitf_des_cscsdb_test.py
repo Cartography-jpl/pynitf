@@ -11,6 +11,5 @@ def test_read_rip(nitf_sample_rip):
     f = NitfFile(nitf_sample_rip)
     d = [d for d in f.des_segment if d.subheader.desid == "CSCSDB"][0]
     print(d)
-    print(d.des.data_to_copy)
     
 

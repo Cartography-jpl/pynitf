@@ -138,7 +138,7 @@ desc2 =["CSSFAB",
          ["ad_a2_tele", "Affine Distortion Parameter A2", 21, float, {"frmt" : "%+21.14E"}],
          ["radius_of_validity_tele", "Radius from the Principal Point to the Outermost Region where Radial Distortion Coefficients are Valid", 21, float, {"frmt" : "%+21.14E"}],
          ],
-        ["reserved_len", "Size of the Reserved Field", 9, int],
+        ["reserved_len", "Size of the Reserved Field", 9, int, {"default" : 0}],
         ["reserved", "Reserved Data Field", "f.reserved_len", None, {'field_value_class' : FieldData}],
 ]
         

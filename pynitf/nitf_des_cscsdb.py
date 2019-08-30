@@ -137,15 +137,67 @@ desc2 =["CSCSDB",
         ["line_spdcf", "SPDCF Identifier for the Unmodeled Error in the Line Direction", 2, int, {"condition" : "f.ue_flag == 1"}],
         ["sample_spdcf", "SPDCF Identifier for the Unmodeled Error in the Sample Direction", 2, int, {"condition" : "f.ue_flag == 1"}],
         ["spdcf_flag", "SPDCF Flag", 1, int],
-         
+        ["num_spdcf", "Number of SPDCF", 2, int,
+         { "condition" : "f.spdcf_flag == 1"}],
+        [["loop", "f.num_spdcf"],
+         ["spdcf_id", "SPDCF Identification Number", 2, int],
+         ["spdcf_p", "Number of constituent SPDCFs associated with the SPDCF ID", 2, int],
+         [["loop", "f.spdcf_p[i1]"],
+          ["spdcf_fam", "SDPCF Family identification", 1, int],
+          ["spdcf_weight", "Weighting of the jth constituent SPDCF",
+           5, float, {"frmt" : "%05.3lf"}],
+          ["fp_n", "CSM Four Parameter Correlation Function Parameter A",
+           8, float,
+           {"condition" : "f.spdcf_fam[i1,i2] == 0", "frmt" : "%8.7lf"}],
+          ["fp_alpha", "CSM Four Parameter Correlation Function Parameter alpha",
+           8, float,
+           {"condition" : "f.spdcf_fam[i1,i2] == 0", "frmt" : "%8.7lf"}],
+          ["fp_beta", "CSM Four Parameter Correlation Function Parameter beta",
+           9, float,
+           {"condition" : "f.spdcf_fam[i1,i2] == 0", "frmt" : "%9.7lf"}],
+          ["fp_t", "CSM Four Parameter Correlation Function Parameter T",
+           21, float,
+           {"condition" : "f.spdcf_fam[i1,i2] == 0", "frmt" : "%21.20le"}],
+          ["num_segs", "Number of Segments in the Piece-Wise Linear Correlation Model", 2, int,
+           {"condition" : "f.spdcf_fam[i1,i2] == 1"}],
+          [["loop", "f.num_segs[i1,i2]"],
+           ["pl_max_cor", "Piece-Wise Linear Function Segment Maximum Correlation Value", 8, float, {"frmt" : "%8.6lf"}],
+           ["pl_tau_max_cor", "Piece-Wise Linear Function Difference (Tau Segment Value)", 21, float, {"frmt" : "%21.20le"}],
+          ],
+          ["dc_a", "Damped Cosine Correlation Function Parameter A",
+           8, float,
+           {"condition" : "f.spdcf_fam[i1,i2] == 2", "frmt" : "%8.6lf"}],
+          ["dc_t", "Damped Cosine Correlation Function Parameter T",
+           21, float,
+           {"condition" : "f.spdcf_fam[i1,i2] == 2", "frmt" : "%21.20le"}],
+          ["dc_p", "Damped Cosine Correlation Function Parameter P",
+           21, float,
+           {"condition" : "f.spdcf_fam[i1,i2] == 2", "frmt" : "%21.20le"}],
+         ], # End loop f.spdcf_p[i1]
+        ], # End loop f.num_spdcf
+        ["direct_covariance_flag", "Direct Covariance Flag", 1, int],
+        ["dc_type", "Direct Covariance Type Flag", 1, int,
+         {"condition" : "f.direct_covariance_flag == 1"}],
+        ["num_para", "Total Number of Adjustable Parameters Described in the Covariance Support Data", 4, int,
+         {"condition" : "f.dc_type == 0"}],
+        [["loop", "f.num_para"],
+         ["ad", "nth Adjustable Value Obtained by an External Adjustment",
+          21, float, {"frmt": "%21.20le"}],
+         ],
+        [["loop", "int((f.num_para / 2) * (f.num_para +1)) if(f.dc_type == 0) else 0"],
+         ["errcov_c4", "Individual Adjustable Parameter Error Covariance Terms",
+          21, float, {"frmt" : "%21.20le"}],
+        ],
+        ["reserved_len", "Length of Reserved Portion", 9, int,
+         {"default" : 0}],
+        ["reserved", "Reserved Data Field", "f.reserved_len", None, {'field_value_class' : FieldData}],
 ]        
 
 #print (desc2)
 
 # udsh here is a from nitf_des_csattb, since the same user defined subheader
 # is used for both
-# data_after_allowed temporary until we fill in all the fields
-(DesCSCSDB, DesCSCSDB_UH) = create_nitf_des_structure("DesCSCSDB", desc2, udsh, hlp=hlp, data_after_allowed=True, data_copy=True)
+(DesCSCSDB, DesCSCSDB_UH) = create_nitf_des_structure("DesCSCSDB", desc2, udsh, hlp=hlp)
 
 DesCSCSDB.desid = hardcoded_value("CSCSDB")
 DesCSCSDB.desver = hardcoded_value("01")
