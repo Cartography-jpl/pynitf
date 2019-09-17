@@ -164,10 +164,18 @@ def read_tre(header, des_list, field_list = []):
         if(getattr(header, h_len) > 0):
             des_index = getattr(header, h_ofl)
             if(des_index > 0):
-                # des_index is 1 based, so subtract 1 to get the des
-                desseg = des_list[getattr(header, h_ofl)-1]
-                tre_list.extend(read_tre_data(desseg.des.data))
-            tre_list.extend(read_tre_data(getattr(header, h_data)))
+                try:
+                    # des_index is 1 based, so subtract 1 to get the des
+                    desseg = des_list[getattr(header, h_ofl)-1]
+                    t = read_tre_data(desseg.des.data)
+                    tre_list.extend(t)
+                except Exception as e:
+                    print("Warning: ", e)
+            try:
+                t = read_tre_data(getattr(header, h_data))
+                tre_list.extend(t)
+            except Exception as e:
+                print("Warning: ", e)
     return tre_list
 
 def prepare_tre_write(tre_list, header, des_list, field_list = [],

@@ -255,7 +255,10 @@ class _FieldValue(object):
             elif(self.optional and t.rstrip(self.optional_char.encode('utf-8') + b' ') == b''):
                 self.value(parent_obj)[key] = None
             elif(self.ty == str):
-                self.value(parent_obj)[key] = t.rstrip().decode("utf-8")
+                try:
+                    self.value(parent_obj)[key] = t.rstrip().decode("utf-8")
+                except:
+                    self.value(parent_obj)[key] = 'pynitf: Field Could Not Be Read'
             else:
                 v = t.rstrip()
                 if(v == b''):
