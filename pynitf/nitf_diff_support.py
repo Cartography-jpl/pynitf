@@ -50,6 +50,10 @@ class DiffHandle(object):
             if (not isinstance(field, _FieldLoopStruct)):
                 if (field.field_name is not None):
                     compare_name = field.field_name
+
+                    val1 = None
+                    val2 = None
+
                     if hasattr(field, 'name') and field.name != None:
                         compare_name = field.name
                         
@@ -66,16 +70,29 @@ class DiffHandle(object):
                             continue
 
                     if hasattr(field, 'eq_fun') and field.eq_fun != None:
-                        this_is_same = field.eq_fun[0](field.value(parent1)[()], 
-                                                       list2[index].value(parent2)[()], 
+                        val1 = field.value(parent1)[()]
+                        val2 = list2[index].value(parent2)[()]
+                        this_is_same = field.eq_fun[0](val1,
+                                                       val2,
                                                        *field.eq_fun[1:])
                     else:
-                        this_is_same = field.value(parent1) == list2[index].value(parent2)
+                        val1 = field.value(parent1)
+                        val2 = list2[index].value(parent2)
+                        this_is_same = val1 == val2
 
                     if not this_is_same:
+
+                        # Convert values into strings and truncate so that it's easier to print out the result
+                        val1 = str(val1)
+                        val2 = str(val2)
+                        if len(val1) > 100:
+                            val1 = val1[:200] + "..."
+                        if len(val2) > 100:
+                            val2 = val2[:200] + "..."
+
                         self.logger.error("%s 1 has field %s as %s while %s 2 has %s" %
-                                          (type, field.field_name, str(field),
-                                           type, str(list2[index])))
+                                          (type, field.field_name, val1,
+                                           type, val2))
                         is_same = False
             else:
                 is_same = self.process_field_value_list(type, field.field_value_list, parent1,

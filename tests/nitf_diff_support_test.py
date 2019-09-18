@@ -18,11 +18,11 @@ import numpy as np
 import logging
 
 # Do these in a few places, so collect in one spot.
-def create_image_seg(f, iid1 = ''):
+def create_image_seg(f, iid1 = '', num = 10):
     img = NitfImageWriteNumpy(9, 10, np.uint8)
     for i in range(9):
         for j in range(10):
-            img[0, i,j] = i * 10 + j
+            img[0, i,j] = i * num + j
     image_seg = NitfImageSegment(img)
     subheader = image_seg.subheader
     subheader.iid1 = iid1
@@ -98,7 +98,15 @@ def create_des(f, date_att = 20170501, q = 0.1):
 
     de = NitfDesSegment(des=des)
     f.des_segment.append(de)
-    
+
+def create_basic_nitf():
+    f = NitfFile()
+    create_tre(f)
+    create_tre2(f)
+    create_text_segment(f)
+
+    return f
+
 def test_nitf_diff_eq(isolated_dir):
     '''This create an end to end NITF file, this was at least initially the
     same as basic_nitf_example.py but as a unit test.'''
@@ -106,39 +114,20 @@ def test_nitf_diff_eq(isolated_dir):
     # Create the file. We don't supply a name yet, that comes when we actually
     # write
     
-    f = NitfFile()
-
-    # clevel default is 3, so this breaks the diff as it should.
-    #f.file_header.clevel = 2
-
-    # Using the alternate atn of 42 breaks the diff, as it should. It
-    # complains that both angle_to_north and xhd differ, because the
-    # tre is written as part of the xhd. Incidentally, USE00A is an
-    # image TRE, but it works fine here for testing file TRE
-    # differencing.
-    #create_tre(f, atn = 42)
-    create_tre(f)
-
-    create_tre2(f)
+    f = create_basic_nitf()
 
     iseg = create_image_seg(f, iid1 = 'An IID1')
     #create_tre(iseg, atn = 43)
     create_tre(iseg)
 
-    create_text_segment(f)
-
     # Using the alternate desid of to break the diff, as it should.
     create_des(f)
     #create_des(f)
 
-    f2 = NitfFile()
-    create_tre(f2)
-    create_tre2(f2)
+    f2 = create_basic_nitf()
     # This exercises the nitf_image_subheader eq_string_ignore_case function used by the iid1 field.
     iseg2 = create_image_seg(f2, 'an iid1')
     create_tre(iseg2)
-
-    create_text_segment(f2)
 
     create_des(f2)
 
@@ -200,6 +189,35 @@ def test_nitf_diff_neq_des(isolated_dir):
     create_text_segment(f2)
 
     create_des(f2, q = 0.2)
+
+    f.write("basic_nitf.ntf")
+    f2.write("basic2_nitf.ntf")
+
+    logger = logging.getLogger("nitf_diff")
+    # This doesn't seem to have the desired effect, so I created
+    # pytest.ini to set the logging level - wlb
+    logging.basicConfig(level=logging.DEBUG)
+
+    assert nitf_file_diff("basic_nitf.ntf", "basic2_nitf.ntf") == False
+
+
+def test_image_content(isolated_dir):
+    '''This create an end to end NITF file, this was at least initially the
+    same as basic_nitf_example.py but as a unit test.'''
+
+    # Create the file. We don't supply a name yet, that comes when we actually
+    # write
+
+    f = create_basic_nitf()
+
+    iseg = create_image_seg(f, num=9)
+    create_tre(iseg)
+
+
+    f2 = create_basic_nitf()
+    # This exercises the nitf_image_subheader eq_string_ignore_case function used by the iid1 field.
+    iseg2 = create_image_seg(f2)
+    create_tre(iseg2)
 
     f.write("basic_nitf.ntf")
     f2.write("basic2_nitf.ntf")
