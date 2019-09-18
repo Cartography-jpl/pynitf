@@ -237,8 +237,8 @@ def read_tre_data(data):
             t = tre_object(tre_name)
             t.read_from_file(fh)
             res.append(t)
-        except:
-            raise Exception("Error while reading TRE " + str(tre_name))
+        except Exception as e:
+            raise Exception("Error while reading TRE " + str(tre_name), str(e))
     return res
     
 def create_nitf_tre_structure(name, description, hlp = None,

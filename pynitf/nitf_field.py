@@ -250,20 +250,20 @@ class _FieldValue(object):
         if(len(t) != self.size):
             raise RuntimeError("Not enough bytes left to read %d bytes for field %s" % (self.size, self.field_name))
         if(self.field_name is not None):
-            if(nitf_literal):
-                self.value(parent_obj)[key] = NitfLiteral(t.rstrip().decode("utf-8"))
-            elif(self.optional and t.rstrip(self.optional_char.encode('utf-8') + b' ') == b''):
-                self.value(parent_obj)[key] = None
-            elif(self.ty == str):
-                try:
-                    self.value(parent_obj)[key] = t.rstrip().decode("utf-8")
-                except:
-                    self.value(parent_obj)[key] = 'pynitf: Field Could Not Be Read'
-            else:
-                v = t.rstrip()
-                if(v == b''):
-                    raise RuntimeError("Empty string read for field %s" % self.field_name)
-                self.value(parent_obj)[key] = self.ty(v)
+            try:
+                if(nitf_literal):
+                    self.value(parent_obj)[key] = NitfLiteral(t.rstrip().decode("utf-8"))
+                elif(self.optional and t.rstrip(self.optional_char.encode('utf-8') + b' ') == b''):
+                    self.value(parent_obj)[key] = None
+                elif(self.ty == str):
+                    self.value(parent_obj)[key] = t.rstrip().decode("utf-8", "replace")
+                else:
+                    v = t.rstrip()
+                    if(v == b''):
+                        raise RuntimeError("Empty string read for field %s" % self.field_name)
+                    self.value(parent_obj)[key] = self.ty(v)
+            except Exception as e:
+                raise Exception("Exception while parsing ", self.field_name, " from ", t.rstrip(), "underlying error: ", e)
 
 class _FieldLoopStruct(object):
     # The __dict__ is at class level
