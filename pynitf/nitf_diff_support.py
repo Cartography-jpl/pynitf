@@ -112,10 +112,17 @@ class TREFileHeadHandle(DiffHandle):
         self.logger.debug("obj1: %s" % obj1.summary())
         self.logger.debug("obj2: %s" % obj2.summary())
 
-        # Compare the fields of the two objects
-        is_same = self.process_field_value_list(self.obj_type, 
+        is_same = False
+        try:
+            # Compare the fields of the two objects
+            is_same = self.process_field_value_list(self.obj_type,
                                                 obj1.field_value_list, obj1, 
                                                 obj2.field_value_list, obj2)
+        except Exception as e:
+            compared = "FileHead"
+            if (self.obj_type == 'TRE'):
+                compared = obj1.tre_tag
+            self.logger.warning("Error while comparing " + compared +": "+ str(e))
 
         self.logger.debug("TREFileHeadHandle(%s) returning>>> %s" % (self.obj_type, is_same))
         return (True, is_same)
