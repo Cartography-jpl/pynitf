@@ -1,3 +1,10 @@
+import subprocess
+import os
+import json
+import six
+import numpy as np
+import logging
+import h5py
 from pynitf.nitf_file import *
 from pynitf.nitf_tre_csde import *
 from pynitf.nitf_tre_csepha import *
@@ -7,15 +14,10 @@ from pynitf.nitf_tre_geosde import *
 from pynitf.nitf_des_csattb import *
 from pynitf.nitf_image import *
 from pynitf.nitf_image_subheader import *
+from pynitf.nitf_des_ext_def_content import *
 from pynitf.nitf_tre import *
 from pynitf_test_support import *
 from pynitf.nitf_diff_support import *
-import subprocess
-import os
-import json
-import six
-import numpy as np
-import logging
 
 # Do these in a few places, so collect in one spot.
 def create_image_seg(f, iid1 = '', num = 10):
@@ -218,6 +220,39 @@ def test_image_content(isolated_dir):
     # This exercises the nitf_image_subheader eq_string_ignore_case function used by the iid1 field.
     iseg2 = create_image_seg(f2)
     create_tre(iseg2)
+
+    f.write("basic_nitf.ntf")
+    f2.write("basic2_nitf.ntf")
+
+    logger = logging.getLogger("nitf_diff")
+    # This doesn't seem to have the desired effect, so I created
+    # pytest.ini to set the logging level - wlb
+    logging.basicConfig(level=logging.DEBUG)
+
+    assert nitf_file_diff("basic_nitf.ntf", "basic2_nitf.ntf") == False
+
+def test_EXT_DEF_CONTENT(isolated_dir):
+    # -- File 1 --
+
+    f = create_basic_nitf()
+    d = DesEXT_h5()
+    h_f = h5py.File("mytestfile.hdf5", "w")
+    h_f['abc']=456
+    h_f.close()
+    d.attach_file("mytestfile.hdf5")
+    de3 = NitfDesSegment(des=d)
+    f.des_segment.append(de3)
+
+    # -- File 2 --
+    f2 = create_basic_nitf()
+    d = DesEXT_h5()
+    h_f = h5py.File("mytestfile2.hdf5", "w")
+    h_f['abc'] = 457
+    h_f.close()
+    d.attach_file("mytestfile2.hdf5")
+    de3 = NitfDesSegment(des=d)
+    f2.des_segment.append(de3)
+
 
     f.write("basic_nitf.ntf")
     f2.write("basic2_nitf.ntf")
