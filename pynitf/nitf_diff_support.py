@@ -240,11 +240,11 @@ class DSegHandle(DiffHandle):
                                                 obj2.des.user_subheader.field_value_list,
                                                 obj2.des.user_subheader) and is_same
 
-        # TODO: compare DES payloads, started here in the elif
+        # Compare DES payloads
         if hasattr(obj1.des, 'handle_diff'):
             is_same = obj1.des.handle_diff(obj2.des) and is_same
         elif hasattr(obj1.des, 'data'):
-            is_same = (obj1.des.data.all() == obj2.des.data.all())
+            is_same = np.array_equal(obj1.des.data, obj2.des.data)
         else:
             is_same = self.process_field_value_list("DES_DATA",
                                                     obj1.des.field_value_list,

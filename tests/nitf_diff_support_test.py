@@ -231,7 +231,7 @@ def test_image_content(isolated_dir):
 
     assert nitf_file_diff("basic_nitf.ntf", "basic2_nitf.ntf") == False
 
-def test_EXT_DEF_CONTENT(isolated_dir):
+def test_EXT_DEF_CONTENT_eq(isolated_dir):
     # -- File 1 --
 
     f = create_basic_nitf()
@@ -242,19 +242,46 @@ def test_EXT_DEF_CONTENT(isolated_dir):
     d.attach_file("mytestfile.hdf5")
     de3 = NitfDesSegment(des=d)
     f.des_segment.append(de3)
+    f.write("basic_nitf.ntf")
 
     # -- File 2 --
     f2 = create_basic_nitf()
     d = DesEXT_h5()
-    h_f = h5py.File("mytestfile2.hdf5", "w")
-    h_f['abc'] = 457
-    h_f.close()
-    d.attach_file("mytestfile2.hdf5")
+    d.attach_file("mytestfile.hdf5")
     de3 = NitfDesSegment(des=d)
     f2.des_segment.append(de3)
+    f2.write("basic2_nitf.ntf")
+
+    logger = logging.getLogger("nitf_diff")
+    # This doesn't seem to have the desired effect, so I created
+    # pytest.ini to set the logging level - wlb
+    logging.basicConfig(level=logging.DEBUG)
+
+    assert nitf_file_diff("basic_nitf.ntf", "basic2_nitf.ntf") == True
 
 
+def test_EXT_DEF_CONTENT_ne(isolated_dir):
+    # -- File 1 --
+
+    f = create_basic_nitf()
+    d = DesEXT_h5()
+    h_f = h5py.File("mytestfile.hdf5", "w")
+    h_f['abc']=456
+    h_f.close()
+    d.attach_file("mytestfile.hdf5")
+    de3 = NitfDesSegment(des=d)
+    f.des_segment.append(de3)
     f.write("basic_nitf.ntf")
+
+    # -- File 2 --
+    f2 = create_basic_nitf()
+    d = DesEXT_h5()
+    h_f = h5py.File("mytestfile.hdf5", "w")
+    h_f['abc'] = 457
+    h_f.close()
+    d.attach_file("mytestfile.hdf5")
+    de3 = NitfDesSegment(des=d)
+    f2.des_segment.append(de3)
     f2.write("basic2_nitf.ntf")
 
     logger = logging.getLogger("nitf_diff")
