@@ -605,8 +605,13 @@ class StringFieldData(FieldData):
         return "%s" % t
 
 class NumFieldData(FieldData):
+    def __init__(self, field_name, size_field, ty, loop, options):
+        self.pack_func = lambda v : pack(self.format, v)
+        self.unpack_func = lambda v: unpack(self.format, v)[0]
+        super().__init__(field_name, size_field, ty, loop, options)
+
     def set(self,parent_obj,key,v):
-        v = pack(self.format, v)
+        v = self.pack_func(v)
         super().set(parent_obj,key,v)
 
     def value(self, parent_obj):
@@ -620,8 +625,8 @@ class NumFieldData(FieldData):
             return parent_obj.value[self.field_name]
         elif len(val) == 4:
             if (DEBUG):
-                print(unpack(self.format, parent_obj.value[self.field_name][0])[0])
-            return unpack(self.format, parent_obj.value[self.field_name][0])[0]
+                print(self.unpack_func(parent_obj.value[self.field_name][0]))
+            return self.unpack_func(parent_obj.value[self.field_name][0])
         else:
             raise RuntimeError("This data type of length %d is not supported" % len(val))
 
@@ -632,7 +637,7 @@ class NumFieldData(FieldData):
             return None
         if (DEBUG):
             print(self.value(parent_obj)[key])
-        return unpack(self.format, self.value(parent_obj)[key])[0]
+        return self.unpack_func(self.value(parent_obj)[key])
     def get_print(self, parent_obj,key):
         t = self.get(parent_obj,key)
         return "%s" % t
@@ -660,6 +665,11 @@ class IntFieldData(NumFieldData):
             self.format = '>H'
         elif (sz is 2 and self.signed is True):
             self.format = '>h'
+        elif (sz is 3):
+            self.pack_func = lambda v : int(v).to_bytes(3, "big",
+                                                        signed=self.signed)
+            self.unpack_func = lambda v : int.from_bytes(v, "big",
+                                                         signed=self.signed)
         elif (sz is 4 and self.signed is False):
             self.format = '>I'
         elif (sz is 4 and self.signed is True):
