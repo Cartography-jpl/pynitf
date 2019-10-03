@@ -225,7 +225,7 @@ class NitfFile(object):
         for iseg in self.image_segment:
             if(iseg.idlvl == idlvl):
                 return iseg
-        return KeyError(str(id))
+        raise KeyError(str(id))
 
     def iseg_by_iid1(self, iid1):
         '''Return a (possibly empty) list of image segments with the given
