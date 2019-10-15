@@ -2,7 +2,7 @@ from __future__ import print_function
 from .nitf_field import *
 from .nitf_tre import *
 import six
-from collections import MutableMapping
+from collections.abc import MutableMapping
 import numpy as np
 
 hlp = '''This is the ENGRDA TRE, Engineering data.
