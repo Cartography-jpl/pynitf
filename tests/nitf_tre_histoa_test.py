@@ -28,7 +28,7 @@ def test_basic():
     fh = six.BytesIO()
     t.write_to_file(fh)
     print(fh.getvalue())
-    assert fh.getvalue() == b'HISTOA00509SYSTEM_TYPE         NO_COMPRESSINONE0000220170615121212ABCDEFGHIJAAAAAAAAAA2HELLO1                                                                          HELLO2                                                                          00              0  0000000             20170615121212ABCDEFGHIJAAAAAAAAAA2HELLO1                                                                          HELLO2                                                                          00              0  0000000             '
+    assert fh.getvalue() == b'HISTOA00509SYSTEM_TYPE         NO_COMPRESSINONE0000220170615121212ABCDEFGHIJAAAAAAAAAA2HELLO1                                                                          HELLO2                                                                          00              0 00000000             20170615121212ABCDEFGHIJAAAAAAAAAA2HELLO1                                                                          HELLO2                                                                          00              0 00000000             '
     fh2 = six.BytesIO(fh.getvalue())
     t2 = TreHISTOA()
     t2.read_from_file(fh2)

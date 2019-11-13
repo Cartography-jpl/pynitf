@@ -16,5 +16,5 @@ setup(name='pynitf',
           'docopt'
       ],
       setup_requires=["pytest-runner",],
-      tests_requires=["pytest",],
+      tests_requires=["pytest","h5py"],
       zip_safe=False)
