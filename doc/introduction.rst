@@ -79,7 +79,7 @@ To build the documentation, you need a few extra packages
 * sphinx
 * PlantUML (see `here <http://plantuml.com/>`_)
 * sphinxcontrib-plantuml (see `here <https://pypi.org/project/sphinxcontrib-plantuml/>`_)
-* ghp-import (see `here <https://github.com/davisp/ghp-import>`_)
+* ghp-import2 (see `here <https://pypi.org/project/ghp-import2/`_)
 
 You can run sphix directly, or use the Makefile
 

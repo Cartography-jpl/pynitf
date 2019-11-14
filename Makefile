@@ -26,6 +26,10 @@ doc-latexpdf:
 
 #=================================================================
 # Upload documentation to github pages
+# *Note* I tend to forget this, but there needs to be a .nojekyll in
+# the github pages for github to serve the page right. This can be done
+# by just adding .nojekyll to doc/_build/html. This has already been done
+# for this repository
 github-pages: doc-html
 	@echo "Note, this should usually be done from the main branch only"
 	ghp-import doc/_build/html -m "Update pynitf documentation"
