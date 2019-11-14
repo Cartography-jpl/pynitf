@@ -78,55 +78,57 @@ Design Philosophy
 
 I should mention the overall design principle’s I had with pynitf. Never really articulated this since it sort of grew organically, but what I was thinking was:
 
-# Things that are format related should be handled by the library. So
-things like formatting floating point number into specific strings,
-adding padding for being the right length, etc. get handled by the
-library.
+#. Things that are format related should be handled by the library. So
+   things like formatting floating point number into specific strings,
+   adding padding for being the right length, etc. get handled by the
+   library.
 
-# Things that are related to interpreting the data get handled by the
-library. So for example fields that give the length of a another field
-or the type of another field should be handled by the library. The
-idea is that the stuff needs to be consistent, it is too easy to
-create an invalid file if the end user is mucking with the internals
-(so saying a field is “byte”, but then writing it out as “floats”).
+#. Things that are related to interpreting the data get handled by the
+   library. So for example fields that give the length of a another field
+   or the type of another field should be handled by the library. The
+   idea is that the stuff needs to be consistent, it is too easy to
+   create an invalid file if the end user is mucking with the internals
+  (so saying a field is “byte”, but then writing it out as “floats”).
 
-# Things that are more a single “thing” get read/written as a
-whole. So examples of this are the camera and RSM, which have lots of
-individual fields but are really just one “thing” get read and written
-as “f.rsm” or “f.camera”. I think there classification stuff may fall
-into this category also - there are lots of fields associated with the
-the classification level but this is really just one thing.
+#. Things that are more a single “thing” get read/written as a
+   whole. So examples of this are the camera and RSM, which have lots of
+   individual fields but are really just one “thing” get read and written
+   as “f.rsm” or “f.camera”. I think there classification stuff may fall
+   into this category also - there are lots of fields associated with the
+   the classification level but this is really just one thing.
 
-# Some things might get extended downstream. I guess I would think of
-this as added to the library downstream, but really part of the
-library. So things like project specific TREs might be added by the
-user of the library (but the TRE then gets handled by pynitf). The RSM
-and camera sort of fall into this category- these are geocal objects
-so geocal adds the extension to the pyntif library to support these
-types. pyntif has hooks that the user can use for adding stuff.
+#. Some things might get extended downstream. I guess I would think of
+   this as added to the library downstream, but really part of the
+   library. So things like project specific TREs might be added by the
+   user of the library (but the TRE then gets handled by pynitf). The RSM
+   and camera sort of fall into this category- these are geocal objects
+   so geocal adds the extension to the pyntif library to support these
+   types. pyntif has hooks that the user can use for adding stuff.
 
-# Things that don’t fall into these categories get read/written by the
-downstream users of the library.
+#. Things that don’t fall into these categories get read/written by
+   the downstream users of the library.
 
-This is complicated a bit in that we don’t really have the pynitf library complete yet. So when there is something that needs to be added to the the nitf file, there are probably 4 categories:
+This is complicated a bit in that we don’t really have the pynitf
+library complete yet. So when there is something that needs to be
+added to the the nitf file, there are probably 4 categories:
 
-# Stuff that really is just end user values that should be set by the
-user of pynitf. Over time, this should be the bulk of things
-read/written. So we just write project specific code to set these
-values.
+#. Stuff that really is just end user values that should be set by the
+   user of pynitf. Over time, this should be the bulk of things
+   read/written. So we just write project specific code to set these
+   values.
 
-# Stuff that is already handled by pynitf. Nothing needs to be done
-other than knowing that you shouldn’t handle this downstream from the
-library.
+#. Stuff that is already handled by pynitf. Nothing needs to be done
+   other than knowing that you shouldn’t handle this downstream from the
+   library.
 
-# Stuff that *should* be handled by pynitf but isn’t currently. This
-should get added by updating pynitf.
+#. Stuff that *should* be handled by pynitf but isn’t currently. This
+   should get added by updating pynitf.
 
-# Stuff that *should* be handled by pynitf but shouldn’t actually go
-into a general purpose library. So this would be things like project
-specific TREs or objects (e.g., geocal Camera). These should get added
-by putting in extensions to pynitf, but then having them handled by
-pynitf.
+#. Stuff that *should* be handled by pynitf but shouldn’t actually go
+   into a general purpose library. So this would be things like project
+   specific TREs or objects (e.g., geocal Camera). These should get added
+   by putting in extensions to pynitf, but then having them handled by
+   pynitf.
 
 
 On demand data
