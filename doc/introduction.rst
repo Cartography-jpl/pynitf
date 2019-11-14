@@ -1,0 +1,107 @@
+****************************************************
+Introduction
+****************************************************
+
+Old documentation, should reorganize this
+
+On demand data
+==============
+
+NITF is an old format, with all kinds of limitations. One limitation is that
+we can't write out data until we are creating the whole file.
+
+When generating data in a program for HDF, you naturally do a calculation, 
+write the results field to HDF, and then continue to the next calculation.
+
+For NITF on the other hand, we don't know where to write out an image segment
+until we've written everthing before it. This is particularly true for 
+compressed images, where we don't know the size of the previous image until
+it has been generated, compressed, and writen to the NITF file.
+
+There are a couple of ways to handle this. One is to use lots of intermediate
+files and/or memory. So we generate all our data ahead of time, and then just
+access it when we actually write out the NITF file.
+
+An alternative is to generate data on demand. Rather than writing to a NITF 
+file, we register various call back functions to generate the data when we
+are ready for it. These callbacks then get called as we write out the file.
+
+See the class NitfImageWriteDataOnDemand, and derived classes for an example
+of supplying the data on demand.
+
+In addition, it can be useful to create TRE metadata and/or make other
+changes when a NITF element is getting written out or read in. We
+supply a list of "hooks" to be be run, providing a higher level interface.
+See for example geocal_nitf_rsm.py in GeoCal for an example of supplying
+a "rsm" object tied to the multiple RSM TREs.
+
+The hooks are there as a convenience, there is also nothing wrong with
+directly creating TREs and adding to the various segments directly.
+
+Install
+=======
+
+This has standard setup.py. You can install a tar file using pip, or
+run setup tools directly (e.g., python setup.py install).
+
+As a convenience, there is also a Makefile, you can build with
+
+    make install
+
+Testing
+=======
+
+Tests can be run by
+
+    python setup.py test
+	
+Standard pytest arguments can be passed:
+
+    python setup.py test --addopts="-k test_tre_read"
+
+For development, it can be useful to run just a single file. You can 
+do this by:
+
+    PYTHONPATH=`pwd`:${PYTHONPATH} pytest -s tests/nitf_tre_test.py
+
+Like with install, there is a Makefile for convenience
+
+    make check
+
+Build documentation
+===================
+
+The documentation is available online. You only did to build the documentation
+if you are updating it, or want the documentation in another format.
+
+To build the documentation, you need a few extra packages
+
+* sphinx
+* PlantUML (see `here <http://plantuml.com/>`_)
+* sphinxcontrib-plantuml (see `here <https://pypi.org/project/sphinxcontrib-plantuml/>`_)
+* ghp-import (see `here <https://github.com/davisp/ghp-import>`_)
+
+You can run sphix directly, or use the Makefile
+
+   make doc-html
+   make doc-latex
+   make doc-latexpdf
+
+Note that if you update the HTML, you will generally want to upload this to
+the github page. This can be done using ghp-import, or with the Makefile:
+
+   make github-pages
+
+Creating package
+================
+
+Quick command to create a tar file including version number. First, make sure
+the version number is setup.py is correct. Then do something like:
+
+    V=`grep version setup.py | sed -r "s/.*'(.*)'.*/\1/"`
+    git tag -s $V -m "This is my new version"
+    git push origin $V
+    git archive --format=tar --prefix=pyntif-$V/ $V | gzip --best > pynitf-$V.tar.gz
+
+Note you can also just download the tar.gz file from github after you create
+the tag, if that is easier.
