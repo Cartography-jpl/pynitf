@@ -34,6 +34,71 @@
   <div class="section" id="introduction">
 <h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
 <p>Old documentation, should reorganize this</p>
+<div class="section" id="overall-class-structure">
+<h2>Overall class structure<a class="headerlink" href="#overall-class-structure" title="Permalink to this headline">¶</a></h2>
+<p>The current hierarchy is shown in <a class="reference internal" href="#overall-hierarchy"><span class="std std-numref">Fig. 1</span></a>.</p>
+<div class="figure align-default" id="id2">
+<span id="overall-hierarchy"></span><p class="plantuml">
+<img src="_images/plantuml-1f720bbd006d071a55f4a5acfb98e9e63141db70.png" alt="class NitfFile {
+   +write(file_name)
+   +NitfFileHeader file_header
+   +NitfImageSegment image_segment[]
+   +NitfGraphicSegment graphic_segment[]
+   +NitfTextSegment text_segment[]
+   +NitfDesSegment des_segment[]
+   +NitfResSegment res_segment[]
+   +Tre tre_list[]
+}
+note top
+   The NITF file class, used for reading
+   and writing a NITF file
+end note
+
+abstract class NitfSegment {
+   +NitfFile nitf_file
+}
+note top
+   Base class of NITF segments
+end note
+
+class NitfImageSegment {
+   +Tre tre_list[]
+}
+
+class NitfGraphicSegment {
+   +Tre tre_list[]
+}
+
+class NitfTextSegment {
+   +Tre tre_list[]
+}
+
+class NitfDesSegment
+
+class NitfResSegment
+
+class Tre
+
+NitfSegment &lt;|.. NitfImageSegment
+NitfSegment &lt;|.. NitfGraphicSegment
+NitfSegment &lt;|.. NitfTextSegment
+NitfSegment &lt;|.. NitfDesSegment
+NitfSegment &lt;|.. NitfResSegment
+NitfFile o-- &quot;many&quot; NitfImageSegment
+NitfFile o-- &quot;many&quot; NitfGraphicSegment
+NitfFile o-- &quot;many&quot; NitfTextSegment
+NitfFile o-- &quot;many&quot; NitfDesSegment
+NitfFile o-- &quot;many&quot; NitfResSegment
+NitfFile &quot;file level&quot; o-- &quot;many&quot; Tre
+NitfImageSegment o-- &quot;many&quot; Tre
+NitfTextSegment o-- &quot;many&quot; Tre"/>
+</p>
+<p class="caption"><span class="caption-number">Fig. 1 </span><span class="caption-text">Overall class hierarchy</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+</div>
+<p>The overall NITF file specification is described in <a class="reference external" href="https://gwg.nga.mil/ntb/baseline/docs/2500c/2500C.pdf">MIL-STD-2500C</a>.</p>
+<p>Many of the TREs are described in <a href="#id3"><span class="problematic" id="id4">`STDI-0002-1_4.0 &lt;https://nsgreg.nga.mil/NSGDOC/files/doc/Document/STDI_0002_1_4.zip`_</span></a>.</p>
+<p>Additional documentation available at <a class="reference external" href="https://www.gwg.nga.mil/ntb/baseline/format.html">Reference Library for NITFS Users</a>.</p>
+</div>
 <div class="section" id="on-demand-data">
 <h2>On demand data<a class="headerlink" href="#on-demand-data" title="Permalink to this headline">¶</a></h2>
 <p>NITF is an old format, with all kinds of limitations. One limitation is that
@@ -98,7 +163,7 @@ if you are updating it, or want the documentation in another format.</p>
 <li><p>sphinx</p></li>
 <li><p>PlantUML (see <a class="reference external" href="http://plantuml.com/">here</a>)</p></li>
 <li><p>sphinxcontrib-plantuml (see <a class="reference external" href="https://pypi.org/project/sphinxcontrib-plantuml/">here</a>)</p></li>
-<li><p>ghp-import2 (see <a href="#id2"><span class="problematic" id="id3">`here &lt;https://pypi.org/project/ghp-import2/`_</span></a>)</p></li>
+<li><p>ghp-import2 (see <a href="#id5"><span class="problematic" id="id6">`here &lt;https://pypi.org/project/ghp-import2/`_</span></a>)</p></li>
 </ul>
 <p>You can run sphix directly, or use the Makefile</p>
 <blockquote>
@@ -147,6 +212,7 @@ the tag, if that is easier.</p>
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#overall-class-structure">Overall class structure</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#on-demand-data">On demand data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#install">Install</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#testing">Testing</a></li>

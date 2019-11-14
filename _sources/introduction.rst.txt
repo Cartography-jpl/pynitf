@@ -4,6 +4,75 @@ Introduction
 
 Old documentation, should reorganize this
 
+Overall class structure
+=======================
+
+The current hierarchy is shown in :numref:`overall_hierarchy`.
+
+.. _overall_hierarchy:
+.. uml::
+   :caption: Overall class hierarchy
+
+   class NitfFile {
+      +write(file_name)
+      +NitfFileHeader file_header
+      +NitfImageSegment image_segment[]
+      +NitfGraphicSegment graphic_segment[]
+      +NitfTextSegment text_segment[]
+      +NitfDesSegment des_segment[]
+      +NitfResSegment res_segment[]
+      +Tre tre_list[]
+   }
+   note top
+      The NITF file class, used for reading
+      and writing a NITF file
+   end note
+
+   abstract class NitfSegment {
+      +NitfFile nitf_file
+   }
+   note top
+      Base class of NITF segments
+   end note
+
+   class NitfImageSegment {
+      +Tre tre_list[]
+   }
+
+   class NitfGraphicSegment {
+      +Tre tre_list[]
+   }
+
+   class NitfTextSegment {
+      +Tre tre_list[]
+   }
+
+   class NitfDesSegment
+
+   class NitfResSegment
+
+   class Tre
+   
+   NitfSegment <|.. NitfImageSegment
+   NitfSegment <|.. NitfGraphicSegment
+   NitfSegment <|.. NitfTextSegment
+   NitfSegment <|.. NitfDesSegment
+   NitfSegment <|.. NitfResSegment
+   NitfFile o-- "many" NitfImageSegment
+   NitfFile o-- "many" NitfGraphicSegment
+   NitfFile o-- "many" NitfTextSegment
+   NitfFile o-- "many" NitfDesSegment
+   NitfFile o-- "many" NitfResSegment
+   NitfFile "file level" o-- "many" Tre
+   NitfImageSegment o-- "many" Tre
+   NitfTextSegment o-- "many" Tre
+
+The overall NITF file specification is described in `MIL-STD-2500C <https://gwg.nga.mil/ntb/baseline/docs/2500c/2500C.pdf>`_.
+
+Many of the TREs are described in `STDI-0002-1_4.0 <https://nsgreg.nga.mil/NSGDOC/files/doc/Document/STDI_0002_1_4.zip`_.
+
+Additional documentation available at `Reference Library for NITFS Users <https://www.gwg.nga.mil/ntb/baseline/format.html>`_.
+
 On demand data
 ==============
 
