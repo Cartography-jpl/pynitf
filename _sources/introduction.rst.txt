@@ -69,7 +69,7 @@ The current hierarchy is shown in :numref:`overall_hierarchy`.
 
 The overall NITF file specification is described in `MIL-STD-2500C <https://gwg.nga.mil/ntb/baseline/docs/2500c/2500C.pdf>`_.
 
-Many of the TREs are described in `STDI-0002-1_4.0 <https://nsgreg.nga.mil/NSGDOC/files/doc/Document/STDI_0002_1_4.zip`_.
+Many of the TREs are described in `STDI-0002-1_4.0 <https://nsgreg.nga.mil/NSGDOC/files/doc/Document/STDI_0002_1_4.zip>`_.
 
 Additional documentation available at `Reference Library for NITFS Users <https://www.gwg.nga.mil/ntb/baseline/format.html>`_.
 
