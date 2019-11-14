@@ -111,12 +111,8 @@ library.</p></li>
 library. So for example fields that give the length of a another field
 or the type of another field should be handled by the library. The
 idea is that the stuff needs to be consistent, it is too easy to
-create an invalid file if the end user is mucking with the internals</p></li>
-</ol>
-<blockquote>
-<div><p>(so saying a field is “byte”, but then writing it out as “floats”).</p>
-</div></blockquote>
-<ol class="arabic simple">
+create an invalid file if the end user is mucking with the internals
+(so saying a field is “byte”, but then writing it out as “floats”).</p></li>
 <li><p>Things that are more a single “thing” get read/written as a
 whole. So examples of this are the camera and RSM, which have lots of
 individual fields but are really just one “thing” get read and written

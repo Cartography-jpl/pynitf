@@ -88,7 +88,7 @@ I should mention the overall design principle’s I had with pynitf. Never reall
    or the type of another field should be handled by the library. The
    idea is that the stuff needs to be consistent, it is too easy to
    create an invalid file if the end user is mucking with the internals
-  (so saying a field is “byte”, but then writing it out as “floats”).
+   (so saying a field is “byte”, but then writing it out as “floats”).
 
 #. Things that are more a single “thing” get read/written as a
    whole. So examples of this are the camera and RSM, which have lots of
