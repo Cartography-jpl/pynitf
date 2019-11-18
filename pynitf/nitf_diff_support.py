@@ -3,6 +3,7 @@ from .nitf_field import _FieldLoopStruct
 import logging
 import six, abc, collections
 import numpy as np
+from .nitf_image import NitfImagePlaceHolder
 
 @six.add_metaclass(abc.ABCMeta)
 class DiffHandle(object):
@@ -167,7 +168,11 @@ class ISegHandle(DiffHandle):
         # so we don't need to do it here.
 
         # Compare the pixels using default atol and rtol (see numpy allclose doc)
-        is_same = is_same and np.allclose(obj1.data[:,:,:], obj2.data[:,:,:])
+        if isinstance(obj1.data, NitfImagePlaceHolder) or isinstance(obj2.data, NitfImagePlaceHolder):
+            print(obj1.data)
+            is_same = is_same and obj1.data == obj2.data
+        else:
+            is_same = is_same and np.allclose(obj1.data[:,:,:], obj2.data[:,:,:])
 
         self.logger.debug("ISegHandle returning>>> %s" % is_same)
         return (True, is_same)
