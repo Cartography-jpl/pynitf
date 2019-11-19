@@ -155,7 +155,7 @@ def _summary(self):
             if self.existence_mask & 0x1000:
                 print("Solar Illumination Estimation Method %s" % (self.sun_illum_method[i,j]), file=res)
                 print("Solar Illumination: %16E" % (self.sun_illum[i,j]), file=res)
-            if self.existence_mask & 0x1000:
+            if self.existence_mask & 0x800:
                 print("Lunar Illumination Estimation Method: %s" % (self.moon_illum_method[i,j]), file=res)
                 print("Lunar Illumination: %16E" % (self.moon_illum[i,j]), file=res)
             if self.existence_mask & 0x400:
