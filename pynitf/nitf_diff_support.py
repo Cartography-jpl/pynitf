@@ -382,7 +382,7 @@ def nitf_file_diff(f1_name, f2_name, exclude = None, include = None):
     is_same = is_same and status
 
     logger.debug("Comparing text segments")
-    staus = _handle_type(f1.text_segment, f2.text_segment, 
+    status = _handle_type(f1.text_segment, f2.text_segment,
                          "text segment", tseg_handle, logger)
     is_same = is_same and status
 
