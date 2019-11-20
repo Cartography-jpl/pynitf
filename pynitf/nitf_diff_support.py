@@ -169,7 +169,6 @@ class ISegHandle(DiffHandle):
 
         # Compare the pixels using default atol and rtol (see numpy allclose doc)
         if isinstance(obj1.data, NitfImagePlaceHolder) or isinstance(obj2.data, NitfImagePlaceHolder):
-            print(obj1.data)
             is_same = is_same and obj1.data == obj2.data
         else:
             is_same = is_same and np.allclose(obj1.data[:,:,:], obj2.data[:,:,:])
