@@ -6,3 +6,4 @@
 .tramp_history
 .cache
 pynitf.egg-info
+doc/_build
