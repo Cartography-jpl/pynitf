@@ -439,6 +439,9 @@ class _FieldStruct(object):
                 print(f.desc(self), file=res, end='')
         return res.getvalue()
 
+    def __eq__(self, other):
+        return str(self) == str(other)
+
 class FieldData(object):
     '''Class to handle generic variable size data. We might add more
     specific classes, but for now just have this one generic one.
