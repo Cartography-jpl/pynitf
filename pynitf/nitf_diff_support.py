@@ -4,6 +4,7 @@ import logging
 import six, abc, collections
 import numpy as np
 from .nitf_image import NitfImagePlaceHolder
+from .nitf_tre import TreUnknown
 
 @six.add_metaclass(abc.ABCMeta)
 class DiffHandle(object):
@@ -132,8 +133,11 @@ class TREFileHeadHandle(DiffHandle):
 
         is_same = False
         try:
-            # Compare the fields of the two objects
-            is_same = self.process_field_value_list(self.obj_type,
+            if isinstance(obj1, TreUnknown) and isinstance(obj2, TreUnknown):
+                is_same = (obj1 == obj2)
+            else:
+                # Compare the fields of the two objects
+                is_same = self.process_field_value_list(self.obj_type,
                                                 obj1.field_value_list, obj1, 
                                                 obj2.field_value_list, obj2)
         except Exception as e:
@@ -169,7 +173,6 @@ class ISegHandle(DiffHandle):
 
         # Compare the pixels using default atol and rtol (see numpy allclose doc)
         if isinstance(obj1.data, NitfImagePlaceHolder) or isinstance(obj2.data, NitfImagePlaceHolder):
-            print(obj1.data)
             is_same = is_same and obj1.data == obj2.data
         else:
             is_same = is_same and np.allclose(obj1.data[:,:,:], obj2.data[:,:,:])

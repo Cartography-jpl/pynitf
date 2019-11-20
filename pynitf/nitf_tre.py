@@ -140,6 +140,8 @@ class TreUnknown(Tre):
         print("TRE - %s" % self.tre_tag, file=res)
         print( "   String: %s" % self.tre_bytes, file=res)
         return res.getvalue()
+    def __eq__(self, other):
+        return self.tre_tag == other.tre_tag and self.tre_bytes == other.tre_bytes
 
 _tre_class = {}
 
