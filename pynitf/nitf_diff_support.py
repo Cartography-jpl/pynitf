@@ -15,6 +15,7 @@ class DiffHandle(object):
 
     exclude = None
     include = None
+    config = None
 
     @classmethod
     def set_exclude(cls, exclude):
@@ -32,7 +33,15 @@ class DiffHandle(object):
     def get_include(cls):
         return cls.include
 
-    def handle_diff(self, obj1, obj2):
+    @classmethod
+    def set_config(cls, config):
+        cls.config = config
+
+    @classmethod
+    def get_config(cls):
+        return cls.config
+
+    def handle_diff(self, obj1, obj2, index=-1):
         '''Handle the difference between 2 objects. Note that many of
         the handles can't handle a particular object. We use a chain of
         responsibility pattern here.
@@ -52,6 +61,7 @@ class DiffHandle(object):
             if (not isinstance(field, _FieldLoopStruct)):
                 if (field.field_name is not None):
                     compare_name = field.field_name
+                    #print(compare_name)
 
                     val1 = None
                     val2 = None
@@ -112,7 +122,7 @@ class DefaultHandle(DiffHandle):
     def __init__(self, logger=logging.getLogger('nitf_diff')):
         super().__init__(logger)
         
-    def handle_diff(self, obj1, obj2):
+    def handle_diff(self, obj1, obj2, index=-1):
         self.logger.debug("Using default always match handler")
         self.logger.debug("obj1: %s" % obj1.summary())
         self.logger.debug("obj2: %s" % obj2.summary())
@@ -126,7 +136,7 @@ class TREFileHeadHandle(DiffHandle):
         assert TRE_file_head_type == 'TRE' or TRE_file_head_type == 'FileHead'
         self.obj_type = TRE_file_head_type
 
-    def handle_diff(self, obj1, obj2):
+    def handle_diff(self, obj1, obj2, index=-1):
         self.logger.debug("Using %s Handler" % self.obj_type)
         self.logger.debug("obj1: %s" % obj1.summary())
         self.logger.debug("obj2: %s" % obj2.summary())
@@ -155,7 +165,7 @@ class ISegHandle(DiffHandle):
     def __init__(self, logger=logging.getLogger('nitf_diff')):
         super().__init__(logger)
 
-    def handle_diff(self, obj1, obj2):
+    def handle_diff(self, obj1, obj2, index=-1):
         self.logger.debug("Using Image Segment Handler")
         self.logger.debug("obj1: %s" % obj1.summary())
         self.logger.debug("obj2: %s" % obj2.summary())
@@ -171,11 +181,56 @@ class ISegHandle(DiffHandle):
         # subheader, _handle_type() checks all segments for tre_lists,
         # so we don't need to do it here.
 
-        # Compare the pixels using default atol and rtol (see numpy allclose doc)
         if isinstance(obj1.data, NitfImagePlaceHolder) or isinstance(obj2.data, NitfImagePlaceHolder):
             is_same = is_same and obj1.data == obj2.data
         else:
-            is_same = is_same and np.allclose(obj1.data[:,:,:], obj2.data[:,:,:])
+            if obj1.data.shape == obj2.data.shape:
+                tolerance_config = None
+                if index != -1 and self.config is not None \
+                        and 'tolerances' in self.config and 'method' in self.config['tolerances'][index]:
+                    tolerance_config = self.config['tolerances'][index]
+
+                    if tolerance_config['method'] == "histogram" and 'numBins' in tolerance_config:
+                        min1 = 0
+                        min2 = 0
+                        max1 = 0
+                        max2 = 0
+                        if np.issubdtype(obj1.data.dtype, np.integer):
+                            min1 = np.iinfo(obj1.data.dtype).min
+                            min2 = np.iinfo(obj2.data.dtype).min
+                            max1 = np.iinfo(obj1.data.dtype).max
+                            max2 = np.iinfo(obj2.data.dtype).max
+                        else:
+                            min1 = np.finfo(obj1.data.dtype).min
+                            min2 = np.finfo(obj2.data.dtype).min
+                            max1 = np.finfo(obj1.data.dtype).max
+                            max2 = np.finfo(obj2.data.dtype).max
+
+                        hist1, bins1 = np.histogram(obj1.data[:,:,:].ravel(), tolerance_config['numBins'], [min1, max1])
+                        hist2, bins2 = np.histogram(obj2.data[:,:,:].ravel(), tolerance_config['numBins'], [min2, max2])
+                        if 'percent' in tolerance_config:
+                            is_same = is_same and np.allclose(hist1, hist2, rtol=tolerance_config['percent']/100)
+                        elif 'value' in tolerance_config:
+                            is_same = is_same and np.allclose(hist1, hist2, rtol=tolerance_config['value'])
+                    elif tolerance_config['method'] == "count":
+                        temp = obj1.data[:, :, :] - obj2.data[:, :, :]
+                        count = np.count_nonzero(obj1.data[:, :, :] - obj2.data[:, :, :])
+                        total = obj1.data[:, :, :].size
+                        if 'percent' in tolerance_config:
+                            is_same = is_same and (count < (total * (tolerance_config['percent']/100)))
+                        elif 'value' in tolerance_config:
+                            is_same = is_same and (count < (total * tolerance_config['value']))
+                    elif tolerance_config['method'] == "value":
+                        if 'percent' in tolerance_config:
+                            is_same = is_same and np.allclose(obj1.data[:, :, :], obj2.data[:, :, :],
+                                                              rtol=tolerance_config['percent']/100)
+                        elif 'value' in tolerance_config:
+                            is_same = is_same and np.allclose(obj1.data[:,:,:], obj2.data[:,:,:],
+                                                              rtol=tolerance_config['value'])
+                else:
+                    is_same = is_same and np.allclose(obj1.data[:, :, :], obj2.data[:, :, :])
+            else:
+                is_same = is_same and False
 
         self.logger.debug("ISegHandle returning>>> %s" % is_same)
         return (True, is_same)
@@ -186,7 +241,7 @@ class TSegHandle(DiffHandle):
     def __init__(self, logger=logging.getLogger('nitf_diff')):
         super().__init__(logger)
 
-    def handle_diff(self, obj1, obj2):
+    def handle_diff(self, obj1, obj2, index=-1):
         self.logger.debug("Using Text Handler")
         self.logger.debug("obj1: %s" % obj1.summary())
         self.logger.debug("obj2: %s" % obj2.summary())
@@ -219,7 +274,7 @@ class DSegHandle(DiffHandle):
     def __init__(self, logger=logging.getLogger('nitf_diff')):
         super().__init__(logger)
 
-    def handle_diff(self, obj1, obj2):
+    def handle_diff(self, obj1, obj2, index=-1):
         self.logger.debug("Using DES Handler")
         self.logger.debug("obj1: %s" % obj1.summary())
         self.logger.debug("obj2: %s" % obj2.summary())
@@ -278,12 +333,17 @@ class DiffHandleList(object):
     def add_handle(self, handle, priority_order=0):
         self.handle_list[priority_order].add(handle)
 
-    def handle_diff(self, obj1, obj2):
+    def set_config(self, config):
+        for k in sorted(self.handle_list.keys()):
+            for handle in self.handle_list[k]:
+                handle.set_config(config)
+
+    def handle_diff(self, obj1, obj2, index=-1):
         '''Go through list of handles for the objects. This returns
         True if the objects compare as the same, False otherwise.'''
         for k in sorted(self.handle_list.keys()):
             for handle in self.handle_list[k]:
-                hflag, res = handle.handle_diff(obj1, obj2)
+                hflag, res = handle.handle_diff(obj1, obj2, index)
                 if(hflag):
                     return res;
         raise RuntimeError("No handle found. Obj1 %s, Obj2 %s" % (obj1, obj2))
@@ -323,7 +383,7 @@ def _handle_type(lis1, lis2, nm, handler, logger):
         is_same = False
     logger.debug("Comparing %d %s" % (min(len(lis1), len(lis2)), nm))
     for i in range(min(len(lis1), len(lis2))):
-        status = handler.handle_diff(lis1[i], lis2[i])
+        status = handler.handle_diff(lis1[i], lis2[i], i)
         is_same = is_same and status
         if(hasattr(lis1[i], "tre_list")):
             if(len(lis1[i].tre_list) != len(lis2[i].tre_list)):
@@ -341,7 +401,7 @@ def _handle_type(lis1, lis2, nm, handler, logger):
                 is_same = is_same and status
     return is_same
     
-def nitf_file_diff(f1_name, f2_name, exclude = None, include = None):
+def nitf_file_diff(f1_name, f2_name, exclude = None, include = None, config = None):
     '''Compare 2 NITF files. This returns an overall status of True
     if the files compare the same, false otherwise. The exclude and
     include lists of names like 'image.iid1' are used to control
@@ -354,6 +414,13 @@ def nitf_file_diff(f1_name, f2_name, exclude = None, include = None):
 
     DiffHandle.set_exclude(exclude)
     DiffHandle.set_include(include)
+    DiffHandle.set_config(config)
+
+    # file_header_handle.set_config(config)
+    # iseg_handle.set_config(config)
+    # tre_handle.set_config(config)
+    # tseg_handle.set_config(config)
+    # dseg_handle.set_config(config)
 
     logger=logging.getLogger('nitf_diff')
     f1 = NitfFile(f1_name)

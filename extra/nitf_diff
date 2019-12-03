@@ -4,6 +4,7 @@ import pynitf
 import importlib.util
 import sys
 import logging
+import json
 
 version="%prog Oct 31, 2018"
 usage="""Usage: 
@@ -40,12 +41,10 @@ Options:
 """
 args = pynitf.docopt_simple.docopt_simple(usage, version=version)
 
+configData = None
 if(args.config_file):
-    spec = importlib.util.spec_from_file_location("config_file",
-                                                  args.config_file)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    sys.modules["config_file"] = module
+    with open(args.config_file) as json_file:
+        configData = json.load(json_file)
 
 if(args.verbose):
     logging.basicConfig(level=logging.DEBUG)
@@ -54,7 +53,7 @@ elif(args.quiet):
 else:    
     logging.basicConfig(level=logging.INFO)
 
-is_same = pynitf.nitf_file_diff(args.file1, args.file2)
+is_same = pynitf.nitf_file_diff(args.file1, args.file2, config=configData)
 if(not is_same):
     logging.getLogger("nitf_diff").error("Files differ")
     sys.exit(1)

@@ -1,0 +1,9 @@
+{
+	"tolerances": [
+		{
+			"method": "count",
+			"fieldName": "all",
+			"percent": 3
+		}
+	]
+}
