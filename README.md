@@ -8,6 +8,13 @@ The module is extendable, you can add new TREs and can also tie in new objects
 to manage TREs. See GeoCal, with the file geocal_nitf_rsm.py to see how this 
 works.
 
+## Extending pynitf
+
+The environment variable "NITF_PLUGIN" can be set with a ":" separated list
+of modules to load. Tools like nitfinfofull use this to load modules to expand
+it functionality (e.g., "geocal")
+
+
 ## On demand data
 
 NITF is an old format, with all kinds of limitations. One limitation is that

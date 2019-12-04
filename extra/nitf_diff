@@ -40,6 +40,11 @@ Options:
 """
 args = pynitf.docopt_simple.docopt_simple(usage, version=version)
 
+# Load plugins for nitf
+if "NITF_PLUGIN" in os.environ:
+    for m in os.environ["NITF_PLUGIN"].split(":"):
+        exec("import %s" % m)
+
 if(args.config_file):
     spec = importlib.util.spec_from_file_location("config_file",
                                                   args.config_file)

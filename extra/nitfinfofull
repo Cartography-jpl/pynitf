@@ -22,12 +22,27 @@ Options:
   --debug
        Turn on debugging statements in pynitf
 
+  --report-raw
+       Some plugins might turn more complicated structures into more
+       complicated objects and report them, e.g., geocal with RSM. In
+       many cases you want that, but in some cases you might want to view
+       the raw field data without having in interpreted. Use this option
+       to report the raw fields instead.
+
   -v --version      
        Print program version
 
 """
 args = pynitf.docopt_simple.docopt_simple(usage, version=version)
 
+if(args.report_raw):
+    os.environ["NITF_USE_RAW"] = "T"
+    
+# Load plugins for nitf
+if "NITF_PLUGIN" in os.environ:
+    for m in os.environ["NITF_PLUGIN"].split(":"):
+        exec("import %s" % m)
+        
 if(args.debug):
     pynitf.nitf_field.DEBUG = True
     pynitf.nitf_des.DEBUG = True
