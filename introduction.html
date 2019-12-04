@@ -149,6 +149,12 @@ by putting in extensions to pynitf, but then having them handled by
 pynitf.</p></li>
 </ol>
 </div>
+<div class="section" id="extending-pynitf">
+<h2>Extending pynitf<a class="headerlink" href="#extending-pynitf" title="Permalink to this headline">¶</a></h2>
+<p>The environment variable “NITF_PLUGIN” can be set with a “:” separated list
+of modules to load. Tools like nitfinfofull use this to load modules to expand
+it functionality (e.g., “geocal”)</p>
+</div>
 <div class="section" id="on-demand-data">
 <h2>On demand data<a class="headerlink" href="#on-demand-data" title="Permalink to this headline">¶</a></h2>
 <p>NITF is an old format, with all kinds of limitations. One limitation is that
@@ -264,6 +270,7 @@ the tag, if that is easier.</p>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Introduction</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#overall-class-structure">Overall class structure</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#design-philosophy">Design Philosophy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#extending-pynitf">Extending pynitf</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#on-demand-data">On demand data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#install">Install</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#testing">Testing</a></li>
