@@ -3,6 +3,7 @@ from .nitf_field import *
 from .nitf_security import NitfSecurity
 import six
 import numpy as np
+import math
 
 hlp = '''This is a NITF image subheader. The field names can be pretty
 cryptic, but these are documented in detail in the NITF 2.10 documentation
@@ -214,6 +215,157 @@ def _shape(self):
     return (self.number_band, self.nrows, self.ncols)
 
 NitfImageSubheader.shape = property(_shape)
+
+# This is GDAL code copied out as python. It is a bit klunky since this is
+# C++ rather than python, but we try to stay as close as possible to GDAL since
+# it is well tested. This is all hidden in this module, so the klunkiness is
+# fine
+
+def check_igeolo_utm_x(name, x):
+    t = math.floor(x+0.5)
+    if(t < -100000 or t >= 1000000):
+        raise RuntimeError("Attempt to write UTM easting %s=%d which is outside the valid range." % (name, t))
+
+def check_igeolo_utm_y(name, y):
+    t = math.floor(y+0.5)
+    if(t < -1000000 or t >= 10000000):
+        raise RuntimeError("Attempt to write UTM northing %s=%d which is outside the valid range." % (name, t))
+
+def nitf_encode_dms_loc(dfValue, pszAxis):
+    if(pszAxis == "Lat"):
+        chHemisphere = 'S' if dfValue < 0.0 else 'N'
+    else:
+        chHemisphere = 'W' if dfValue < 0.0 else 'E'
+    dfValue = math.fabs(dfValue)
+    nDegrees = int(dfValue)
+    dfValue = (dfValue-nDegrees) * 60.0
+    nMinutes = int(dfValue)
+    dfValue = (dfValue-nMinutes) * 60.0
+    nSeconds = int(dfValue + 0.5)
+    if nSeconds == 60:
+    # Do careful rounding on seconds so that 59.9->60 is properly
+    # rolled into minutes and degrees.
+        nSeconds = 0
+        nMinutes += 1
+        if nMinutes == 60:
+            nMinutes = 0
+            nDegrees += 1
+    if pszAxis == "Lat":
+        res = "%02d%02d%02d%s" % (nDegrees, nMinutes, nSeconds, chHemisphere)
+    else:
+        res = "%03d%02d%02d%s" % (nDegrees, nMinutes, nSeconds, chHemisphere)
+    return res.encode('utf-8')
+
+def test_nitf_encode_dms_loc():
+    print(nitf_encode_dms_loc(50 + 30 / 60.0 + 20 / (60 * 60), "Lat"))
+    print(nitf_encode_dms_loc(50 + 30 / 60.0 + 20 / (60 * 60), "Lon"))
+    print(nitf_encode_dms_loc(-50 + 30 / 60.0 + 20 / (60 * 60), "Lat"))
+    print(nitf_encode_dms_loc(-50 + 30 / 60.0 + 20 / (60 * 60), "Lon"))
+
+def nitf_write_igeolo(chICORDS, nZone, df):
+    [[dfULX, dfULY], [dfURX, dfURY], [dfLRX, dfLRY], [dfLLX, dfLLY]] = df
+    szIGEOLO = bytearray(b' ' * 60)
+    # Note we don't support the military grid reference system given by
+    # 'U'.
+    if chICORDS not in ('G', 'N', 'S', 'D'):
+        raise RuntimeError("Invalid ICOORDS value (%s)" % chICORDS)
+    if chICORDS == 'G':
+        if(math.fabs(dfULX) > 180 or math.fabs(dfURX) > 180 or
+           math.fabs(dfLRX) > 180 or math.fabs(dfLLX) > 180 or
+           math.fabs(dfULY) > 90 or math.fabs(dfURY) > 90 or
+           math.fabs(dfLRY) > 90 or math.fabs(dfLLY) > 90):
+            raise RuntimeError("Attempt to write geographic bound outside of legal range.")
+
+        szIGEOLO[0:7] = nitf_encode_dms_loc(dfULY, "Lat" );
+        szIGEOLO[7:15] = nitf_encode_dms_loc(dfULX, "Long" );
+        szIGEOLO[15:22] = nitf_encode_dms_loc(dfURY, "Lat" );
+        szIGEOLO[22:30] = nitf_encode_dms_loc(dfURX, "Long" );
+        szIGEOLO[30:37] = nitf_encode_dms_loc(dfLRY, "Lat" );
+        szIGEOLO[37:45] = nitf_encode_dms_loc(dfLRX, "Long" );
+        szIGEOLO[45:52] = nitf_encode_dms_loc(dfLLY, "Lat" );
+        szIGEOLO[52:60] = nitf_encode_dms_loc(dfLLX, "Long" );
+    if chICORDS == 'D':
+        if(math.fabs(dfULX) > 180 or math.fabs(dfURX) > 180 or
+           math.fabs(dfLRX) > 180 or math.fabs(dfLLX) > 180 or
+           math.fabs(dfULY) > 90 or math.fabs(dfURY) > 90 or
+           math.fabs(dfLRY) > 90 or math.fabs(dfLLY) > 90):
+            raise RuntimeError("Attempt to write geographic bound outside of legal range.")
+        szIGEOLO[0:15] = ("%+#07.3f%+#08.3f" % (dfULY, dfULX)).encode('utf-8')
+        szIGEOLO[15:30] = ("%+#07.3f%+#08.3f" % (dfURY, dfURX)).encode('utf-8')
+        szIGEOLO[30:45] = ("%+#07.3f%+#08.3f" % (dfLRY, dfLRX)).encode('utf-8')
+        szIGEOLO[45:60] = ("%+#07.3f%+#08.3f" % (dfLLY, dfLLX)).encode('utf-8')
+    if chICORDS in ('N', 'S'):
+        check_igeolo_utm_x("dfULX", dfULX);
+        check_igeolo_utm_y("dfULY", dfULY);
+        check_igeolo_utm_x("dfURX", dfURX);
+        check_igeolo_utm_y("dfURY", dfURY);
+        check_igeolo_utm_x("dfLRX", dfLRX);
+        check_igeolo_utm_y("dfLRY", dfLRY);
+        check_igeolo_utm_x("dfLLX", dfLLX);
+        check_igeolo_utm_y("dfLLY", dfLLY);
+        szIGEOLO[0:15] = ("%02d%06d%07d" % (nZone, int(math.floor(dfULY)),
+                                 int(math.floor(dfULX)))).encode('utf-8')
+        szIGEOLO[15:30] = ("%02d%06d%07d" % (nZone, int(math.floor(dfURY)),
+                                 int(math.floor(dfURX)))).encode('utf-8')
+        szIGEOLO[30:45] = ("%02d%06d%07d" % (nZone, int(math.floor(dfLRY)),
+                                 int(math.floor(dfLRX)))).encode('utf-8')
+        szIGEOLO[45:60] = ("%02d%06d%07d" % (nZone, int(math.floor(dfLLY)),
+                                 int(math.floor(dfLLX)))).encode('utf-8')
+    return szIGEOLO
+
+def nitf_read_igeolo(chICORDS, s):
+    # Note we don't support the military grid reference system given by
+    # 'U'.
+    if chICORDS not in ('G', 'N', 'S', 'D'):
+        raise RuntimeError("Invalid ICOORDS value (%s)" % chICORDS)
+
+    res = []
+    nZone = None
+    for pszCoordPair in (s[0:15], s[15:30], s[30:45], s[45:60]):
+        if chICORDS in ("N", "S"):
+            nZone = int(pszCoordPair[0:2])
+            res.append([float(pszCoordPair[2:8]),
+                        float(pszCoordPair[8:15])])
+        # Not sure what "C" is, but this is in the GDAL code. Go ahead and
+        # include, in case this was some backwards compatibility thing or
+        # something like that.
+        if chICORDS in ("G", "C"):
+            y = (float(pszCoordPair[0:2]) +
+                 float(pszCoordPair[2:4]) / 60.0 +
+                 float(pszCoordPair[4:6]) / 3600.0)
+            if(pszCoordPair[6] in ('s', 'S')):
+                y *= -1
+            x = (float(pszCoordPair[7:10]) +
+                 float(pszCoordPair[10:12]) / 60.0 +
+                 float(pszCoordPair[12:14]) / 3600.0)
+            if(pszCoordPair[14] in ('w', 'W')):
+                x *= -1
+            res.append([x,y])
+        if chICORDS == "D":
+            y = float(pszCoordPair[0:7])
+            x = float(pszCoordPair[7:15])
+            res.append([x,y])
+    return res, nZone
+
+def _set_geolo_corner(self, v):
+    '''Set IGEOLO corners. We pass the icoords to specify the encoding,
+    the corners, and for UTM the utm_zone. The corners are an array
+    of 4 pairs. Each pair is X, Y which is longitude, latitude or UTM
+    X, Y. The corners are in the order upper left, upper right, lower right,
+    lower left (these are in the image space)'''
+    icoords, corners, utm_zone = v
+    self.icords = icoords
+    self.igeolo = nitf_write_igeolo(icoords, utm_zone, corners).decode('utf-8')
+
+def _get_geolo_corner(self):
+    '''These gets the IGEOLO corners. We return icoords, corners, utm_zone
+    as the inverse for _set_geolo_corner.'''
+    icoords = self.icords
+    corners, utm_zone = nitf_read_igeolo(self.icords,
+                                         self.igeolo.encode('utf-8'))
+    return icoords, corners, utm_zone
+
+NitfImageSubheader.geolo_corner = property(_get_geolo_corner, _set_geolo_corner)
 
 def set_default_image_subheader(ih, nrow, ncol, data_type, numbands=1,
                                 iid1 = "Test data",
