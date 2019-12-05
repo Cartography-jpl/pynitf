@@ -28,6 +28,9 @@ Options:
   --config-file=f
        Give a python configuration file to load to set up special 
        comparisons.
+       
+  --log-file=f
+       Give a path for the logs to be written to
 
   --quiet
        Don't print any messages, just return an overall status code.
@@ -64,7 +67,12 @@ elif(args.quiet):
 else:    
     logging.basicConfig(level=logging.INFO)
 
+if (args.log_file):
+    hdlr = logging.FileHandler(args.log_file)
+    logging.getLogger("nitf_diff").addHandler(hdlr)
+
 is_same = pynitf.nitf_file_diff(args.file1, args.file2, config=configData)
+
 if(not is_same):
     logging.getLogger("nitf_diff").error("Files differ")
     sys.exit(1)
