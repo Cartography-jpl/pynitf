@@ -5,6 +5,29 @@ import six
 from collections.abc import MutableMapping
 import numpy as np
 
+class ENGRDAFieldData(FieldData):
+    def get_print(self, parent_obj,key):
+        t = self.get(parent_obj,key)
+        if (t is None):
+            return "Not used"
+        if(len(t) == 0):
+            return "Not used"
+
+        if self.field_name == 'engdata':
+            data = _getitem(parent_obj, parent_obj.getEngLblByIndex(key))
+            dataWithoutUnits = data[0]
+
+            if dataWithoutUnits.shape == (1,1):
+                dataWithoutUnits = dataWithoutUnits[0][0] # just print out the single 1x1 value without the brackets
+
+            dataWithoutUnitsStr = str(dataWithoutUnits)
+
+            if len(dataWithoutUnitsStr) > 1000:
+                dataWithoutUnitsStr = dataWithoutUnitsStr[0:1000]
+            return dataWithoutUnitsStr
+        else:
+            return "Data length %s" % len(t)
+
 hlp = '''This is the ENGRDA TRE, Engineering data.
 
 The field names can be pretty cryptic, but are documented in detail in
@@ -35,11 +58,14 @@ desc = ["ENGRDA",
          # to set this to t.engmtxc[i1]*t.engmtxr[i1]
          ["engdatc", "Engineering Data Count", 8, int],
          ["engdata", "Engineering Data", "f.engdatc[i1]*f.engdts[i1]", None,
-          {'field_value_class' : FieldData, 'size_not_updated' : True}],
+          {'field_value_class' : ENGRDAFieldData, 'size_not_updated' : True}],
         ], # End recnt loop
 ]
 
 TreENGRDA = create_nitf_tre_structure("TreENGRDA",desc,hlp=hlp)
+
+def _getEngLblByIndex(self, i):
+    return self.englbl[i]
 
 def _summary(self):
     res = six.StringIO()
@@ -76,6 +102,7 @@ def _engdatc_value(self, *key):
     return (self.engmtxc[key]*self.engmtxr[key])
 
 TreENGRDA.engdatc_value = _engdatc_value
+TreENGRDA.getEngLblByIndex = _getEngLblByIndex
 
 TreENGRDA.summary = _summary
 

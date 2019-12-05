@@ -1,0 +1,9 @@
+{
+	"tolerances": [
+		{
+			"method": "value",
+			"fieldName": "all",
+			"fixed": 1
+		}
+	]
+}

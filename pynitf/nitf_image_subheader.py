@@ -93,6 +93,10 @@ NitfImageSubheader.ifc_value = hardcoded_value("N")
 NitfImageSubheader.imflt_value = hardcoded_value("   ")
 NitfImageSubheader.isync_value = hardcoded_value(0)
 
+def __eq__(self, other):
+    return str(self) == str(other)
+
+
 def _summary(self):
     res = six.StringIO()
     print("%s %s %s" % (self.im, self.iid1, self.iid2), file=res)

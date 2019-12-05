@@ -143,6 +143,14 @@ class NitfImagePlaceHolder(NitfImage):
     def __str__(self):
         return "NitfImagePlaceHolder %d bytes of data" % (self.data_size)
 
+    def __eq__(self, other):
+        if not isinstance(other, NitfImagePlaceHolder):
+            # don't attempt to compare against unrelated types
+            return NotImplemented
+
+        return self.image_subheader == other.image_subheader and self.header_size == other.header_size and\
+               self.data_size == other.data_size
+
     def read_from_file(self, fh, segindex=None):
         '''Read an image from a file. For larger images a derived class might
         want to not actually read in the data (e.g., you might memory

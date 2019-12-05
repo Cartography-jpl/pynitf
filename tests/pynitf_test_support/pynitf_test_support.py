@@ -8,6 +8,8 @@ import sys
 import subprocess
 import re
 import pytest
+from distutils import dir_util
+
 # Some unit tests require h5py. This is not an overall requirement, so if
 # not found we just skip those tests
 try:
@@ -76,6 +78,22 @@ def gdal_value(f, line, sample, band = None):
 require_gdal_value = pytest.mark.skipif(not sys.version_info > (3,) or
                    not cmd_exists("gdallocationinfo"),
                    reason="Require python 3 and gdallocationinfo")
+
+
+@pytest.fixture(scope="function")
+def config_dir(tmpdir, request):
+    '''
+    Fixture responsible for searching a folder with the same name of test
+    module and, if available, moving all contents to a temporary directory so
+    tests can use them freely.
+    '''
+    filename = request.module.__file__
+    test_dir, _ = os.path.splitext(filename)
+
+    if os.path.isdir(test_dir):
+        dir_util.copy_tree(test_dir, str(tmpdir))
+
+    return tmpdir
 
 @pytest.yield_fixture(scope="function")
 def isolated_dir(tmpdir):

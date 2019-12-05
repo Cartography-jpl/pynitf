@@ -1,0 +1,10 @@
+{
+	"tolerances": [
+		{
+			"method": "histogram",
+			"fieldName": "all",
+			"percent": 67,
+			"numBins": 4
+		}
+	]
+}
