@@ -10,3 +10,6 @@ doc/_build
 .eggs
 .pytest_cache
 basic*.ntf
+build
+dist
+
