@@ -24,6 +24,7 @@ import six
 import numpy as np
 import hashlib
 import h5py
+import time
 
 def createHISTOA():
 
@@ -258,12 +259,29 @@ def test_main(isolated_dir):
     f.des_segment.append(de3)
 
     # -- EXT_DEF_CONTENT --
-    d = DesEXT_h5()
+    d_ext = DesEXT_h5()
     h_f = h5py.File("mytestfile.hdf5", "w")
-    h_f.close()
-    d.attach_file("mytestfile.hdf5")
 
-    de3 = NitfDesSegment(des=d)
+    arr = np.random.randn(1000)
+
+    g = h_f.create_group('Base_Group')
+    d = g.create_dataset('default', data=arr)
+
+    g.attrs['Date'] = time.time()
+    g.attrs['User'] = 'Me'
+
+    d.attrs['OS'] = os.name
+
+    for k in g.attrs.keys():
+        print('{} => {}'.format(k, g.attrs[k]))
+
+    for j in d.attrs.keys():
+        print('{} => {}'.format(j, d.attrs[j]))
+
+    h_f.close()
+    d_ext.attach_file("mytestfile.hdf5")
+
+    de3 = NitfDesSegment(des=d_ext)
     f.des_segment.append(de3)
 
     #print (f)
