@@ -22,7 +22,7 @@ copyright = '2019, Mike Smyth, Philip Yoon, Walt Bunch'
 author = 'Mike Smyth, Philip Yoon, Walt Bunch'
 
 # The full version, including alpha/beta/rc tags
-release = '0.60'
+release = '0.61'
 
 
 # -- General configuration ---------------------------------------------------
