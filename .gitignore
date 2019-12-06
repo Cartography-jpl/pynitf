@@ -7,3 +7,6 @@
 .cache
 pynitf.egg-info
 doc/_build
+.eggs
+.pytest_cache
+basic*.ntf
