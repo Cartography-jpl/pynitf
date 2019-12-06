@@ -80,7 +80,7 @@ require_gdal_value = pytest.mark.skipif(not sys.version_info > (3,) or
                    reason="Require python 3 and gdallocationinfo")
 
 
-@pytest.fixture(scope="function")
+@pytest.yield_fixture(scope="function")
 def config_dir(tmpdir, request):
     '''
     Fixture responsible for searching a folder with the same name of test
@@ -93,7 +93,12 @@ def config_dir(tmpdir, request):
     if os.path.isdir(test_dir):
         dir_util.copy_tree(test_dir, str(tmpdir))
 
-    return tmpdir
+    curdir = os.getcwd()
+    try:
+        tmpdir.chdir()
+        yield tmpdir
+    finally:
+        os.chdir(curdir)
 
 @pytest.yield_fixture(scope="function")
 def isolated_dir(tmpdir):
