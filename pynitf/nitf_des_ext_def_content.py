@@ -160,6 +160,16 @@ class DesEXT_h5(DesEXT_DEF_CONTENT):
         self.temp_dir = temp_dir
         self._h5py_fh = None
 
+    def __str__(self):
+        fh = six.StringIO()
+        self.str_hook(fh)
+        print(self.content_header, file=fh)
+        if self.h5py_fh is not None:
+            h5lsoutput = subprocess.getoutput("h5ls -r %s" % self.h5py_fh.filename)
+            print("HDF5 content", file=fh)
+            print(h5lsoutput, file=fh)
+        return fh.getvalue()
+
     def attach_file(self, file):
         '''Attach a HDF 5 file to write out.'''
         self.file = file
