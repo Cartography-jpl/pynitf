@@ -35,9 +35,6 @@ Options:
 """
 args = pynitf.docopt_simple.docopt_simple(usage, version=version)
 
-if(args.report_raw):
-    os.environ["NITF_USE_RAW"] = "T"
-    
 # Load plugins for nitf
 if "NITF_PLUGIN" in os.environ:
     for m in os.environ["NITF_PLUGIN"].split(":"):
@@ -46,5 +43,5 @@ if "NITF_PLUGIN" in os.environ:
 if(args.debug):
     pynitf.nitf_field.DEBUG = True
     pynitf.nitf_des.DEBUG = True
-f = pynitf.NitfFile(args.input_file)
+f = pynitf.NitfFile(args.input_file, use_raw=args.report_raw)
 print(f)

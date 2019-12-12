@@ -4,6 +4,7 @@ import io, six
 
 def test_basic():
     t = NitfFileHeader()
+    t.fdt = "20021216151629"
     with open(unit_test_data + "sample.ntf", 'rb') as fh:
         t.read_from_file(fh)
     assert t.fhdr == "NITF"
@@ -31,6 +32,7 @@ def test_basic():
 
 def test_write():
     t = NitfFileHeader()
+    t.fdt = "20021216151629"
     fh = six.BytesIO()
     t.write_to_file(fh)
     # We manually check the results of this file header as valid by using

@@ -76,8 +76,6 @@ NitfFileHeader = create_nitf_field_structure("NitfFileHeader", desc, hlp=hlp)
 NitfFileHeader.fhdr_value = hardcoded_value("NITF")
 NitfFileHeader.fver_value = hardcoded_value("02.10")
 NitfFileHeader.stype_value = hardcoded_value("BF01")
-# Will want this calculated
-NitfFileHeader.fdt_value = hardcoded_value("20021216151629")
 
 def _get_security(self):
     return NitfSecurity.get_security(self, "f")
