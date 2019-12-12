@@ -15,16 +15,16 @@ class ENGRDAFieldData(FieldData):
 
         if self.field_name == 'engdata':
             data = _getitem(parent_obj, parent_obj.getEngLblByIndex(key))
-            dataWithoutUnits = data[0]
+            data_without_unit = data[0]
 
-            if dataWithoutUnits.shape == (1,1):
-                dataWithoutUnits = dataWithoutUnits[0][0] # just print out the single 1x1 value without the brackets
+            if hasattr(data_without_unit, "shape") and data_without_unit.shape == (1,1):
+                data_without_unit = data_without_unit[0][0] # just print out the single 1x1 value without the brackets
 
-            dataWithoutUnitsStr = str(dataWithoutUnits)
+            data_without_unit_str = str(data_without_unit)
 
-            if len(dataWithoutUnitsStr) > 1000:
-                dataWithoutUnitsStr = dataWithoutUnitsStr[0:1000]
-            return dataWithoutUnitsStr
+            if len(data_without_unit_str) > 1000:
+                data_without_unit_str = data_without_unit_str[0:1000]
+            return data_without_unit_str
         else:
             return "Data length %s" % len(t)
 

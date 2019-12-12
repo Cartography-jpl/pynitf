@@ -84,6 +84,7 @@ def test_file_engrda(isolated_dir):
     assert len(f2.engrda.keys()) == 3
     assert all(t in f2.engrda.keys() for t in ["My_sensor 1", "My_sensor 2",
                                                "My_sensor 3"])
+    print(f2)
     f3 = NitfFile()
     f3.tre_list.append(f2.engrda["My_sensor 1"])
     f3.tre_list.append(f2.engrda["My_sensor 3"])
