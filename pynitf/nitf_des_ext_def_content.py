@@ -7,6 +7,7 @@ import datetime
 import shutil
 import tempfile
 import numpy as np
+import subprocess
 
 # DesEXT_h5 depends on h5py being available. Ok if it isn't, we just can't
 # use this particular class.
