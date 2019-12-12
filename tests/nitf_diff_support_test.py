@@ -235,11 +235,11 @@ def test_nitf_diff_image_segment_value_tolerance(config_dir):
     # pytest.ini to set the logging level - wlb
     logging.basicConfig(level=logging.DEBUG)
 
-    configFile = config_dir.join("nitf_diff_histogram_tolerance.json")
-    with open(configFile) as json_file:
-        configData = json.load(configFile)
+    with open("nitf_diff_histogram_tolerance.json") as fh:
+        config_data = json.load(fh)
 
-    assert nitf_file_diff("basic_nitf.ntf", "basic2_nitf.ntf", config=configData) == True
+    assert nitf_file_diff("basic_nitf.ntf", "basic2_nitf.ntf",
+                          config=config_data) == True
 
 def test_nitf_diff_image_segment_count_tolerance(config_dir):
     f = NitfFile()
@@ -258,11 +258,11 @@ def test_nitf_diff_image_segment_count_tolerance(config_dir):
     # pytest.ini to set the logging level - wlb
     logging.basicConfig(level=logging.DEBUG)
 
-    configFile = config_dir.join("nitf_diff_count_tolerance.json")
-    with open(configFile) as json_file:
-        configData = json.load(configFile)
+    with open("nitf_diff_count_tolerance.json") as fh:
+        config_data = json.load(fh)
 
-    assert nitf_file_diff("basic_nitf.ntf", "basic2_nitf.ntf", config=configData) == True
+    assert nitf_file_diff("basic_nitf.ntf", "basic2_nitf.ntf",
+                          config=config_data) == True
 
 def test_nitf_diff_image_segment_histogram_tolerance(config_dir):
     f = NitfFile()
@@ -281,11 +281,10 @@ def test_nitf_diff_image_segment_histogram_tolerance(config_dir):
     # pytest.ini to set the logging level - wlb
     logging.basicConfig(level=logging.DEBUG)
 
-    configFile = config_dir.join("nitf_diff_histogram_tolerance.json")
-    with open(configFile) as json_file:
-        configData = json.load(configFile)
-
-    assert nitf_file_diff("basic_nitf.ntf", "basic2_nitf.ntf", config=configData) == False
+    with open("nitf_diff_histogram_tolerance.json") as fh:
+        config_data = json.load(fh)
+    assert nitf_file_diff("basic_nitf.ntf", "basic2_nitf.ntf",
+                          config=config_data) == False
 
 def test_nitf_diff_image_segment_histogram_tolerance2(config_dir):
     f = NitfFile()
@@ -304,11 +303,11 @@ def test_nitf_diff_image_segment_histogram_tolerance2(config_dir):
     # pytest.ini to set the logging level - wlb
     logging.basicConfig(level=logging.DEBUG)
 
-    configFile = config_dir.join("nitf_diff_histogram_tolerance.json")
-    with open(configFile) as json_file:
-        configData = json.load(configFile)
+    with open("nitf_diff_histogram_tolerance.json") as fh:
+        config_data = json.load(fh)
 
-    assert nitf_file_diff("basic_nitf.ntf", "basic2_nitf.ntf", config=configData) == True
+    assert nitf_file_diff("basic_nitf.ntf", "basic2_nitf.ntf",
+                          config=config_data) == True
 
 def test_image_content(isolated_dir):
     '''This create an end to end NITF file, this was at least initially the

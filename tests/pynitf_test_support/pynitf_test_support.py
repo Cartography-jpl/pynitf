@@ -83,8 +83,8 @@ require_gdal_value = pytest.mark.skipif(not sys.version_info > (3,) or
 @pytest.fixture(scope="function")
 def config_dir(tmpdir, request):
     '''
-    Fixture responsible for searching a folder with the same name of test
-    module and, if available, moving all contents to a temporary directory so
+    Likes isolated_dir, but first copies a folder with the same name of test
+    module and, if available, moves all contents to the temporary directory so
     tests can use them freely.
     '''
     filename = request.module.__file__
@@ -92,7 +92,12 @@ def config_dir(tmpdir, request):
 
     if os.path.isdir(test_dir):
         dir_util.copy_tree(test_dir, str(tmpdir))
-
+    curdir = os.getcwd()
+    try:
+        tmpdir.chdir()
+        yield curdir
+    finally:
+        os.chdir(curdir)
     return tmpdir
 
 @pytest.yield_fixture(scope="function")
