@@ -498,8 +498,11 @@ class NitfImageSegment(NitfSegment):
     
 class NitfGraphicSegment(NitfPlaceHolder):
     '''Graphic segment (GS), support the standard graphic type of data.'''
-    def __init__(self, header_size=None, data_size=None):
-        NitfPlaceHolder.__init__(self, header_size, data_size, "Graphic Segment")
+    def __init__(self, header_size=None, data_size=None, nitf_file=None,
+                 hook_obj = []):
+        NitfPlaceHolder.__init__(self, header_size, data_size,
+                                 "Graphic Segment", nitf_file=nitf_file,
+                                 hook_obj=hook_obj)
 
 class NitfTextSegment(NitfSegment):
     '''Text segment (TS), support the standard text type of data. 
@@ -657,8 +660,10 @@ class NitfResSegment(NitfPlaceHolder):
     '''Reserved extension segment (RES), non-standard data segment which is
     user-defined. A NITF file can support different user-defined types of 
     segments called RES.'''
-    def __init__(self, header_size=None, data_size=None):
-        NitfPlaceHolder.__init__(self, header_size, data_size, "RES")
+    def __init__(self, header_size=None, data_size=None, nitf_file=None,
+                 hook_obj = []):
+        NitfPlaceHolder.__init__(self, header_size, data_size, "RES",
+                                 nitf_file=nitf_file, hook_obj=hook_obj)
 
 # Add engrda to give hash access to ENGRDA TREs
 add_engrda_function(NitfFile)
