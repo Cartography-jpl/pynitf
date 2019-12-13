@@ -80,7 +80,7 @@ require_gdal_value = pytest.mark.skipif(not sys.version_info > (3,) or
                    reason="Require python 3 and gdallocationinfo")
 
 
-@pytest.fixture(scope="function")
+@pytest.yield_fixture(scope="function")
 def config_dir(tmpdir, request):
     '''
     Likes isolated_dir, but first copies a folder with the same name of test
@@ -98,7 +98,6 @@ def config_dir(tmpdir, request):
         yield curdir
     finally:
         os.chdir(curdir)
-    return tmpdir
 
 @pytest.yield_fixture(scope="function")
 def isolated_dir(tmpdir):
