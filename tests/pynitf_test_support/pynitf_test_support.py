@@ -8,6 +8,7 @@ import sys
 import subprocess
 import re
 import pytest
+import math
 from distutils import dir_util
 
 # Some unit tests require h5py. This is not an overall requirement, so if
@@ -43,6 +44,13 @@ security_fake.security_control_number = "1234"
 security_fake.copy_number = 2
 security_fake.number_of_copies = 5
 security_fake.encryption = 1
+
+# We often have errors in formatting floats. Give a few "evil" floats to
+# use in testing
+evil_float1 = math.pi
+evil_float2 = math.pi * 1e-12
+evil_float3 = math.pi * 1e+12
+
 
 # Short hand for marking as unconditional skipping. Good for tests we
 # don't normally run, but might want to comment out for a specific debugging

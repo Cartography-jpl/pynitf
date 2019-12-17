@@ -22,4 +22,4 @@ def test_tre_mimcsa_basic():
     fh = six.BytesIO()
     t.write_to_file(fh)
     print(fh.getvalue())
-    assert fh.getvalue() == b'MIMCSA00121Some layer ID                       22.2         10.1         29.9         00NCN/A                                 N/A   '
+    assert fh.getvalue() == b'MIMCSA00121Some layer ID                       22.200000000010.100000000029.900000000000NCN/A                                 N/A   '

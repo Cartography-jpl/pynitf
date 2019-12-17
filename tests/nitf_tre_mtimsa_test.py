@@ -32,7 +32,7 @@ def test_tre_mtimsa_basic():
     fh = six.BytesIO()
     t.write_to_file(fh)
     print(fh.getvalue())
-    assert fh.getvalue() == b'MTIMSA0016004299Some Layer                          043Camera A                            00001704433.33        000000045today                   \x00\x00\x00\x00\x00\x00\x04\xd2\x04\x00\x00\x00d\x00\x00\x00\x02\x00\x00\x00{\x00\x00\x00|'
+    assert fh.getvalue() == b'MTIMSA0016004299Some Layer                          043Camera A                            00001704433.3300000000000000045today                   \x00\x00\x00\x00\x00\x00\x04\xd2\x04\x00\x00\x00d\x00\x00\x00\x02\x00\x00\x00{\x00\x00\x00|'
 
     fh2 = six.BytesIO(fh.getvalue())
     t2 = TreMTIMSA()
@@ -83,7 +83,7 @@ def test_tre_mtimsa_size_2():
     fh = six.BytesIO()
     t.write_to_file(fh)
     print(fh.getvalue())
-    assert fh.getvalue() == b'MTIMSA0015604299Some Layer                          043Camera A                            00001704433.33        000000045today                   \x00\x00\x00\x00\x00\x00\x04\xd2\x02\x00\x00\x00d\x00\x00\x00\x02\x00{\x00|'
+    assert fh.getvalue() == b'MTIMSA0015604299Some Layer                          043Camera A                            00001704433.3300000000000000045today                   \x00\x00\x00\x00\x00\x00\x04\xd2\x02\x00\x00\x00d\x00\x00\x00\x02\x00{\x00|'
 
     fh2 = six.BytesIO(fh.getvalue())
     t2 = TreMTIMSA()

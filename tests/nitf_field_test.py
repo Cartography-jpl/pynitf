@@ -1,7 +1,15 @@
 from pynitf.nitf_field import *
 from pynitf_test_support import *
 import io, six
+import math
 
+def test_float_to_fixed_width():
+    assert len(float_to_fixed_width(evil_float1, 7)) <= 7
+    assert len(float_to_fixed_width(evil_float2, 7)) <= 7
+    assert len(float_to_fixed_width(evil_float3, 7, maximum_precision=True)) <= 7
+    for i in range(-7,7):
+        print(float_to_fixed_width(pow(10,i), 7))
+        
 def test_basic():
     '''Basic test, just set and read values.'''
     TestField = create_nitf_field_structure("TestField",

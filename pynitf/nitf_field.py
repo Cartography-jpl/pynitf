@@ -67,7 +67,23 @@ class _FieldValueAccess(object):
             raise RuntimeError("Need to give indexes to set value for field "
                                + self.fv.field_name)
         self.fv.set(parent_obj, (), v)
-    
+
+def float_to_fixed_width(n, max_width, maximum_precision=False):
+    '''Utility function that tries to fit a float with maximum precision into
+    other a fixed point string, or optionally an exponent string'''
+    s1 = '{:.{}f}'
+    if(maximum_precision and
+       (n < pow(10,-max_width+5) or
+        n > pow(10,max_width-5))):
+        s1 = '{:.{}e}'
+    for i in range(max_width - 2, -1, -1):
+        s = s1.format(n, i)
+        if len(s) <= max_width:
+            break
+    if(len(s) > max_width):
+        raise RuntimeError("Can't fit %f into length %d" % (n, max_width))
+    return s
+        
 class _FieldValue(object):
     '''This handles a single NITF field. We consider a field in a looping 
     structure to be a single field presented as an array. So for example
@@ -91,6 +107,9 @@ class _FieldValue(object):
         if(ty == int):
             self.fstring = "{:s}"
             self.frmt = "%%0%dd" % self.size
+        if(ty == float):
+            self.fstring = "{:%ds}" % self.size
+            self.frmt = lambda v : float_to_fixed_width(v, self.size)
         if("frmt" in options):
             self.frmt = options["frmt"]
         self.default = options.get("default", None)
@@ -845,7 +864,11 @@ def create_nitf_field_structure(name, description, hlp = None):
     for str type is just "%s" and integer is "%d" - you don't need to specify
     this if you want the default (note that we already handling padding, so
     you don't need to specify something like "%03d" to get 0 filled padding).
-
+    Floats are more complicated. We have as a default the 
+    float_to_fixed_width function. This uses fixed point with the precision
+    set to fit (so 0.00001, 0.00010, 10.0000, through 1000000). This often
+    but not always works, set the NITF documentation for how the floats 
+    should be formatted.
     '''
     t = _create_nitf_field_structure()
     res = type(name, (_FieldStruct,), t.process(description))
@@ -860,4 +883,4 @@ def create_nitf_field_structure(name, description, hlp = None):
     return res
 
 __all__ = ["FieldData", "StringFieldData", "IntFieldData", "FloatFieldData", "hardcoded_value", "NitfLiteral",
-           "create_nitf_field_structure"]
+           "create_nitf_field_structure", "float_to_fixed_width"]
