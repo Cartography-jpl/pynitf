@@ -39,6 +39,7 @@ class NitfFile(object):
         structure. Otherwise we start with a default file (a file header, but
         no segments) - which you can then populate before calling write'''
         self.file_header = NitfFileHeader()
+        self.file_name = file_name
         # This is the order things appear in the file
         self.image_segment = ListNitfFileReference(self)
         self.graphic_segment = ListNitfFileReference(self)
@@ -138,6 +139,7 @@ class NitfFile(object):
         to higher level objects (e.g., RSM). It can be useful to suppress that
         in certain contexts (e.g., nitfinfofull reporting raw TRE fields),
         so you can specify use_raw=True to skip hooks.'''
+        self.file_name = file_name
         with open(file_name, 'rb') as fh:
             self.file_header.read_from_file(fh)
             hook_obj = NitfFile.image_segment_hook_obj
