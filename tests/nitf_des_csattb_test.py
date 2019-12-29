@@ -31,7 +31,6 @@ def test_des_snip_user_header():
 def test_des_csattb_basic():
 
     d = DesCSATTB()
-
     d.qual_flag_att = 1
     d.interp_type_att = 1
     d.att_type = 1
@@ -46,6 +45,7 @@ def test_des_csattb_basic():
         d.q3[n] = 0.11111
         d.q4[n] = 0.11111
     d.reserved_len = 0
+    assert d.user_subheader_size == 46 
 
     fh = six.BytesIO()
     dseg = NitfDesSegment(des=d);
@@ -57,7 +57,6 @@ def test_des_csattb_basic():
     dseg2 = NitfDesSegment(header_size=hs, data_size=ds)
     dseg2.read_from_file(fh2)
     d2 = dseg2.des
-
     assert d2.qual_flag_att == 1
     assert d2.interp_type_att == 1
     assert d2.att_type == 1

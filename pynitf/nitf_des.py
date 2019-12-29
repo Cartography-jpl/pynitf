@@ -102,6 +102,17 @@ class NitfDes(object):
             fh = six.BytesIO(self.des_subheader.desshf)
             self.user_subheader.read_from_file(fh)
 
+    @property
+    def user_subheader_size(self):
+        '''Return the size of the user subheader. This can be used to
+        make sure we aren't exceeding the size supported by desshl'''
+        if(self.user_subheader_class):
+            fh = six.BytesIO()
+            self.user_subheader.write_to_file(fh)
+            return len(fh.getvalue())
+        else:
+            return 0
+
     def write_user_subheader(self, sh):
         '''This writes the user subheader section of the des subheader. Note
         that derived classes do not normally call this function. Because the
