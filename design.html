@@ -33,8 +33,8 @@
             
   <div class="section" id="software-design">
 <h1>Software Design<a class="headerlink" href="#software-design" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="priority-set">
-<h2>Priority Set<a class="headerlink" href="#priority-set" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="priority-handle-set">
+<h2>Priority Handle Set<a class="headerlink" href="#priority-handle-set" title="Permalink to this headline">¶</a></h2>
 <p>We have a number of places where we want to have a
 <a class="reference external" href="https://en.wikipedia.org/wiki/Chain-of-responsibility_pattern">chain-of-responsibility</a>, with the addition of an ordering based on a priority order. We
 also want to be able to modify the handles, starting with a default set of
@@ -42,7 +42,7 @@ handles. So for example while reading a NitfFile we would like to process
 images using a set of handles (e.g., read JPEG 2000, read using numpy arrays,
 etc.), that we could potentially change for a particular NitfFile (e.g.,
 add a special reader for an unusual format).</p>
-<p>To support this, we have a class PrioritySet. This is very similar to
+<p>To support this, we have a class PriorityHandleSet. This is very similar to
 a <a class="reference external" href="https://en.wikipedia.org/wiki/Priority_queue">priority queue</a> except that
 we:</p>
 <ul class="simple">
@@ -55,7 +55,7 @@ priority in an arbitrary order</p></li>
 <p>The design for this is shown in <a class="reference internal" href="#id1"><span class="std std-numref">Fig. 2</span></a>.</p>
 <div class="figure align-default" id="id3">
 <span id="id1"></span><p class="plantuml">
-<img src="_images/plantuml-7a2b081d71d3351d9231170461e8fbfaf304b075.png" alt="abstract class PrioritySet {
+<img src="_images/plantuml-36dede213618563c3d0cb2a00106eb12f27ecb9a.png" alt="abstract class PriorityHandleSet {
    +add_handle(h, priority_order=0)
    +discard_handle(h)
    {static} add_default_handle(cls, h, priority_order=0)
@@ -78,17 +78,6 @@ note top
    modified.
 end note
 
-note right of PrioritySet::handle_h
-   Determine if a given handle h can handle the
-   given args. If it can, return (True, other_ret)
-   otherwise, return (False, None).
-
-   handle loops through all the handles h calling
-   handle_h defined in the derived class, and returns
-   the value returned by the first handle that says it
-   could process that
-end note
-
 class NitfDesHandleSet
 note top
    Process NitfDes
@@ -99,10 +88,34 @@ note right
    Process NitfImage
 end note
 
-PrioritySet &lt;|.. NitfDesHandleSet
-PrioritySet &lt;|.. NitfImageHandleSet"/>
+PriorityHandleSet &lt;|-- NitfDesHandleSet
+PriorityHandleSet &lt;|-- NitfImageHandleSet"/>
 </p>
-<p class="caption"><span class="caption-number">Fig. 2 </span><span class="caption-text">Priority Set</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-number">Fig. 2 </span><span class="caption-text">Priority Handle Set</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
+</div>
+<p>The PriorityHandleSet has members for adding and removing “Handles”. A handle
+is purposely vague, it is any object that the derived class wants to be.
+And in some cases the object is actually a class - so for example
+NitfImageHandleSet uses handles that are classes derived from NitfImage.</p>
+<p>The function handle forwards work to the function handle_h, as shown in
+<a class="reference internal" href="#handle-sequence"><span class="std std-numref">Fig. 3</span></a></p>
+<div class="figure align-default" id="id4">
+<span id="handle-sequence"></span><p class="plantuml">
+<img src="_images/plantuml-46cce3e4485123cb612c728e6bd43f19ab59c8b9.png" alt="caller -&gt; &quot;handler_set:DerivedFromPriorityHandleSet&quot; as hset: 1 handle(*args, **keywords)
+loop h:HandleObjects
+    hset -&gt; hset : 1.1 handle_h(h,*args,**keywords)
+    alt h couldn't handle
+       hset -&gt; hset: return (False, None)
+    else h could handle
+       hset -&gt; hset: return (True, res)
+    end
+    note right hset
+       Continue looping until the
+       first h can handle the args
+    end note
+end"/>
+</p>
+<p class="caption"><span class="caption-number">Fig. 3 </span><span class="caption-text">handler_set:DerivedFromPriorityHandleSet sequence diagram</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
 </div>
 </div>
 <div class="section" id="nitf-diff">
@@ -118,10 +131,10 @@ date time (fdt) will generally change from one run to the next.</p>
 for identical, 1 for different), along with log information describing
 what if any differences there are.</p>
 <p>We use the same pluggable set of handles like we do for NitfDesHandleSet etc.
-The design is shown in <a class="reference internal" href="#id2"><span class="std std-numref">Fig. 3</span></a>.</p>
-<div class="figure align-default" id="id4">
+The design is shown in <a class="reference internal" href="#id2"><span class="std std-numref">Fig. 4</span></a>.</p>
+<div class="figure align-default" id="id5">
 <span id="id2"></span><p class="plantuml">
-<img src="_images/plantuml-26c448f3eae8334338d50ae65a00335d25cf4ebb.png" alt="class NitfDiff {
+<img src="_images/plantuml-43138ccac33c32888263033523a60fabd9230d79.png" alt="class NitfDiff {
    +config
    +handle_set
    +run(fname1, fname2)
@@ -138,26 +151,29 @@ note top
    Both of these
 end note
 
-abstract class PrioritySet
+abstract class PriorityHandleSet
 
 class NitfDiffHandleSet {
    +handle_h(h, nitf_diff, obj1, obj2)
    {static} default_config
 }
-note top
+note bottom
    Handle comparing two objects. Logs differences,
    and return True if the objects are the same, False
    if different.
 end note
 
-PrioritySet &lt;|.. NitfDiffHandleSet
+PriorityHandleSet &lt;|-- NitfDiffHandleSet
 NitfDiff *-- NitfDiffHandleSet : Has a handle_set"/>
 </p>
-<p class="caption"><span class="caption-number">Fig. 3 </span><span class="caption-text">nitf_diff</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-number">Fig. 4 </span><span class="caption-text">nitf_diff</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
 </div>
 <p>Most of the time there is a known set of handles and configuration parameters,
 with a user adding or modifying a few. So we have both the default handles
-for NitfDiffHandleSet and default configuration. NitfDiff</p>
+for NitfDiffHandleSet and default configuration. NitfDiff object can then
+have their handle and/or config objects modified to change the behavior for
+a specific comparison. The program nitf_diff (which is a wrapper around
+NitfDiff) can take a JSON file and/or arbitrary python code to change this.</p>
 </div>
 </div>
 
@@ -182,7 +198,7 @@ for NitfDiffHandleSet and default configuration. NitfDiff</p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Software Design</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#priority-set">Priority Set</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#priority-handle-set">Priority Handle Set</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#nitf-diff">nitf_diff</a></li>
 </ul>
 </li>
