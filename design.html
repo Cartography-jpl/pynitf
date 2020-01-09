@@ -1,0 +1,237 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Software Design &#8212; pynitf 0.61 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Introduction" href="introduction.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="software-design">
+<h1>Software Design<a class="headerlink" href="#software-design" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="priority-set">
+<h2>Priority Set<a class="headerlink" href="#priority-set" title="Permalink to this headline">¶</a></h2>
+<p>We have a number of places where we want to have a
+<a class="reference external" href="https://en.wikipedia.org/wiki/Chain-of-responsibility_pattern">chain-of-responsibility</a>, with the addition of an ordering based on a priority order. We
+also want to be able to modify the handles, starting with a default set of
+handles. So for example while reading a NitfFile we would like to process
+images using a set of handles (e.g., read JPEG 2000, read using numpy arrays,
+etc.), that we could potentially change for a particular NitfFile (e.g.,
+add a special reader for an unusual format).</p>
+<p>To support this, we have a class PrioritySet. This is very similar to
+a <a class="reference external" href="https://en.wikipedia.org/wiki/Priority_queue">priority queue</a> except that
+we:</p>
+<ul class="simple">
+<li><p>Don’t want to actually pop from a queue, rather we iterate through the stored
+items.</p></li>
+<li><p>The items aren’t totally ordered. We iterate through items with the same
+priority in an arbitrary order</p></li>
+<li><p>We want to have a default list of handlers, that can then be modified.</p></li>
+</ul>
+<p>The design for this is shown in <a class="reference internal" href="#id1"><span class="std std-numref">Fig. 2</span></a>.</p>
+<div class="figure align-default" id="id3">
+<span id="id1"></span><p class="plantuml">
+<img src="_images/plantuml-7a2b081d71d3351d9231170461e8fbfaf304b075.png" alt="abstract class PrioritySet {
+   +add_handle(h, priority_order=0)
+   +discard_handle(h)
+   {static} add_default_handle(cls, h, priority_order=0)
+   {static} discard_default_handle(cls, h, priority_order=0)
+   {static} default_handle_list()
+   +handle(*args, **keywords)
+   {abstract} handle_h(h, *args, **keywords)
+}
+note top
+   This class also adds the normal python
+   magic functions to be able to iterate like
+   a set.
+
+   Higher numbers in the priority order are
+   returned first.
+
+   We also have proper copy semantics, so you
+   can call copy.copy(t.default_handle_set())
+   to get a copy of the default set that can be
+   modified.
+end note
+
+note right of PrioritySet::handle_h
+   Determine if a given handle h can handle the
+   given args. If it can, return (True, other_ret)
+   otherwise, return (False, None).
+
+   handle loops through all the handles h calling
+   handle_h defined in the derived class, and returns
+   the value returned by the first handle that says it
+   could process that
+end note
+
+class NitfDesHandleSet
+note top
+   Process NitfDes
+end note
+
+class NitfImageHandleSet
+note right
+   Process NitfImage
+end note
+
+PrioritySet &lt;|.. NitfDesHandleSet
+PrioritySet &lt;|.. NitfImageHandleSet"/>
+</p>
+<p class="caption"><span class="caption-number">Fig. 2 </span><span class="caption-text">Priority Set</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
+</div>
+</div>
+<div class="section" id="nitf-diff">
+<h2>nitf_diff<a class="headerlink" href="#nitf-diff" title="Permalink to this headline">¶</a></h2>
+<p>We want to be able compare two NITF files to know if they are the “same”.</p>
+<p>What is the “same” really depends on the application. For example, two files
+with images that have a difference of 1e-4 might be different because the data
+isn’t identical, or might be the same because they are close enough.</p>
+<p>Likewise, if we generate GLAS/GFM DESs, we don’t expect the UUIDs to be the
+same between 2 runs, even if the actual GLAS/GFM is the “same”. And the file
+date time (fdt) will generally change from one run to the next.</p>
+<p>The output from nitf_diff will be an overall status code (normal or 0 exit code
+for identical, 1 for different), along with log information describing
+what if any differences there are.</p>
+<p>We use the same pluggable set of handles like we do for NitfDesHandleSet etc.
+The design is shown in <a class="reference internal" href="#id2"><span class="std std-numref">Fig. 3</span></a>.</p>
+<div class="figure align-default" id="id4">
+<span id="id2"></span><p class="plantuml">
+<img src="_images/plantuml-26c448f3eae8334338d50ae65a00335d25cf4ebb.png" alt="class NitfDiff {
+   +config
+   +handle_set
+   +run(fname1, fname2)
+}
+note top
+   This class contains a general dict &quot;config&quot;
+   that can be used by any of the handles to
+   record whatever.
+
+   There is a NitfDiffHandleSet &quot;handle_set&quot;
+   available, which contains the list of handles
+   used to compare two objects.
+
+   Both of these
+end note
+
+abstract class PrioritySet
+
+class NitfDiffHandleSet {
+   +handle_h(h, nitf_diff, obj1, obj2)
+   {static} default_config
+}
+note top
+   Handle comparing two objects. Logs differences,
+   and return True if the objects are the same, False
+   if different.
+end note
+
+PrioritySet &lt;|.. NitfDiffHandleSet
+NitfDiff *-- NitfDiffHandleSet : Has a handle_set"/>
+</p>
+<p class="caption"><span class="caption-number">Fig. 3 </span><span class="caption-text">nitf_diff</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
+</div>
+<p>Most of the time there is a known set of handles and configuration parameters,
+with a user adding or modifying a few. So we have both the default handles
+for NitfDiffHandleSet and default configuration. NitfDiff</p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">pynitf</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Software Design</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#priority-set">Priority Set</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#nitf-diff">nitf_diff</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="introduction.html" title="previous chapter">Introduction</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Mike Smyth, Philip Yoon, Walt Bunch.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/design.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

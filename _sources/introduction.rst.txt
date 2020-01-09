@@ -130,13 +130,6 @@ added to the the nitf file, there are probably 4 categories:
    by putting in extensions to pynitf, but then having them handled by
    pynitf.
 
-Extending pynitf
-================
-
-The environment variable "NITF_PLUGIN" can be set with a ":" separated list
-of modules to load. Tools like nitfinfofull use this to load modules to expand
-it functionality (e.g., "geocal")
-   
 
 On demand data
 ==============

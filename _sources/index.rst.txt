@@ -11,6 +11,7 @@ Welcome to pynitf's documentation!
    :caption: Contents:
 
    introduction
+   design
 
 
 Indices and tables
