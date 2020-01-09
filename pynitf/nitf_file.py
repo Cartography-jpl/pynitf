@@ -8,12 +8,13 @@ from .nitf_file_header import NitfFileHeader
 from .nitf_image_subheader import NitfImageSubheader
 from .nitf_text_subheader import NitfTextSubheader
 from .nitf_des_subheader import NitfDesSubheader
-from .nitf_image import nitf_image_read
-from .nitf_des import nitf_des_read
+from .nitf_image import NitfImageHandleSet
+from .nitf_des import NitfDesHandleSet
 from .nitf_tre import read_tre, prepare_tre_write, add_find_tre_function
 from .nitf_tre_engrda import add_engrda_function
 from .nitf_security import security_unclassified
 import io,six,copy,weakref
+import copy
 
 class ListNitfFileReference(list):
     '''Useful to add nitf_file to various NitfSegment as they get added
@@ -40,6 +41,8 @@ class NitfFile(object):
         no segments) - which you can then populate before calling write'''
         self.file_header = NitfFileHeader()
         self.file_name = file_name
+        self.image_handle_set = copy.copy(NitfImageHandleSet.default_handle_set())
+        self.des_handle_set = copy.copy(NitfDesHandleSet.default_handle_set())
         # This is the order things appear in the file
         self.image_segment = ListNitfFileReference(self)
         self.graphic_segment = ListNitfFileReference(self)
@@ -437,8 +440,9 @@ class NitfImageSegment(NitfSegment):
     def read_from_file(self, fh, segindex=None):
         '''Read from a file'''
         self.subheader.read_from_file(fh)
-        self.data = nitf_image_read(self.subheader, self.header_size,
-                                    self.data_size, fh, segindex)
+        ihs = self.nitf_file.image_handle_set if self.nitf_file else NitfImageHandleSet.default_handle_set()
+        self.data = ihs.handle(self.subheader, self.header_size,
+                               self.data_size, fh, segindex)
     def prepare_tre_write(self, des_list, seg_index):
         for ho in self.hook_obj:
             ho.prepare_tre_write_hook(self, des_list, seg_index)
@@ -630,8 +634,9 @@ class NitfDesSegment(NitfSegment):
     def read_from_file(self, fh, segindex=None):
         '''Read from a file'''
         self.subheader.read_from_file(fh)
-        self.data = nitf_des_read(self.subheader, self.header_size,
-                                  self.data_size, fh)
+        dhs = self.nitf_file.des_handle_set if self.nitf_file else NitfDesHandleSet.default_handle_set()
+        self.data = dhs.handle(self.subheader, self.header_size,
+                               self.data_size, fh)
         
     def __str__(self):
         '''Text description of structure, e.g., something you can print out'''

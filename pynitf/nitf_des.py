@@ -11,6 +11,7 @@ from __future__ import print_function
 from .nitf_field import FieldData, _FieldStruct, _FieldLoopStruct, \
     _FieldValueArrayAccess, _create_nitf_field_structure, create_nitf_field_structure
 from .nitf_des_subheader import NitfDesSubheader
+from .priority_set import PrioritySet
 from .nitf_security import security_unclassified
 import copy
 import io,six
@@ -450,55 +451,29 @@ def create_nitf_des_structure(name, desc_data, desc_uh = None, hlp = None,
 
     return (res, res2)
 
-class NitfDesHandleList(object):
-    '''Small class to handle to list of DES objects. This is little more
-    complicated than just a list of handlers. The extra piece is allowing
-    a priority_order to be assigned to the handlers, we look for 
-    lower number first. So for example we can put NitfDesPlaceHolder as the
-    highest number, and it will be tried after all the other handlers have
-    been tried.
-
-    This is a chain-of-responsibility pattern, with the addition of an
-    ordering based on a priority_order. 
-    '''
-    def __init__(self):
-        self.handle_list = collections.defaultdict(lambda : set())
-
-    def add_handle(self, cls, priority_order=0):
-        self.handle_list[priority_order].add(cls)
-
-    def discard_handle(self, cls):
-        '''Discard any handle of the given class. Ok if this isn't actually
-        in the list of handles.'''
-        for k in sorted(self.handle_list.keys()):
-            self.handle_list[k].discard(cls)
-
-    def des_handle(self, subheader, header_size, data_size, fh):
-        for k in sorted(self.handle_list.keys()):
-            for cls in self.handle_list[k]:
-                try:
-                    t = cls(des_subheader=subheader,
-                            header_size=header_size,
-                            data_size=data_size)
-                    t.read_from_file(fh)
-                    return t
-                except NitfDesCannotHandle:
-                    pass
-        raise NitfDesCannotHandle("No handle found for data.")
-
-_hlist = NitfDesHandleList()
-
-
-def nitf_des_read(subheader, header_size, data_size, fh):
-    return _hlist.des_handle(subheader, header_size, data_size, fh)
+class NitfDesHandleSet(PrioritySet):
+    '''Set of handlers for reading a DES.'''
+    def handle_h(self, cls, subheader, header_size, data_size, fh):
+        try:
+            t = cls(des_subheader=subheader,
+                    header_size=header_size,
+                    data_size=data_size)
+            t.read_from_file(fh)
+        except NitfDesCannotHandle:
+            return (False, None)
+        return (True, t)
 
 def register_des_class(cls, priority_order=0):
-    _hlist.add_handle(cls, priority_order)
+    # TODO Temporary, reverse order of priority. This is because we
+    # use to use lower priority executed first, and we are using this logic
+    # in geocal. Want to be able to deliver just pynitf w/o geocal. Once
+    # geocal is changed, we can change this behavior.
+    NitfDesHandleSet.add_default_handle(cls, -priority_order)
 
 def unregister_des_class(cls):
     '''Remove a handler from the list. This isn't used all that often,
     but it can be useful in testing.'''
-    _hlist.discard_handle(cls)
+    NitfDesHandleSet.discard_default_handle(cls)
     
 register_des_class(TreOverflow)
 register_des_class(NitfDesPlaceHolder, priority_order=1000)
@@ -508,5 +483,5 @@ register_des_class(NitfDesPlaceHolder, priority_order=1000)
 __all__ = [ "NitfDesCannotHandle", "NitfDes", "NitfDesPlaceHolder",
             "NitfDesCopy",
             "TreOverflow", "create_nitf_des_structure",
-            "nitf_des_read", "register_des_class", "unregister_des_class"]
+            "NitfDesHandleSet", "register_des_class", "unregister_des_class"]
 
