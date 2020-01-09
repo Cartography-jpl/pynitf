@@ -11,7 +11,7 @@ from __future__ import print_function
 from .nitf_field import FieldData, _FieldStruct, _FieldLoopStruct, \
     _FieldValueArrayAccess, _create_nitf_field_structure, create_nitf_field_structure
 from .nitf_des_subheader import NitfDesSubheader
-from .priority_set import PrioritySet
+from .priority_handle_set import PriorityHandleSet
 from .nitf_security import security_unclassified
 import copy
 import io,six
@@ -451,7 +451,7 @@ def create_nitf_des_structure(name, desc_data, desc_uh = None, hlp = None,
 
     return (res, res2)
 
-class NitfDesHandleSet(PrioritySet):
+class NitfDesHandleSet(PriorityHandleSet):
     '''Set of handlers for reading a DES.'''
     def handle_h(self, cls, subheader, header_size, data_size, fh):
         try:

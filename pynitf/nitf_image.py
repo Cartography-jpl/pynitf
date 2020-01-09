@@ -1,6 +1,6 @@
 from .nitf_image_subheader import (NitfImageSubheader,
                                    set_default_image_subheader)
-from .priority_set import PrioritySet
+from .priority_handle_set import PriorityHandleSet
 from .nitf_security import security_unclassified
 import abc, six
 import numpy as np
@@ -388,7 +388,7 @@ class NitfRadCalc(object):
         ss = slice(sstart, sstart + d.shape[2])
         d[:,:,:] = self.dn[bs,ls,ss] * self.gain[bs,ls,ss] + self.offset[bs,ls,ss]
 
-class NitfImageHandleSet(PrioritySet):
+class NitfImageHandleSet(PriorityHandleSet):
     '''Set of handlers for reading an image.'''
     def handle_h(self, cls, subheader, header_size, data_size, fh, segindex):
         try:

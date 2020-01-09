@@ -1,6 +1,6 @@
 import collections
 
-class PrioritySet(collections.abc.Set):
+class PriorityHandleSet(collections.abc.Set):
     def __init__(self):
         self.handle_set = collections.defaultdict(lambda : set())
 
@@ -74,4 +74,4 @@ class PrioritySet(collections.abc.Set):
         raise NotImplementedError
         
         
-__all__ = ["PrioritySet",]        
+__all__ = ["PriorityHandleSet",]        
