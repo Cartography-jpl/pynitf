@@ -7,8 +7,9 @@ def test_float_to_fixed_width():
     assert len(float_to_fixed_width(evil_float1, 7)) <= 7
     assert len(float_to_fixed_width(evil_float2, 7)) <= 7
     assert len(float_to_fixed_width(evil_float3, 7, maximum_precision=True)) <= 7
-    for i in range(-7,7):
-        print(float_to_fixed_width(pow(10,i), 7))
+    if(False):
+        for i in range(-7,7):
+            print(float_to_fixed_width(pow(10,i), 7))
         
 def test_basic():
     '''Basic test, just set and read values.'''
@@ -21,6 +22,7 @@ def test_basic():
     t.fhdr = 'FOO'
     assert t.fhdr == "FOO"
     t.clevel = 1
+    assert list(t.items()) == [('fhdr', 'FOO'), ('clevel', 1)]
     fh = six.BytesIO()
     t.write_to_file(fh)
     assert fh.getvalue() == b'FOO 01'
@@ -47,6 +49,7 @@ def test_calculated_value():
     with pytest.raises(RuntimeError):
         t.fhdr = 'FOO'
     assert t.fhdr == "NITF"
+    assert list(t.items()), (("fhdr", "NITF"))
 
 def test_loop():
     '''Test where we have a looping structure'''
@@ -82,6 +85,7 @@ Loop - f.numi
   li[2]  : 7
   li[3]  : 8
 '''
+    assert list(t.items()) == [('fhdr', 'NITF'), ('numi', 4), ('lish', [1, 2, 3, 4]), ('li', [5, 6, 7, 8])]
     fh = six.BytesIO()
     t.write_to_file(fh)
     assert fh.getvalue() == b'NITF0040000010000000005000002000000000600000300000000070000040000000008'
@@ -114,6 +118,7 @@ def test_loop_calc_value():
         t.lish[0] = 10
     with pytest.raises(RuntimeError):
         t.li[0] = 10
+    assert list(t.items()) == [('fhdr', 'NITF'), ('numi', 4), ('lish', [11, 12, 13, 14]), ('li', [21, 22, 23, 24])]
 
 def test_nested_loop():
     TestField = create_nitf_field_structure("TestField",
@@ -138,6 +143,7 @@ def test_nested_loop():
         t.li[1,4]
     with pytest.raises(IndexError):
         t.li[2,1]
+    assert list(t.items()) == [('fhdr', 'NITF'), ('numi', 2), ('lish', [0, 0]), ('numj', [3, 4]), ('li', [[0, 10, 0], [0, 0, 0, 20]])]
     fh = six.BytesIO()
     t.write_to_file(fh)
     assert fh.getvalue() == b'NITF0020000000030000000000000000001000000000000000000040000000000000000000000000000000000000020' 
@@ -212,7 +218,6 @@ def test_nested_loop2():
                 assert t2.li[i1,i2,i3] == val
                 val += 1
     assert str(t) == str(t2)
-    #print(t)
 
 def test_nested_loop3():
     # The "mark1" through "mark3" make it easier to look at the write out
@@ -277,6 +282,7 @@ def test_nested_loop3():
                 for i4 in range(t.numl[i1,i2, i3]):
                     assert t.li[i1,i2,i3,i4] == val
                     val += 1
+    assert list(t.items()) == [('fhdr', 'NITF'), ('numi', 2), ('mark1', ['mark1', 'mark1']), ('numj', [2, 4]), ('mark2', [['mark2', 'mark2'], ['mark2', 'mark2', 'mark2', 'mark2']]), ('numk', [[2, 2], [2, 2, 2, 2]]), ('mark3', [[['mark3', 'mark3'], ['mark3', 'mark3']], [['mark3', 'mark3'], ['mark3', 'mark3'], ['mark3', 'mark3'], ['mark3', 'mark3']]]), ('numl', [[[3, 3], [3, 3]], [[3, 3], [3, 3], [3, 3], [3, 3]]]), ('li', [[[[10, 11, 12], [13, 14, 15]], [[16, 17, 18], [19, 20, 21]]], [[[22, 23, 24], [25, 26, 27]], [[28, 29, 30], [31, 32, 33]], [[34, 35, 36], [37, 38, 39]], [[40, 41, 42], [43, 44, 45]]]])]
     fh = six.BytesIO()
     t.write_to_file(fh)
     assert fh.getvalue() == b'NITF002mark1002mark2002mark3003000000001000000000110000000012mark3003000000001300000000140000000015mark2002mark3003000000001600000000170000000018mark3003000000001900000000200000000021mark1004mark2002mark3003000000002200000000230000000024mark3003000000002500000000260000000027mark2002mark3003000000002800000000290000000030mark3003000000003100000000320000000033mark2002mark3003000000003400000000350000000036mark3003000000003700000000380000000039mark2002mark3003000000004000000000410000000042mark3003000000004300000000440000000045'
@@ -286,14 +292,20 @@ def test_nested_loop3():
     fh2 = six.BytesIO()
     t2.write_to_file(fh2)
     val = 10
+    expected_items = []
     for i1 in range(t2.numi):
         for i2 in range(t2.numj[i1]):
             for i3 in range(t2.numk[i1,i2]):
                 for i4 in range(t2.numl[i1,i2, i3]):
                     assert t2.li[i1,i2,i3,i4] == val
+                    expected_items.append(((i1,i2,i3,i4), val))
                     val += 1
     assert str(t) == str(t2)
-    #print(t)
+    assert FieldValueArray.is_shape_equal(t.li, t2.li)
+    assert list(t.li.values()) == list([itm[1] for itm in expected_items])
+    assert list(t.li.items()) == expected_items
+    t2.numl[1,3,1]=t.numl[1,3,1]+1
+    assert not FieldValueArray.is_shape_equal(t.li, t2.li)
     
 def test_conditional():
     TestField = create_nitf_field_structure("TestField",
@@ -307,13 +319,16 @@ def test_conditional():
     t.write_to_file(fh)
     assert fh.getvalue() == b'NITF00000'
     assert t.udhofl is None
+    assert list(t.items()) == [('fhdr', 'NITF'), ('udhdl', 0), ('udhofl', None)]
     t.udhdl = 10
     t.udhofl = 20
     fh = six.BytesIO()
     t.write_to_file(fh)
     assert fh.getvalue() == b'NITF00010020'
     assert t.udhofl == 20
-    
+    assert list(t.items()) == [('fhdr', 'NITF'), ('udhdl', 10), ('udhofl', 20)]
+
+
 def test_loop_conditional():
     # udhdl doesn't really loop in a nitf file header, but we'll pretend it
     # does to test a looping conditional
@@ -332,6 +347,7 @@ def test_loop_conditional():
     t.udhofl[1] = 30
     t.udhofl[2] = 40
     assert list(t.udhofl) == [None, 30, 40]
+    assert list(t.items()) == [('fhdr', 'NITF'), ('numi', 3), ('udhdl', [0, 10, 20]), ('udhofl', [None, 30, 40])]
     fh = six.BytesIO()
     t.write_to_file(fh)
     assert fh.getvalue() == b'NITF003000000001003000020040'

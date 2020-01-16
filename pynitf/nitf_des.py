@@ -8,8 +8,9 @@
 # from word to Excel. For some reason, you can't go directly to Excel. You
 # can then cut and paste from excel to emacs
 from __future__ import print_function
-from .nitf_field import FieldData, _FieldStruct, _FieldLoopStruct, \
-    _FieldValueArrayAccess, _create_nitf_field_structure, create_nitf_field_structure
+from .nitf_field import (FieldData, _FieldStruct, _FieldLoopStruct, 
+                         _create_nitf_field_structure,
+                         create_nitf_field_structure)
 from .nitf_des_subheader import NitfDesSubheader
 from .priority_handle_set import PriorityHandleSet
 from .nitf_security import security_unclassified

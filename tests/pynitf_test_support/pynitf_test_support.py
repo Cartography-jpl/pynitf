@@ -2,14 +2,20 @@
 import numpy as np
 from numpy.testing import assert_almost_equal, assert_approx_equal
 from pynitf.nitf_security import NitfSecurity
+from pynitf.nitf_image import NitfImageWriteNumpy
+from pynitf.nitf_file import (NitfImageSegment, NitfTextSegment,
+                              NitfDesSegment)
+from pynitf.nitf_des_csattb import (DesCSATTB_UH, DesCSATTB)
+from pynitf.nitf_tre_csde import TreUSE00A
 from unittest import SkipTest
 import os
 import sys
 import subprocess
 import re
-import pytest
 import math
 from distutils import dir_util
+import json
+import pytest
 
 # Some unit tests require h5py. This is not an overall requirement, so if
 # not found we just skip those tests
@@ -63,6 +69,80 @@ def cmd_exists(cmd):
     return subprocess.call("type " + cmd, shell=True, 
                            stdout=subprocess.PIPE, stderr=subprocess.PIPE) == 0
 
+def create_image_seg(f, security = None, iid1 = '', row_offset = 10, bias = 0,
+                     adjust = None, nrow = 9, ncol = 10):
+    '''Create a small image segment. The security setting can be passed in,
+    otherwise the default unclassified version is used. The IID can be passed.
+    The values filled in can be controlled by row_offset, bias, and adjust.'''
+    img = NitfImageWriteNumpy(nrow, ncol, np.uint8)
+    for i in range(nrow):
+        for j in range(ncol):
+            img[0, i, j] = i * row_offset + j
+    iseg = NitfImageSegment(img, security=security)
+    iseg.iid1 = iid1
+    f.image_segment.append(iseg)
+    return iseg
+
+def create_tre(f, angle_to_north = 270):
+    '''Create a sample TRE. We use TreUSE00A because it is a simple TRE. You
+    can pass in different values to angle_to_north to get "different" TREs.
+    '''
+    t = TreUSE00A()
+    t.angle_to_north = angle_to_north
+    t.mean_gsd = 105.2
+    t.dynamic_range = 2047
+    t.obl_ang = 34.12
+    t.roll_ang = -21.15
+    t.n_ref = 0
+    t.rev_num = 3317
+    t.n_seg = 1
+    t.max_lp_seg = 6287
+    t.sun_el = 68.5
+    t.sun_az = 131.3
+    f.tre_list.append(t)
+
+def create_text_segment(f, first_name = 'Guido', textid = 'ID12345'):
+    '''Create a text segment'''
+    d = {
+        'first_name': first_name,
+        'second_name': 'Rossum',
+        'titles': ['BDFL', 'Developer'],
+    }
+    ts = NitfTextSegment(txt = json.dumps(d))
+    ts.subheader.textid = textid
+    ts.subheader.txtalvl = 0
+    ts.subheader.txtitl = 'sample title'
+    f.text_segment.append(ts)
+
+def create_des(f, date_att = 20170501, q = 0.1):
+    '''Create a DES segment'''
+    ds = DesCSATTB_UH()
+    ds.id = '4385ab47-f3ba-40b7-9520-13d6b7a7f311'
+    ds.numais = '010'
+    for i in range(int(ds.numais)):
+        ds.aisdlvl[i] = 5 + i
+    ds.reservedsubh_len = 0
+
+    des = DesCSATTB(user_subheader=ds)
+    des.qual_flag_att = 1
+    des.interp_type_att = 1
+    des.att_type = 1
+    des.eci_ecf_att = 0
+    des.dt_att = 900.5
+    des.date_att = 20170501
+    des.t0_att = 235959.100001000
+    des.num_att = 5
+    for n in range(des.num_att):
+        des.q1[n] = q
+        des.q2[n] = q
+        des.q3[n] = q
+        des.q4[n] = q
+    des.reserved_len = 0
+
+    de = NitfDesSegment(des=des)
+    f.des_segment.append(de)
+    
+    
 # Some tests are python 3 only. Don't want the python 2 tests to fail for
 # python code that we know can't be run
 require_python3 = pytest.mark.skipif(not sys.version_info > (3,),

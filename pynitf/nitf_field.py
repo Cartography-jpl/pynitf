@@ -34,9 +34,19 @@ from struct import *
 
 # Add a bunch of debugging if you are diagnosing a problem
 DEBUG = False
-class _FieldValueArrayAccess(object):
+class FieldValueArray(object):
     '''Provides an array access to a _FieldValue that is part of a loop 
-    structure'''
+    structure.
+
+    This provides an array like interface, so you can get an set values
+    with things like a[0,1]. We do *not* support slices. The arrays in NITF
+    are in general "ragged" arrays, so for example it might be something
+    like [[1,2], [3,4,5]] where the first row has 2 columns, the second row
+    has three columns. It isn't exactly clear how to handle slices, so we
+    just don't do that.
+
+    In addition, you can use "to_list()" to convert an array to a nested list
+    of values.'''
     # The __dict__ is at object level
     def __init__(self, fv, parent_obj):
         self.fv=fv
@@ -51,6 +61,52 @@ class _FieldValueArrayAccess(object):
             self.fv.set(self.parent_obj, ind,v)
         else:
             self.fv.set(self.parent_obj, (ind,),v)
+    def to_list(self, lead=()):
+        '''Return the data as a nested list.'''
+        if(len(lead) == self.dim_size() - 1):
+            return [self[(*lead, i)] for i in range(self.shape(lead))]
+        return [self.to_list(lead=(*lead, i)) for i in range(self.shape(lead))]
+    def dim_size(self):
+        '''Shortcut for getting the length of the looping size (i.e., is
+        this a 1d, 2d or 3d object).'''
+        return len(self.fv.loop.size)
+    def shape(self, lead=()):
+        '''Shortcut for calling shape in the looping structure for this
+        array'''
+        return self.fv.loop.shape(self.parent_obj, lead)
+    def values(self, lead=()):
+        '''Iterate through values. This uses the 'C' like order, where we
+        vary the last. This is like doing a flatten on the results of 
+        to_list'''
+        if(len(lead) == self.dim_size() - 1):
+            for i in range(self.shape(lead=lead)):
+                yield self[(*lead,i)]
+        else:
+            for i in range(self.shape(lead=lead)):
+                for j in self.values(lead=(*lead,i)):
+                    yield j
+    def items(self,lead=()):
+        '''Likes values(), but iterator through a tuple of the (index,value)
+        instead of just values.'''
+        if(len(lead) == self.dim_size() - 1):
+            for i in range(self.shape(lead=lead)):
+                yield ((*lead,i), self[(*lead,i)])
+        else:
+            for i in range(self.shape(lead=lead)):
+                for j in self.items(lead=(*lead,i)):
+                    yield j
+    @classmethod
+    def is_shape_equal(cls, arr1, arr2, lead=()):
+        '''Return True if the shape of arr1 and arr2 are the same,
+        False otherwise'''
+        if(arr1.dim_size() != arr2.dim_size()):
+            return False
+        if(len(lead) == arr1.dim_size() - 1):
+            return arr1.shape(lead=lead) == arr2.shape(lead=lead)
+        for i in range(arr1.shape(lead=lead)):
+            if not cls.is_shape_equal(arr1, arr2, lead=(*lead,i)):
+                return False
+        return True
 
 class _FieldValueAccess(object):
     '''Python descriptor to provide access for getting and setting a
@@ -60,7 +116,7 @@ class _FieldValueAccess(object):
         self.fv = fv
     def __get__(self, parent_obj, cls):
         if(self.fv.loop is not None):
-            return _FieldValueArrayAccess(self.fv, parent_obj)
+            return FieldValueArray(self.fv, parent_obj)
         return self.fv.get(parent_obj, ())
     def __set__(self, parent_obj, v):
         if(self.fv.loop is not None):
@@ -327,6 +383,17 @@ class _FieldLoopStruct(object):
         for i in range(maxi):
             for f in self.field_value_list:
                 f.read_from_file(parent_object, lead + (i,), fh, nitf_literal)
+    def field_names(self):
+        '''Return a iterator of all field names in this structure (or loops
+        nested in this structure).
+        '''
+        for f in self.field_value_list:
+            if(not isinstance(f, _FieldLoopStruct)):
+                if(f.field_name is not None):
+                    yield f.field_name
+            else:
+                for fname in f.field_names():
+                    yield fname
     def desc(self, parent_object):
         '''Text description of structure, e.g., something you can print
         out.'''
@@ -418,6 +485,36 @@ class _FieldStruct(object):
         '''Create a NITF field structure structure.'''
         self.value = {}
         self.fh_loc = defaultdict(lambda: dict())
+    def items(self, array_as_list = True):
+        '''Return an iterator that gives returns tuples with the field name
+        and value of that field. 
+
+        By default, for arrays/looped data we convert the data to a
+        possible nested list (e.g., [1,2,3] for a field in a loop of
+        size 3, [[1,2,3], [1,2]] for a field with an outer loop of
+        size 2, and inner loop of (3,2).
+
+        Note that some fields in a FieldStruct might be conditional. In all
+        cases the field name is returned, even if it is conditional with
+        the condition false. In the case that the conditional field isn't 
+        present, its value is returned as None.
+
+        Depending on the application, converting arrays to lists might not
+        be desirable. If the array_as_list keyword is set to False we instead
+        return a FieldValueArray. Note that FieldValueArray has its own 
+        iterate function which can be used to step through the array (e.g.,
+        in comparing 2 arrays).
+        '''
+        for f in self.field_value_list:
+            if(not isinstance(f, _FieldLoopStruct)):
+                if(f.field_name is not None):
+                    yield (f.field_name, f.get(self, ()))
+            else:
+                for fname in f.field_names():
+                    if(array_as_list):
+                        yield (fname, getattr(self, fname).to_list())
+                    else:
+                        yield (fname, getattr(self, fname))
     def write_to_file(self, fh):
         '''Write to a file stream.'''
         for f in self.field_value_list:
@@ -835,7 +932,7 @@ def create_nitf_field_structure(name, description, hlp = None):
               class. However there are some special cases (e.g., IXSHD used
               for image segment level TREs). If we need to change this,
               we can supply the class to use here. This class should supply
-              a fieldname, get, set, loop, write_to_file, read_from_file, 
+              a field_name, get, set, loop, write_to_file, read_from_file, 
               and get_print function because these are the things we call. 
               Note that we have a generic FieldData class here, which might 
               be sufficient.
@@ -882,5 +979,5 @@ def create_nitf_field_structure(name, description, hlp = None):
             pass
     return res
 
-__all__ = ["FieldData", "StringFieldData", "IntFieldData", "FloatFieldData", "hardcoded_value", "NitfLiteral",
+__all__ = ["FieldValueArray", "FieldData", "StringFieldData", "IntFieldData", "FloatFieldData", "hardcoded_value", "NitfLiteral",
            "create_nitf_field_structure", "float_to_fixed_width"]

@@ -23,16 +23,6 @@ import filecmp
 #pynitf.nitf_field.DEBUG = True
 #pynitf.nitf_des.DEBUG = True
 
-# Do these in a few places, so collect in one spot.
-def create_image_seg(f, security = None):
-    img = NitfImageWriteNumpy(9, 10, np.uint8)
-    if(security):
-        img.security = security
-    for i in range(9):
-        for j in range(10):
-            img[0, i,j] = i * 10 + j
-    f.image_segment.append(NitfImageSegment(img))
-
 def create_tre(f):
     t = TreUSE00A()
     t.angle_to_north = 270

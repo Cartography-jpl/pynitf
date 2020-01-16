@@ -103,7 +103,7 @@ class NitfFile(object):
     def summary(self):
         '''Short text summary of this file, something you can print out'''
         res = six.StringIO()
-        print("NITF File Summary")
+        print("NITF File Summary", file=res)
         print("-------------------------------------------------------------",
               file=res)
         print("File Header:", file=res)
@@ -421,7 +421,8 @@ class NitfImageSegment(NitfSegment):
     '''
     def __init__(self, image = None,
                  hook_obj = None,
-                 header_size = None, data_size = None, nitf_file=None):
+                 header_size = None, data_size = None, nitf_file=None,
+                 security = None):
         '''Initialize. You can pass a NitfImage class to use (i.e., you've
         created this for writing), or a list of classes to use to try
         to read an image. This list is tried in order, the first class
@@ -437,6 +438,10 @@ class NitfImageSegment(NitfSegment):
             hook_obj = NitfFile.image_segment_hook_obj
         NitfSegment.__init__(self, h, image, hook_obj = hook_obj,
                              nitf_file = nitf_file)
+        # Override security already set in NitfImage if desired.
+        if(security is not None):
+            self.security = security
+            
     def read_from_file(self, fh, segindex=None):
         '''Read from a file'''
         self.subheader.read_from_file(fh)
@@ -500,6 +505,10 @@ class NitfImageSegment(NitfSegment):
     @property
     def iid1(self):
         return self.subheader.iid1
+
+    @iid1.setter
+    def iid1(self, v):
+        self.subheader.iid1 = v
     
     
 class NitfGraphicSegment(NitfPlaceHolder):
