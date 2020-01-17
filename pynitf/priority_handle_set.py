@@ -42,6 +42,10 @@ class PriorityHandleSet(collections.abc.Set):
         for k in sorted(self.handle_set.keys()):
             self.handle_set[k].discard(h)
 
+    def clear(self):
+        '''Remove all handles in the set.'''
+        self.handle_set.clear()
+
     @classmethod
     def default_handle_set(cls):
         '''Return the default set of handlers to use.'''

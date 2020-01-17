@@ -9,7 +9,7 @@ import pydoc
 from pynitf import *
 import pynitf
 
-version="%prog July 7, 2017"
+version="July 7, 2017"
 usage="""Usage:
   explore_nitf.py [-hvc COMMAND] <nitf_file>
 

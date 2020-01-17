@@ -16,6 +16,7 @@ import math
 from distutils import dir_util
 import json
 import pytest
+from _pytest.logging import caplog
 
 # Some unit tests require h5py. This is not an overall requirement, so if
 # not found we just skip those tests
@@ -28,6 +29,8 @@ except ImportError:
 
 # Location of test data that is part of source
 unit_test_data = os.path.abspath(os.path.dirname(__file__) + "/unit_test_data/") + "/"
+# Locate of programs
+program_dir = os.path.abspath(os.path.dirname(__file__) + "../../../extra/") + "/"
 
 # Fake security object, just so we can test setting and reading
 security_fake = NitfSecurity()
@@ -167,6 +170,13 @@ require_gdal_value = pytest.mark.skipif(not sys.version_info > (3,) or
                    not cmd_exists("gdallocationinfo"),
                    reason="Require python 3 and gdallocationinfo")
 
+@pytest.yield_fixture(scope="function")
+def print_logging(caplog):
+    '''Print the logger to the console. Normally this only shows up for
+    failed tasks, but with -s we print this out for each job that runs.'''
+    yield caplog
+    print("Logger output:")
+    print("\n".join("%s: %s" % (r.levelname, r.getMessage()) for r in caplog.get_records("call")))
 
 @pytest.yield_fixture(scope="function")
 def config_dir(tmpdir, request):

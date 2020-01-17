@@ -31,6 +31,12 @@ import io,six
 from collections import defaultdict
 import sys
 from struct import *
+import logging
+import itertools
+import operator
+import functools
+import math
+from .nitf_diff_handle import NitfDiffHandle
 
 # Add a bunch of debugging if you are diagnosing a problem
 DEBUG = False
@@ -74,6 +80,8 @@ class FieldValueArray(object):
         '''Shortcut for calling shape in the looping structure for this
         array'''
         return self.fv.loop.shape(self.parent_obj, lead)
+    def type(self):
+        return self.fv.ty
     def values(self, lead=()):
         '''Iterate through values. This uses the 'C' like order, where we
         vary the last. This is like doing a flatten on the results of 
@@ -824,7 +832,125 @@ class FloatFieldData(NumFieldData):
         if(t is None):
             return "Not used"
         return "%f" % t
-        
+
+logger = logging.getLogger('nitf_diff')
+class FieldStructDiff(NitfDiffHandle):
+    '''Base class for comparing the various NITF Field Structure objects
+    (e.g., NitfFileHeader).
+
+    While we could just create new NitfDiffHandle objects for each
+    structure (e.g., each of the TREs in the file), we instead try to
+    provide a good deal of functionality through "configuration". The
+    configuration is a dictionary type object that derived class get
+    from the nitf_diff object.  This then contains keyword/value pairs
+    for controlling things. While derived classes can others, these
+    are things that can be defined:
+
+    exclude           - list of fields to exclude from comparing
+    exclude_but_warn  - list of fields to exclude from comparing, but warn if 
+                        different
+    include           - if nonempty, only include the given fields
+    eq_fun            - a dictionary going from field name to a function
+                        to compare
+    rel_tol           - a dictionary going from field name to a relative
+                        tolerance. Only used for fields with float type.
+    abs_tol           - a dictionary going from field name to absolute
+                        tolerance. Only used for fields with float type.
+
+    If a function isn't otherwise defined in eq_fun, we use operator.eq, 
+    except for floating point numbers. For floating point numbers we use
+    math.isclose. The rel_tol and/or abs_tol can be supplied. The default
+    values are used for math.isclose if not supplied (so 1e-9 and 0.0).
+    
+    For array/loop fields we compare the shape, and if the same we compare
+    each element in the array.
+    '''
+    def desc(self, nitf_diff):
+        '''The description of what we are comparing, used in reporting.'''
+        return "Field Structure"
+    def configuration(self, nitf_diff):
+        '''Derived class should extract out the appropriate configuration
+        from the supplied NitfDiff object.'''
+        # Default is no configuration
+        return {}
+    def _warn_is_diff(self, s, nitf_diff, fn):
+        logger.warning("For %s field %s %s , but not considering files different.",
+                       self.desc(nitf_diff), fn, s)
+    def _is_diff(self, s, nitf_diff, fn):
+        logger.error("For %s field %s %s.", self.desc(nitf_diff), fn, s)
+        self.is_same = False
+
+    def handle_diff(self, obj1, obj2, nitf_diff):
+        '''Derived class will likely override this to check for their
+        specific types'''
+        if(not isinstance(obj1, _FieldStruct) or
+           not isinstance(obj2, _FieldStruct)):
+            return (False, None)
+        return (True, self.compare_obj(obj1, obj2, nitf_diff))
+    
+    def compare_obj(self, obj1, obj2, nitf_diff):
+        c = self.configuration(nitf_diff)
+        exclude = c.get('exclude', [])
+        exclude_but_warn = c.get('exclude_but_warn', [])
+        include = c.get('include', [])
+        eq_fun = c.get('eq_fun', {})
+        rel_tol = c.get('rel_tol', {})
+        abs_tol = c.get('abs_tol', {})
+        self.is_same = True
+        for (fn1, v1), (fn2, v2) in \
+            itertools.zip_longest(obj1.items(array_as_list=False),
+                                  obj2.items(array_as_list=False),
+                                  fillvalue=("No_field", None)):
+            if(fn1 != fn2):
+                logger.error("While comparing %s different fields found. Field in object 1 is %s and object 2 is %s. Stopping comparison for %s" % (self.desc(nitf_diff), fn1, fn2, self.desc(nitf_diff)))
+                return False
+            if fn1 in exclude:
+                continue
+            if len(include) > 0 and fn1 not in include:
+                continue
+            if fn1 in exclude_but_warn:
+                rep_diff = self._warn_is_diff
+            else:
+                rep_diff = self._is_diff
+            if(isinstance(v1, float) or (isinstance(v1, FieldValueArray) and
+                                         v1.type() == float)):
+                def _f(a,b):
+                    if(a is None and b is None):
+                        return True
+                    if(a is None or b is None):
+                        return False
+                    return math.isclose(a,b,rel_tol = rel_tol.get(fn1, 1e-9),
+                                        abs_tol = abs_tol.get(fn1, 0.0))
+                def_eq_fun = _f
+            else:
+                def_eq_fun = operator.eq
+            cmp_fun = eq_fun.get(fn1, def_eq_fun) 
+            if(isinstance(v1, FieldValueArray)):
+                if(not FieldValueArray.is_shape_equal(v1, v2)):
+                    rep_diff("array shapes are different", nitf_diff, fn1)
+                    continue
+                diff_count = 0
+                total_count = 0
+                # TODO add a verbose mode
+                for (ind, av1), av2 in itertools.zip_longest(v1.items(),
+                                                             v2.values()):
+                    total_count += 1
+                    if(not cmp_fun(av1, av2)):
+                        ind_str = ", ".join(str(i) for i in ind)
+                        logger.info("%s[%s]: %s != %s", fn1, ind_str, av1,
+                                    av2)
+                        # Debugging for unit test not handling this somehow
+                        #print("For %s[%s]: %s != %s" % (fn1, ind, av1, av2))
+                        #print(logger.isEnabledFor(logging.INFO))
+                        diff_count += 1
+                if(diff_count > 0):
+                    rep_diff("array had %d of %d different" %
+                             (diff_count, total_count), nitf_diff, fn1)
+                continue
+            if not cmp_fun(v1, v2):
+                rep_diff("differ: %s != %s" % (v1, v2), nitf_diff, fn1)
+        return self.is_same
+
 class _create_nitf_field_structure(object):
     # The __dict__ is at class level
     def __init__(self):
@@ -979,5 +1105,7 @@ def create_nitf_field_structure(name, description, hlp = None):
             pass
     return res
 
-__all__ = ["FieldValueArray", "FieldData", "StringFieldData", "IntFieldData", "FloatFieldData", "hardcoded_value", "NitfLiteral",
+__all__ = ["FieldValueArray", "FieldData", "StringFieldData", "IntFieldData",
+           "FloatFieldData", "hardcoded_value", "NitfLiteral",
+           "FieldStructDiff",
            "create_nitf_field_structure", "float_to_fixed_width"]

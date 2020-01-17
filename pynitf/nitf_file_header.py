@@ -1,6 +1,7 @@
 from __future__ import print_function
 from .nitf_field import *
 from .nitf_security import NitfSecurity
+from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
 
 import six
 
@@ -94,5 +95,40 @@ def summary(self):
 
 NitfFileHeader.summary = summary
 
-__all__ = ["NitfFileHeader"]
+class FileHeaderDiff(FieldStructDiff):
+    '''Compare two file headers.'''
+    def desc(self, nitf_diff):
+        '''The description of what we are comparing, used in reporting.'''
+        return "NITF File Header"
+    def configuration(self, nitf_diff):
+        return nitf_diff.config.get("File Header", {})
+
+    def handle_diff(self, h1, h2, nitf_diff):
+        if(not isinstance(h1, NitfFileHeader) or
+           not isinstance(h2, NitfFileHeader)):
+            return (False, None)
+        return (True, self.compare_obj(h1, h2, nitf_diff))
+
+NitfDiffHandleSet.add_default_handle(FileHeaderDiff())
+_default_config = {}
+# A user might not care at all about the fdt changing, but by default
+# give a warning since they might care. The user can change the configuration
+# of nitf_diff to completely ignore this if desired.
+_default_config["exclude_but_warn"] = ["fdt"]
+# Ignore all the structural differences about the file. We compare all
+# the individual pieces, so this will get reported as we go through each
+# element. But it is useful to also report that udhd varies if we are
+# already saying the TREs are different.
+_default_config["exclude"] = ['fl', 'hl',
+                              'numi', 'lish', 'li',
+                              'nums', 'lssh', 'ls',
+                              'numx',
+                              'numt', 'ltsh', 'lt', 
+                              'numdes', 'ldsh', 'ld',
+                              'numres', 'lresh', 'lre',
+                              'udhdl', 'udhofl', 'udhd', 
+                              'xhdl', 'xhdlofl', 'xhd']
+
+NitfDiffHandleSet.default_config["File Header"] = _default_config
+__all__ = ["NitfFileHeader", "FileHeaderDiff"]
 

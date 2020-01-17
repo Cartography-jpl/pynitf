@@ -1,8 +1,10 @@
 from pynitf.nitf_file_header import *
+from pynitf.nitf_file import NitfDiff
 from pynitf_test_support import *
 import io, six
+import copy
 
-def test_basic():
+def test_basic(print_logging):
     t = NitfFileHeader()
     t.fdt = "20021216151629"
     with open(unit_test_data + "sample.ntf", 'rb') as fh:
@@ -29,7 +31,21 @@ def test_basic():
     assert t.udhdl == 0
     if(False):
         print(t)
-
+    t2 = copy.deepcopy(t)
+    d = NitfDiff()
+    assert d.compare_obj(t, t2) == True
+    # Change fdt. Should get a warning, but not a failure
+    t2.fdt = "20031216151629"
+    assert d.compare_obj(t, t2) == True
+    # Should completely ignore difference in lish
+    t2 = copy.deepcopy(t)
+    t2.lish[0] = 440
+    assert d.compare_obj(t, t2) == True
+    t2 = copy.deepcopy(t)
+    t2.ostaid = "FOO"
+    # Should give a difference
+    assert d.compare_obj(t, t2) == False
+    
 def test_write():
     t = NitfFileHeader()
     t.fdt = "20021216151629"

@@ -8,7 +8,7 @@
 
 import docopt_simple
 import re
-version="%prog April 4, 2017"
+version="April 4, 2017"
 usage="""Usage:
   nitro_to_python.py [options] <nitro_source_file>
   nitro_to_python.py -h | --help

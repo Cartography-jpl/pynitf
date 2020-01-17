@@ -1,7 +1,25 @@
 from pynitf.nitf_field import *
+from pynitf.nitf_file import NitfDiff
+from pynitf.nitf_diff_handle import AlwaysTrueHandle, NitfDiffHandle
 from pynitf_test_support import *
 import io, six
 import math
+from pynitf_test_support import *
+import copy
+import logging
+
+@pytest.yield_fixture(scope="function")
+def nitf_diff_field_struct(print_logging):
+    '''Set up a NitfDiff object that just compares field structure 
+    objects'''
+    # This doesn't work for some reason. Will need to dig into this
+    logger = logging.getLogger("nitf_diff")
+    logger.setLevel(logging.INFO)
+    d = NitfDiff()
+    d.handle_set.clear()
+    d.handle_set.add_handle(FieldStructDiff(), priority_order = 1)
+    d.handle_set.add_handle(AlwaysTrueHandle(), priority_order = 0)
+    yield d
 
 def test_float_to_fixed_width():
     assert len(float_to_fixed_width(evil_float1, 7)) <= 7
@@ -11,8 +29,9 @@ def test_float_to_fixed_width():
         for i in range(-7,7):
             print(float_to_fixed_width(pow(10,i), 7))
         
-def test_basic():
+def test_basic(nitf_diff_field_struct):
     '''Basic test, just set and read values.'''
+    d = nitf_diff_field_struct # Shorter name
     TestField = create_nitf_field_structure("TestField",
         [["fhdr", "", 4, str,  {"default" : "NITF"}],
          ["clevel", "", 2, int ],
@@ -25,6 +44,7 @@ def test_basic():
     assert list(t.items()) == [('fhdr', 'FOO'), ('clevel', 1)]
     fh = six.BytesIO()
     t.write_to_file(fh)
+    assert d.compare_obj(t, t) == True
     assert fh.getvalue() == b'FOO 01'
     fh2 = six.BytesIO(b'BOO 02')
     t2 = TestField()
@@ -35,9 +55,11 @@ def test_basic():
 '''fhdr  : BOO
 clevel: 2
 '''
+    assert d.compare_obj(t, t2) == False
 
-def test_calculated_value():
+def test_calculated_value(nitf_diff_field_struct):
     '''Test where we have a calculated value, in this case a hard coded value'''
+    d = nitf_diff_field_struct # Shorter name
     TestField = create_nitf_field_structure("TestField",
         [["fhdr", "", 4, str],
         ])
@@ -50,9 +72,11 @@ def test_calculated_value():
         t.fhdr = 'FOO'
     assert t.fhdr == "NITF"
     assert list(t.items()), (("fhdr", "NITF"))
-
-def test_loop():
+    assert d.compare_obj(t,t) == True
+    
+def test_loop(nitf_diff_field_struct):
     '''Test where we have a looping structure'''
+    d = nitf_diff_field_struct # Shorter name
     TestField = create_nitf_field_structure("TestField",
         [["fhdr", "", 4, str, {"default" : "NITF"}],
          ["numi", "", 3, int],
@@ -95,8 +119,13 @@ Loop - f.numi
     assert t2.numi == 2
     assert list(t2.lish) == [13,14]
     assert list(t2.li) == [15,16]
+    t2 = copy.deepcopy(t)
+    assert d.compare_obj(t, t2) == True
+    t2.li[1] = 17
+    assert d.compare_obj(t, t2) == False
     
-def test_loop_calc_value():
+def test_loop_calc_value(nitf_diff_field_struct):
+    d = nitf_diff_field_struct # Shorter name
     TestField = create_nitf_field_structure("TestField",
         [["fhdr", "", 4, str, {"default" : "NITF"}],
          ["numi", "", 3, int],
@@ -119,8 +148,10 @@ def test_loop_calc_value():
     with pytest.raises(RuntimeError):
         t.li[0] = 10
     assert list(t.items()) == [('fhdr', 'NITF'), ('numi', 4), ('lish', [11, 12, 13, 14]), ('li', [21, 22, 23, 24])]
+    assert d.compare_obj(t, t) == True
 
-def test_nested_loop():
+def test_nested_loop(nitf_diff_field_struct):
+    d = nitf_diff_field_struct # Shorter name
     TestField = create_nitf_field_structure("TestField",
         [["fhdr", "", 4, str, {"default" : "NITF"}],
          ["numi", "", 3, int],
@@ -151,8 +182,12 @@ def test_nested_loop():
     t2 = TestField()
     t2.read_from_file(fh2)
     assert str(t) == str(t2)
+    assert d.compare_obj(t, t2) == True
+    t2.li[1,3] = 17
+    assert d.compare_obj(t, t2) == False
 
-def test_nested_loop2():
+def test_nested_loop2(nitf_diff_field_struct):
+    d = nitf_diff_field_struct # Shorter name
     # The "mark1" through "mark3" make it easier to look at the write out
     # of the TRE and make sure things are going into the correct spot, and
     # that we are reading this correctly.
@@ -218,8 +253,12 @@ def test_nested_loop2():
                 assert t2.li[i1,i2,i3] == val
                 val += 1
     assert str(t) == str(t2)
+    assert d.compare_obj(t, t2) == True
+    t2.li[1,3,1] = 17
+    assert d.compare_obj(t, t2) == False
 
-def test_nested_loop3():
+def test_nested_loop3(nitf_diff_field_struct):
+    d = nitf_diff_field_struct # Shorter name
     # The "mark1" through "mark3" make it easier to look at the write out
     # of the TRE and make sure things are going into the correct spot, and
     # that we are reading this correctly.
@@ -304,14 +343,21 @@ def test_nested_loop3():
     assert FieldValueArray.is_shape_equal(t.li, t2.li)
     assert list(t.li.values()) == list([itm[1] for itm in expected_items])
     assert list(t.li.items()) == expected_items
+    assert d.compare_obj(t, t2) == True
+    t2.li[1,3,1,0] = 17
+    assert d.compare_obj(t, t2) == False
     t2.numl[1,3,1]=t.numl[1,3,1]+1
     assert not FieldValueArray.is_shape_equal(t.li, t2.li)
+    assert d.compare_obj(t, t2) == False
     
-def test_conditional():
+def test_conditional(nitf_diff_field_struct):
+    d = nitf_diff_field_struct # Shorter name
     TestField = create_nitf_field_structure("TestField",
         [["fhdr", "", 4, str, {"default" : "NITF"}],
          ["udhdl", "", 5, int],
-         ["udhofl", "", 3, int, {"condition" : "f.udhdl != 0"}]])
+         ["udhofl", "", 3, int, {"condition" : "f.udhdl != 0"}],
+         ["flttst", "", 10, float, {"condition" : "f.udhdl != 0"}],
+        ])
     t = TestField()
     with pytest.raises(RuntimeError):
         t.udhofl = 1
@@ -319,17 +365,29 @@ def test_conditional():
     t.write_to_file(fh)
     assert fh.getvalue() == b'NITF00000'
     assert t.udhofl is None
-    assert list(t.items()) == [('fhdr', 'NITF'), ('udhdl', 0), ('udhofl', None)]
+    assert t.flttst is None
+    assert list(t.items()) == [('fhdr', 'NITF'), ('udhdl', 0), ('udhofl', None),
+                               ('flttst', None)]
+    assert d.compare_obj(t, t) == True
     t.udhdl = 10
     t.udhofl = 20
+    t.flttst = 1.123467
+    assert d.compare_obj(t, t) == True
     fh = six.BytesIO()
     t.write_to_file(fh)
-    assert fh.getvalue() == b'NITF00010020'
+    assert fh.getvalue() == b'NITF000100201.12346700'
     assert t.udhofl == 20
-    assert list(t.items()) == [('fhdr', 'NITF'), ('udhdl', 10), ('udhofl', 20)]
+    assert list(t.items()) == [('fhdr', 'NITF'), ('udhdl', 10), ('udhofl', 20),
+                               ('flttst', 1.123467)]
+    t2 = copy.deepcopy(t)
+    t2.udhofl = 21
+    t2.flttst = 1.1234568
+    assert d.compare_obj(t, t2) == False
+    t2.udhdl = 0
+    assert d.compare_obj(t, t2) == False
 
-
-def test_loop_conditional():
+def test_loop_conditional(nitf_diff_field_struct):
+    d = nitf_diff_field_struct # Shorter name
     # udhdl doesn't really loop in a nitf file header, but we'll pretend it
     # does to test a looping conditional
     TestField = create_nitf_field_structure("TestField",
@@ -351,4 +409,8 @@ def test_loop_conditional():
     fh = six.BytesIO()
     t.write_to_file(fh)
     assert fh.getvalue() == b'NITF003000000001003000020040'
+    t2 = copy.deepcopy(t)
+    assert d.compare_obj(t, t2) == True
+    t2.udhofl[2] = 50
+    assert d.compare_obj(t, t2) == False
     

@@ -1,118 +1,37 @@
 import subprocess
 import os
 import json
-import six
 import numpy as np
 import logging
 import h5py
-from pynitf.nitf_file import *
-from pynitf.nitf_tre_csde import *
-from pynitf.nitf_tre_csepha import *
-from pynitf.nitf_tre_piae import *
-from pynitf.nitf_tre_rpc import *
-from pynitf.nitf_tre_geosde import *
-from pynitf.nitf_des_csattb import *
-from pynitf.nitf_image import *
-from pynitf.nitf_image_subheader import *
-from pynitf.nitf_des_ext_def_content import *
-from pynitf.nitf_tre import *
+from pynitf import *
 from pynitf_test_support import *
-from pynitf.nitf_diff_support import *
-
-# Do these in a few places, so collect in one spot.
-def create_image_seg(f, iid1 = '', num = 10, bias = 0, adjust = None):
-    img = NitfImageWriteNumpy(9, 10, np.uint8)
-    for i in range(9):
-        for j in range(10):
-            img[0, i, j] = (i * num + j) + bias
-
-    if adjust is not None:
-        for adjustment in adjust:
-            img[0, adjustment[0], adjustment[1]] = adjustment[2]
-
-    image_seg = NitfImageSegment(img)
-    subheader = image_seg.subheader
-    subheader.iid1 = iid1
-    f.image_segment.append(image_seg)
-    return image_seg
-
-def create_tre(f, atn = 270):
-    t = TreUSE00A()
-    t.angle_to_north = atn
-    t.mean_gsd = 105.2
-    t.dynamic_range = 2047
-    t.obl_ang = 34.12
-    t.roll_ang = -21.15
-    t.n_ref = 0
-    t.rev_num = 3317
-    t.n_seg = 1
-    t.max_lp_seg = 6287
-    t.sun_el = 68.5
-    t.sun_az = 131.3
-    f.tre_list.append(t)
-
-def create_tre2(f):
-    t = TreUSE00A()
-    t.angle_to_north = 290
-    t.mean_gsd = 105.2
-    t.dynamic_range = 2047
-    t.obl_ang = 34.12
-    t.roll_ang = -21.15
-    t.n_ref = 0
-    t.rev_num = 3317
-    t.n_seg = 1
-    t.max_lp_seg = 6287
-    t.sun_el = 68.5
-    t.sun_az = 131.3
-    f.tre_list.append(t)
-    
-def create_text_segment(f, first_name = 'Guido', textid = 'ID12345'):
-    d = {
-        'first_name': first_name,
-        'second_name': 'Rossum',
-        'titles': ['BDFL', 'Developer'],
-    }
-    ts = NitfTextSegment(txt = json.dumps(d))
-    ts.subheader.textid = textid
-    ts.subheader.txtalvl = 0
-    ts.subheader.txtitl = 'sample title'
-    f.text_segment.append(ts)
-
-def create_des(f, date_att = 20170501, q = 0.1):
-
-    ds = DesCSATTB_UH()
-    ds.id = '4385ab47-f3ba-40b7-9520-13d6b7a7f311'
-    ds.numais = '010'
-    for i in range(int(ds.numais)):
-        ds.aisdlvl[i] = 5 + i
-    ds.reservedsubh_len = 0
-
-    des = DesCSATTB(user_subheader=ds)
-    des.qual_flag_att = 1
-    des.interp_type_att = 1
-    des.att_type = 1
-    des.eci_ecf_att = 0
-    des.dt_att = 900.5
-    des.date_att = 20170501
-    des.t0_att = 235959.100001000
-    des.num_att = 5
-    for n in range(des.num_att):
-        des.q1[n] = q
-        des.q2[n] = q
-        des.q3[n] = q
-        des.q4[n] = q
-    des.reserved_len = 0
-
-    de = NitfDesSegment(des=des)
-    f.des_segment.append(de)
+#----------------------------------------------------------------
+# Note, you can see the logging output while running tests by
+# adding --log-cli-level=INFO to pytest
+#----------------------------------------------------------------
 
 def create_basic_nitf():
     f = NitfFile()
     create_tre(f)
-    create_tre2(f)
+    create_tre(f, 290)
     create_text_segment(f)
-
     return f
+
+def test_always_true_handle(isolated_dir):
+    '''Basic test where we always match. This tests at the basic mechanics 
+    of NitfDiff, and ensures we can add handles to it.'''
+    diff = NitfDiff()
+    # TODO Probably want to move priority higher, but leave here until
+    # we get a full nitf diff running
+    diff.handle_set.add_handle(AlwaysTrueHandle(), priority_order=-1)
+    f = NitfFile()
+    create_tre(f)
+    f.write("basic_nitf.ntf")
+    f = NitfFile()
+    create_tre(f, 290)
+    f.write("basic2_nitf.ntf")
+    assert diff.compare("basic_nitf.ntf", "basic2_nitf.ntf") == True
 
 def test_nitf_diff_neq_one_val(isolated_dir):
     f = NitfFile()
@@ -120,7 +39,7 @@ def test_nitf_diff_neq_one_val(isolated_dir):
     f.write("basic_nitf.ntf")
 
     f = NitfFile()
-    create_tre2(f)
+    create_tre(f, 290)
     f.write("basic2_nitf.ntf")
 
     assert nitf_file_diff("basic_nitf.ntf", "basic2_nitf.ntf") == False
@@ -144,7 +63,7 @@ def test_nitf_diff_eq(isolated_dir):
 
     f2 = create_basic_nitf()
     # This exercises the nitf_image_subheader eq_string_ignore_case function used by the iid1 field.
-    iseg2 = create_image_seg(f2, 'an iid1')
+    iseg2 = create_image_seg(f2, iid1='an iid1')
     create_tre(iseg2)
 
     create_des(f2)
@@ -185,7 +104,7 @@ def test_nitf_diff_neq_des(isolated_dir):
     # create_tre(f, atn = 42)
     create_tre(f)
 
-    create_tre2(f)
+    create_tre(f, 290)
 
     iseg = create_image_seg(f, iid1='An IID1')
     # create_tre(iseg, atn = 43)
@@ -199,9 +118,9 @@ def test_nitf_diff_neq_des(isolated_dir):
 
     f2 = NitfFile()
     create_tre(f2)
-    create_tre2(f2)
+    create_tre(f2, 290)
     # This exercises the nitf_image_subheader eq_string_ignore_case function used by the iid1 field.
-    iseg2 = create_image_seg(f2, 'an iid1')
+    iseg2 = create_image_seg(f2, iid1='an iid1')
     create_tre(iseg2)
 
     create_text_segment(f2)
@@ -224,7 +143,7 @@ def test_nitf_diff_image_segment_value_tolerance(config_dir):
     create_tre(iseg)
 
     f2 = NitfFile()
-    iseg2 = create_image_seg(f2, iid1='An IID1', num=10)
+    iseg2 = create_image_seg(f2, iid1='An IID1', row_offset=10)
     create_tre(iseg2)
 
     f.write("basic_nitf.ntf")
@@ -270,7 +189,7 @@ def test_nitf_diff_image_segment_histogram_tolerance(config_dir):
     create_tre(iseg)
 
     f2 = NitfFile()
-    iseg2 = create_image_seg(f2, iid1='An IID1', num=100)
+    iseg2 = create_image_seg(f2, iid1='An IID1', row_offset=100)
     create_tre(iseg2)
 
     f.write("basic_nitf.ntf")
@@ -318,7 +237,7 @@ def test_image_content(isolated_dir):
 
     f = create_basic_nitf()
 
-    iseg = create_image_seg(f, num=9)
+    iseg = create_image_seg(f, row_offset=9)
     create_tre(iseg)
 
 
