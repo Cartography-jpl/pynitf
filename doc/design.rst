@@ -34,7 +34,7 @@ The design for this is shown in :numref:`priority_handle_set`.
       +discard_handle(h)
       {static} add_default_handle(cls, h, priority_order=0)
       {static} discard_default_handle(cls, h, priority_order=0)
-      {static} default_handle_list()
+      {static} default_handle_set()
       +handle(*args, **keywords)
       {abstract} handle_h(h, *args, **keywords)
    }
@@ -117,7 +117,8 @@ The design is shown in :numref:`nitf_diff`.
    class NitfDiff {
       +config
       +handle_set
-      +run(fname1, fname2)
+      +compare(fname1, fname2)
+      +compare_obj(self, obj1, obj2)
    }
    note top
       This class contains a general dict "config"
@@ -128,7 +129,8 @@ The design is shown in :numref:`nitf_diff`.
       available, which contains the list of handles
       used to compare two objects.
 
-      Both of these
+      Both of these are set to initial default values
+      stored in NitfDiffHandleSet class.
    end note
 
    abstract class PriorityHandleSet
@@ -143,9 +145,26 @@ The design is shown in :numref:`nitf_diff`.
       if different.
    end note
 
+   class NitfDiffHandle {
+     +handle_diff(self, obj1, obj2, nitf_diff)
+   }
+   note bottom
+      Base class for handling difference between
+      two NITF object. Like always, you don't
+      need to actually derive from this class if
+      for whatever reason this isn't convenient
+      but you should provide this interface.
+
+      handle_diff returns (False, None) if it can't
+      handle obj1 and obj2, (True, Comparison_result)
+      if it can. Comparison_result is True if objects
+      are the "same", False otherwise.
+   end note
+
    PriorityHandleSet <|-- NitfDiffHandleSet
    NitfDiff *-- NitfDiffHandleSet : Has a handle_set
-
+   NitfDiffHandleSet *-- "many" NitfDiffHandle
+   
 Most of the time there is a known set of handles and configuration parameters,
 with a user adding or modifying a few. So we have both the default handles
 for NitfDiffHandleSet and default configuration. NitfDiff object can then
@@ -153,3 +172,64 @@ have their handle and/or config objects modified to change the behavior for
 a specific comparison. The program nitf_diff (which is a wrapper around
 NitfDiff) can take a JSON file and/or arbitrary python code to change this.
 
+NitfDiffHandle
+--------------
+
+There are a number of NitfDiffHandle objects defined in pynitf:
+
+.. table:: NitfDiffHandle objects
+	   
+  +---------------------+-------------------------------------------------+
+  | Class               | Description                                     +
+  +=====================+=================================================+
+  | NitfFileHandle      | Top level class that handles comparing NitfFile |
+  |                     | Compares matching items, so first image segment |
+  |  		        | in file 1 compared to first image segment in    |
+  |		        | file 2, etc. We could create more sophisticated |
+  |	   	        | classes (e.g., compare by matching iid1), which |
+  |                     | is why even the files are handled by a plugin   |
+  +---------------------+-------------------------------------------------+
+  | AlwaysTrueHandle    | Always say things are equal. Nice for various   |
+  |                     | test cases (e.g. test some object types, skip   |
+  |                     | other types).                                   |
+  +---------------------+-------------------------------------------------+
+  | FieldStructDiff     | Base class for various FieldStruct objects      |
+  |                     | (e.g DiffFileHeader )                           |
+  +---------------------+-------------------------------------------------+
+  | DiffFileHeader      | Compare NitfFileHeader                          |
+  +---------------------+-------------------------------------------------+
+
+FieldStructDiff
+---------------
+  
+There are various handles to check the different FieldStruct objects.
+
+While we could just create new NitfDiffHandle objects for each
+field structure (e.g., each of the TREs in the file), we instead try to
+provide a good deal of functionality through "configuration". The
+configuration is a dictionary type object that derived class get
+from the nitf_diff object.  This then contains keyword/value pairs
+for controlling things. While derived classes can others, these
+are things that can be defined:
+
+* **exclude** - List of fields to exclude from comparing
+* **exclude_but_warn** - List of field to exclude from comparing, but
+  warn if different.
+* **include** - If nonempty, only include the given fields
+* **eq_fun** - A dictionary going from field name to a function to compare.
+* **rel_tol** - A dictionary going from field name to a relative tolerance.
+  Only used for fields with float type.
+* **abs_tol** - A dictionary going from field name to absolute tolerance.
+  Only used for fields with float type.
+
+If a function isn't otherwise defined in eq_fun, we use operator.eq, 
+except for floating point numbers. For floating point numbers we use
+math.isclose. The rel_tol and/or abs_tol can be supplied. The default
+values are used for math.isclose if not supplied (so 1e-9 and 0.0).
+    
+For array/loop fields we compare the shape, and if the same we compare
+each element in the array. The default it to provide a summary of differences
+(e.g., array had 1 of 42 difference). We also provide information about all
+the difference found at the logging level of INFO.
+
+   
