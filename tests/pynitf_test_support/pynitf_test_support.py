@@ -17,11 +17,14 @@ from distutils import dir_util
 import json
 import pytest
 from _pytest.logging import caplog
+import warnings
 
 # Some unit tests require h5py. This is not an overall requirement, so if
 # not found we just skip those tests
 try:
-    import h5py
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        import h5py
     have_h5py = True
 except ImportError:
     # Ok if we don't have h5py, we just can't execute this code
@@ -229,6 +232,8 @@ def nitf_sample_files(isolated_dir):
         return "/raid1/smyth/NitfSamples/"
     elif(os.path.exists("/opt/nitf_files/NitfSamples/")):
         return "/opt/nitf_files/NitfSamples/"
+    elif(os.path.exists("/data2/smythdata/NitfSamples/")):
+        return "/data2/smythdata/NitfSamples/"
     pytest.skip("Require NitfSamples test data to run")
 
 @pytest.yield_fixture(scope="function")

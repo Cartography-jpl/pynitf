@@ -3,7 +3,6 @@ import os
 import json
 import numpy as np
 import logging
-import h5py
 from pynitf import *
 from pynitf_test_support import *
 #----------------------------------------------------------------

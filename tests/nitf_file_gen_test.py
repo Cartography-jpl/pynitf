@@ -23,7 +23,6 @@ import json
 import six
 import numpy as np
 import hashlib
-import h5py
 import time
 
 def createHISTOA():

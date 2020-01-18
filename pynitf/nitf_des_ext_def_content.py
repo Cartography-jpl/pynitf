@@ -7,11 +7,14 @@ import datetime
 import shutil
 import tempfile
 import numpy as np
+import warnings
 
 # DesEXT_h5 depends on h5py being available. Ok if it isn't, we just can't
 # use this particular class.
 try:
-    import h5py
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        import h5py
 except ImportError:
     pass
 
