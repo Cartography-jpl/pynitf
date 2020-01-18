@@ -18,11 +18,13 @@
 # -- Project information -----------------------------------------------------
 
 project = 'pynitf'
-copyright = '2019, Mike Smyth, Philip Yoon, Walt Bunch'
+copyright = '2020, Mike Smyth, Philip Yoon, Walt Bunch'
 author = 'Mike Smyth, Philip Yoon, Walt Bunch'
 
+exec(open("../pynitf/version.py").read())
+
 # The full version, including alpha/beta/rc tags
-release = '0.61'
+release = __version__
 
 
 # -- General configuration ---------------------------------------------------

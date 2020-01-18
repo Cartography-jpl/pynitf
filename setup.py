@@ -1,7 +1,10 @@
 from setuptools import setup
 
+# Version moved to pynitf/version.py so we have one place it is defined.
+exec(open("pynitf/version.py").read())
+
 setup(name='pynitf',
-      version='0.62',
+      version=__version__,
       description='This is a package for reading and writing NITF',
       url='https://github.jpl.nasa.gov/Cartography/pynitf',
       author='Mike Smyth <Mike.M.Smyth@jpl.nasa.gov>, Philip Yoon <Philip.J.Yoon@jpl.nasa.gov>',

@@ -4,6 +4,7 @@
 from __future__ import absolute_import
 import os as _os
 import glob as _glob
+from .version import __version__
 
 for _i in _glob.glob(_os.path.dirname(__file__) + "/*.py"):
     _mname = _os.path.basename(_i).split('.')[0]
