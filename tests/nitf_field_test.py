@@ -1,5 +1,5 @@
 from pynitf.nitf_field import *
-from pynitf.nitf_file import NitfDiff
+from pynitf.nitf_file_diff import NitfDiff
 from pynitf.nitf_diff_handle import AlwaysTrueHandle, NitfDiffHandle
 from pynitf_test_support import *
 import io, six
@@ -12,9 +12,6 @@ import logging
 def nitf_diff_field_struct(print_logging):
     '''Set up a NitfDiff object that just compares field structure 
     objects'''
-    # This doesn't work for some reason. Will need to dig into this
-    logger = logging.getLogger("nitf_diff")
-    logger.setLevel(logging.INFO)
     d = NitfDiff()
     d.handle_set.clear()
     d.handle_set.add_handle(FieldStructDiff(), priority_order = 1)

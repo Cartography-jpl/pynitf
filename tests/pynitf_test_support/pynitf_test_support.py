@@ -7,6 +7,7 @@ from pynitf.nitf_file import (NitfImageSegment, NitfTextSegment,
                               NitfDesSegment)
 from pynitf.nitf_des_csattb import (DesCSATTB_UH, DesCSATTB)
 from pynitf.nitf_tre_csde import TreUSE00A
+from pynitf.nitf_diff_handle import DifferenceFormatter
 from unittest import SkipTest
 import os
 import sys
@@ -16,7 +17,7 @@ import math
 from distutils import dir_util
 import json
 import pytest
-from _pytest.logging import caplog
+import logging
 import warnings
 
 # Some unit tests require h5py. This is not an overall requirement, so if
@@ -174,12 +175,32 @@ require_gdal_value = pytest.mark.skipif(not sys.version_info > (3,) or
                    reason="Require python 3 and gdallocationinfo")
 
 @pytest.yield_fixture(scope="function")
-def print_logging(caplog):
-    '''Print the logger to the console. Normally this only shows up for
-    failed tasks, but with -s we print this out for each job that runs.'''
-    yield caplog
-    print("Logger output:")
-    print("\n".join("%s: %s" % (r.levelname, r.getMessage()) for r in caplog.get_records("call")))
+def print_logging(isolated_dir):
+    '''Direct logging to a local "run.log" file.
+
+    Also print the logger to the console. Normally this only shows up for
+    failed tasks, but with -s we print this out for each job that runs.
+    '''
+    h = logging.FileHandler('run.log')
+    h.setLevel(logging.INFO)
+    h.setFormatter(DifferenceFormatter())
+    logger = logging.getLogger('nitf_diff')
+    original_lv = logger.getEffectiveLevel()
+    print(original_lv)
+    try:
+        logger.setLevel(logging.INFO)
+        logger.addHandler(h)
+        yield
+    finally:
+        logger.setLevel(original_lv)
+        logger.removeHandler(h)
+    # We output the run.log file rather than just attaching the logger to
+    # the console so we can avoid the "Logger output:" part if there is no
+    # actual output.
+    t = open("run.log").read()
+    if(len(t) > 0):
+        print("\nLogger output:")
+        print(t)
 
 @pytest.yield_fixture(scope="function")
 def config_dir(tmpdir, request):

@@ -199,6 +199,39 @@ There are a number of NitfDiffHandle objects defined in pynitf:
   | DiffFileHeader      | Compare NitfFileHeader                          |
   +---------------------+-------------------------------------------------+
 
+The handles should return an overall status of the comparison, so True for
+objects are the same, False otherwise.
+
+In addition, differences should be reported to the users. We do this through
+the python logger:
+
+.. code-block:: python
+
+   logger = logging.getLogger("nitf-diff")
+
+   logger.difference("This is a difference")
+   logger.difference_detail("This is more detailed information about differences")
+
+The functions "difference" and "difference_detail" have the same arguments
+as python logger "info".
+
+The new levels can be displayed using DifferenceFormatter as the formatter:
+
+.. code-block:: python
+		
+   logger = logging.getLogger('nitf_diff')
+   h = logging.StreamHandler()
+   h.setFormatter(DifferenceFormatter())
+   logger.addHandler(h)
+
+Note to see detailed information about differences you should set the
+logging level (in both the handler and the logger) to logging.INFO:
+
+.. code-block:: python
+		
+    h.setLevel(logging.INFO)
+    logger.setLevel(logging.INFO)
+
 FieldStructDiff
 ---------------
   

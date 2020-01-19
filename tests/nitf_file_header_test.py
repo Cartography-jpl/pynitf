@@ -1,5 +1,5 @@
 from pynitf.nitf_file_header import *
-from pynitf.nitf_file import NitfDiff
+from pynitf.nitf_file_diff import NitfDiff
 from pynitf_test_support import *
 import io, six
 import copy

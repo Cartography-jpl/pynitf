@@ -2,6 +2,26 @@ from .priority_handle_set import PriorityHandleSet
 import logging
 
 logger = logging.getLogger('nitf_diff')
+print(logger)
+
+# Add two new logging level to capture diff and diff_detailed. We are using
+# logging which generally is used to report errors to instead report
+# information about differences.
+
+class DifferenceFormatter(logging.Formatter):
+    def format(self, record):
+        if(record.levelno == 39):
+            return "Difference found: " + record.getMessage()
+        elif(record.levelno == 21):
+            return "      - " + record.getMessage()
+        return "%s: %s" % (record.levelname, record.getMessage())
+        
+def _log_difference(msg, *args, **kwargs):
+    logger.log(39, msg, *args, **kwargs)
+def _log_difference_detail(msg, *args, **kwargs):
+    logger.log(21, msg, *args, **kwargs)
+logger.difference = _log_difference
+logger.difference_detail = _log_difference_detail
 
 class NitfDiffHandleSet(PriorityHandleSet):
     default_config = {}
@@ -16,6 +36,13 @@ class NitfDiffHandle(object):
         '''Handle determining difference between object. Returns a tuple, with
         the first value indicating if we can handle the types and the second
         indicating if the objects are the same.
+
+        If you have difference to report, you should use the logger
+            logger = logging.getLogger('nitf_diff')
+
+        This has had "difference" and "difference_detail" added to
+        it for reporting differences, and more detailed information about
+        differences (use like you would logger.info).
 
         So, if we can't handle this particular set of objects, this
         returns (False, None).  Otherwise, it returns (True, True) if
@@ -32,4 +59,5 @@ class AlwaysTrueHandle(NitfDiffHandle):
         logger.info("obj2: %s" % obj2.summary())
         return (True, True)
 
-__all__ = ["AlwaysTrueHandle", "NitfDiffHandle", "NitfDiffHandleSet",]
+__all__ = ["AlwaysTrueHandle", "NitfDiffHandle", "NitfDiffHandleSet",
+           "DifferenceFormatter",]

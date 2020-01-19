@@ -877,7 +877,7 @@ class FieldStructDiff(NitfDiffHandle):
         logger.warning("For %s field %s %s , but not considering files different.",
                        self.desc(nitf_diff), fn, s)
     def _is_diff(self, s, nitf_diff, fn):
-        logger.error("For %s field %s %s.", self.desc(nitf_diff), fn, s)
+        logger.difference("For %s field %s %s.", self.desc(nitf_diff), fn, s)
         self.is_same = False
 
     def handle_diff(self, obj1, obj2, nitf_diff):
@@ -902,7 +902,7 @@ class FieldStructDiff(NitfDiffHandle):
                                   obj2.items(array_as_list=False),
                                   fillvalue=("No_field", None)):
             if(fn1 != fn2):
-                logger.error("While comparing %s different fields found. Field in object 1 is %s and object 2 is %s. Stopping comparison for %s" % (self.desc(nitf_diff), fn1, fn2, self.desc(nitf_diff)))
+                logger.difference("While comparing %s different fields found. Field in object 1 is %s and object 2 is %s. Stopping comparison for %s" % (self.desc(nitf_diff), fn1, fn2, self.desc(nitf_diff)))
                 return False
             if fn1 in exclude:
                 continue
@@ -937,11 +937,8 @@ class FieldStructDiff(NitfDiffHandle):
                     total_count += 1
                     if(not cmp_fun(av1, av2)):
                         ind_str = ", ".join(str(i) for i in ind)
-                        logger.info("%s[%s]: %s != %s", fn1, ind_str, av1,
-                                    av2)
-                        # Debugging for unit test not handling this somehow
-                        #print("For %s[%s]: %s != %s" % (fn1, ind, av1, av2))
-                        #print(logger.isEnabledFor(logging.INFO))
+                        logger.difference_detail("%s[%s]: %s != %s",
+                                                 fn1, ind_str, av1, av2)
                         diff_count += 1
                 if(diff_count > 0):
                     rep_diff("array had %d of %d different" %

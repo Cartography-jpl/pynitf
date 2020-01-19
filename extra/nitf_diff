@@ -87,14 +87,22 @@ if(args.config_file_python):
     nspec.loader.exec_module(module)
     sys.modules["config_file"] = module
 
+logger = logging.getLogger('nitf_diff')
+h = logging.StreamHandler()
+h.setFormatter(pynitf.DifferenceFormatter())
+logger.addHandler(h)
 if(args.debug):
-    logging.basicConfig(level=logging.DEBUG)
+    h.setLevel(logging.DEBUG)
+    logger.setLevel(logging.DEBUG)
 elif(args.verbose):
-    logging.basicConfig(level=pynitf.NitfDiffHandle.INFO)
+    h.setLevel(logging.INFO)
+    logger.setLevel(logging.INFO)
 elif(args.quiet):
-    logging.basicConfig(level=1000)
+    h.setLevel(1000)
+    logger.setLevel(1000)
 else:    
-    logging.basicConfig(level=logging.WARNING)
+    h.setLevel(logging.WARNING)
+    logger.setLevel(logging.WARNING)
 
 is_same = nitf_diff.compare(args.file1, args.file2)
 
