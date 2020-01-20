@@ -97,17 +97,15 @@ NitfFileHeader.summary = summary
 
 class FileHeaderDiff(FieldStructDiff):
     '''Compare two file headers.'''
-    def desc(self, nitf_diff):
-        '''The description of what we are comparing, used in reporting.'''
-        return "NITF File Header"
     def configuration(self, nitf_diff):
         return nitf_diff.config.get("File Header", {})
 
     def handle_diff(self, h1, h2, nitf_diff):
-        if(not isinstance(h1, NitfFileHeader) or
-           not isinstance(h2, NitfFileHeader)):
-            return (False, None)
-        return (True, self.compare_obj(h1, h2, nitf_diff))
+        with nitf_diff.diff_context("NITF File Header"):
+            if(not isinstance(h1, NitfFileHeader) or
+               not isinstance(h2, NitfFileHeader)):
+                return (False, None)
+            return (True, self.compare_obj(h1, h2, nitf_diff))
 
 NitfDiffHandleSet.add_default_handle(FileHeaderDiff())
 _default_config = {}

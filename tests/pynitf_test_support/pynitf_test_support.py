@@ -186,7 +186,6 @@ def print_logging(isolated_dir):
     h.setFormatter(DifferenceFormatter())
     logger = logging.getLogger('nitf_diff')
     original_lv = logger.getEffectiveLevel()
-    print(original_lv)
     try:
         logger.setLevel(logging.INFO)
         logger.addHandler(h)

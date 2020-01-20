@@ -865,19 +865,15 @@ class FieldStructDiff(NitfDiffHandle):
     For array/loop fields we compare the shape, and if the same we compare
     each element in the array.
     '''
-    def desc(self, nitf_diff):
-        '''The description of what we are comparing, used in reporting.'''
-        return "Field Structure"
     def configuration(self, nitf_diff):
         '''Derived class should extract out the appropriate configuration
         from the supplied NitfDiff object.'''
         # Default is no configuration
         return {}
-    def _warn_is_diff(self, s, nitf_diff, fn):
-        logger.warning("For %s field %s %s , but not considering files different.",
-                       self.desc(nitf_diff), fn, s)
-    def _is_diff(self, s, nitf_diff, fn):
-        logger.difference("For %s field %s %s.", self.desc(nitf_diff), fn, s)
+    def _is_diff_ignored(self, s, *args):
+        logger.difference_ignored(s, *args)
+    def _is_diff(self, s, *args):
+        logger.difference(s, *args)
         self.is_same = False
 
     def handle_diff(self, obj1, obj2, nitf_diff):
@@ -902,14 +898,14 @@ class FieldStructDiff(NitfDiffHandle):
                                   obj2.items(array_as_list=False),
                                   fillvalue=("No_field", None)):
             if(fn1 != fn2):
-                logger.difference("While comparing %s different fields found. Field in object 1 is %s and object 2 is %s. Stopping comparison for %s" % (self.desc(nitf_diff), fn1, fn2, self.desc(nitf_diff)))
+                logger.difference("different fields found. Field in object 1 is %s and object 2 is %s. Stopping comparison." % (fn1, fn2))
                 return False
             if fn1 in exclude:
                 continue
             if len(include) > 0 and fn1 not in include:
                 continue
             if fn1 in exclude_but_warn:
-                rep_diff = self._warn_is_diff
+                rep_diff = self._is_diff_ignored
             else:
                 rep_diff = self._is_diff
             if(isinstance(v1, float) or (isinstance(v1, FieldValueArray) and
@@ -927,7 +923,7 @@ class FieldStructDiff(NitfDiffHandle):
             cmp_fun = eq_fun.get(fn1, def_eq_fun) 
             if(isinstance(v1, FieldValueArray)):
                 if(not FieldValueArray.is_shape_equal(v1, v2)):
-                    rep_diff("array shapes are different", nitf_diff, fn1)
+                    rep_diff("%s: array shapes are different", fn1)
                     continue
                 diff_count = 0
                 total_count = 0
@@ -941,11 +937,11 @@ class FieldStructDiff(NitfDiffHandle):
                                                  fn1, ind_str, av1, av2)
                         diff_count += 1
                 if(diff_count > 0):
-                    rep_diff("array had %d of %d different" %
-                             (diff_count, total_count), nitf_diff, fn1)
+                    rep_diff("%s: array had %d of %d different", fn1, 
+                             diff_count, total_count)
                 continue
             if not cmp_fun(v1, v2):
-                rep_diff("differ: %s != %s" % (v1, v2), nitf_diff, fn1)
+                rep_diff("%s: %s != %s", fn1, v1, v2)
         return self.is_same
 
 class _create_nitf_field_structure(object):

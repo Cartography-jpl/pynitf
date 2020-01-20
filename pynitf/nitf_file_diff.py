@@ -1,12 +1,30 @@
 from .nitf_file import NitfFile
-from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
+from .nitf_diff_handle import (NitfDiffHandle, NitfDiffHandleSet,
+                               DiffContextFilter)
 import copy
+import logging
+from contextlib import contextmanager
+
+logger = logging.getLogger('nitf_diff')
 
 class NitfDiff(object):
     '''Class that handles the overall NITF diff between two files.'''
     def __init__(self):
         self.config = copy.copy(NitfDiffHandleSet.default_config)
         self.handle_set = copy.copy(NitfDiffHandleSet.default_handle_set())
+        self.context_filter = DiffContextFilter("File level")
+
+    @contextmanager
+    def diff_context(self, v):
+        '''"with" context manager for setting the context where we are
+        reporting differences. Handles setting the difference context, 
+        and then changing back after we leave the block'''
+        org_ctx = self.context_filter.ctx
+        try:
+            self.context_filter.ctx = v
+            yield
+        finally:
+            self.context_filter.ctx = org_ctx
 
     def _update_dict(self, d, u):
         '''Recursively update a dictionary with a second dictionary. Handles
@@ -34,7 +52,13 @@ class NitfDiff(object):
         individual components of a NITF file (e.g, you have 2 files
         open and want to know if two NitfImageSegment are the same)
         '''
-        return self.handle_set.handle(obj1, obj2, self)
+        f = self.context_filter if self.context_filter not in logger.filters else None
+        try:
+            if(f):
+                logger.addFilter(f)
+            return self.handle_set.handle(obj1, obj2, self)
+        finally:
+            logger.removeFilter(f)
 
 
 class NitfFileHandle(NitfDiffHandle):

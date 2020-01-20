@@ -16,7 +16,8 @@ def nitf_diff_field_struct(print_logging):
     d.handle_set.clear()
     d.handle_set.add_handle(FieldStructDiff(), priority_order = 1)
     d.handle_set.add_handle(AlwaysTrueHandle(), priority_order = 0)
-    yield d
+    with d.diff_context("Field Structure"):
+        yield d
 
 def test_float_to_fixed_width():
     assert len(float_to_fixed_width(evil_float1, 7)) <= 7
@@ -52,6 +53,14 @@ def test_basic(nitf_diff_field_struct):
 '''fhdr  : BOO
 clevel: 2
 '''
+    assert d.compare_obj(t, t2) == False
+    TestField2 = create_nitf_field_structure("TestField2",
+        [["fhdr", "", 4, str,  {"default" : "NITF"}],
+         ["clevel2", "", 2, int ],
+        ])
+    t2 = TestField2()
+    t2.fhdr = 'FOO'
+    t2.clevel2 = 1
     assert d.compare_obj(t, t2) == False
 
 def test_calculated_value(nitf_diff_field_struct):
