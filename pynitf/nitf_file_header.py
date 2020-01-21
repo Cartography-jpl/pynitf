@@ -115,7 +115,7 @@ _default_config = {}
 _default_config["exclude_but_warn"] = ["fdt"]
 # Ignore all the structural differences about the file. We compare all
 # the individual pieces, so this will get reported as we go through each
-# element. But it is useful to also report that udhd varies if we are
+# element. But it is not useful to also report that udhd varies if we are
 # already saying the TREs are different.
 _default_config["exclude"] = ['fl', 'hl',
                               'numi', 'lish', 'li',

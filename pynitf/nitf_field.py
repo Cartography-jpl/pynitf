@@ -180,8 +180,6 @@ class _FieldValue(object):
         self.condition = options.get("condition", None)
         self.optional = options.get("optional", False)
         self.optional_char = options.get("optional_char", " ")
-        self.eq_fun = options.get("eq_fun", None)
-        self.name = options.get("name", None)
 
     def value(self,parent_obj):
         if(self.field_name is None):
@@ -598,6 +596,7 @@ class FieldData(object):
         self.condition = options.get("condition", None)
         self.size_offset = options.get("size_offset", 0)
         self.size_not_updated = options.get("size_not_updated", False)
+        self.ty = ty
         # This isn't exactly the size. Rather it is the expression that
         # we either use to read or set the size, e.g., "ixshdl". Note
         # that in standard NITF bizarreness this isn't actually the size,
@@ -1055,23 +1054,6 @@ def create_nitf_field_structure(name, description, hlp = None):
               and get_print function because these are the things we call. 
               Note that we have a generic FieldData class here, which might 
               be sufficient.
-    eq_fun  - Function used for testing equality. This is assumed to take at
-              least two values for comparison, but may accept other values,
-              for example a floating-point comparison tolerance. This was
-              added so that nitf_diff_support could use equality definitions
-              provided by particular subheader and TRE fields. An example is
-              the NitfImageSubheader field iid1 that uses a case-ignoring
-              string comparing function. This causes the nitf_diff_support
-              ISegHandle class to ignore case while comparing iid1 fields.
-              The value of eq_fun should be a tuple with the first element
-              being the name of the function, and any remaining elements
-              being extra parms passed to the function, after the two items
-              begin compared.
-    name    - Name used to identify the field for include/exclude lists
-              optionally used by nitf_diff_support.nitf_file_diff.
-              If name is not provided, field_name is used instead. This 
-              alternate name is available to solve any possible name 
-              collisions among various segment headers and TRE fields.
 
     The 'frmt' can be a format string (e.g., "%03d" for a 3 digit integer),
     or it can be a function that takes a value and returns a string - useful

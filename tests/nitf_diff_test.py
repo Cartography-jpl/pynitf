@@ -12,7 +12,7 @@ def create_basic_nitf():
     return f
 
 # Haven't gotten nitf_diff working yet, we'll come back to this
-@skip
+#@skip
 def test_nitf_diff(isolated_dir):
     f = NitfFile()
     create_tre(f)

@@ -1,4 +1,5 @@
-from .nitf_file import NitfFile
+from .nitf_file import (NitfFile, NitfImageSegment, NitfGraphicSegment,
+                        NitfTextSegment, NitfDesSegment, NitfResSegment)
 from .nitf_diff_handle import (NitfDiffHandle, NitfDiffHandleSet,
                                DiffContextFilter)
 import copy
@@ -15,13 +16,19 @@ class NitfDiff(object):
         self.context_filter = DiffContextFilter("File level")
 
     @contextmanager
-    def diff_context(self, v):
+    def diff_context(self, v, add_text = False):
         '''"with" context manager for setting the context where we are
         reporting differences. Handles setting the difference context, 
-        and then changing back after we leave the block'''
+        and then changing back after we leave the block.
+
+        If add_text is set to True, add the context to the existing context.
+        This is useful for nested context (e.g. TRE in an image segment)'''
         org_ctx = self.context_filter.ctx
         try:
-            self.context_filter.ctx = v
+            if(add_text):
+                self.context_filter.ctx += " " + v
+            else:
+                self.context_filter.ctx = v
             yield
         finally:
             self.context_filter.ctx = org_ctx
@@ -91,4 +98,84 @@ class NitfFileHandle(NitfDiffHandle):
 
 NitfDiffHandleSet.add_default_handle(NitfFileHandle())
 
-__all__ = ["NitfDiff", "NitfFileHandle",]
+
+class ImageSegmentDiff(NitfDiffHandle):
+    '''Compare two image segments.'''
+    def handle_diff(self, iseg1, iseg2, nitf_diff):
+        if(not isinstance(iseg1, NitfImageSegment) or
+           not isinstance(iseg2, NitfImageSegment)):
+            return (False, None)
+        with nitf_diff.diff_context("ImageSegment '%s'" % iseg1.iid1):
+            is_same = nitf_diff.compare_obj(iseg1.subheader, iseg2.subheader)
+            if(len(iseg1.tre_list) != len(iseg2.tre_list)):
+                logger.difference("Segment 1 has %d TREs while Segment 2 has %d",
+                                  len(iseg1.tre_list), len(iseg2.tre_list))
+                is_same = False
+            for i in range(min(len(iseg1.tre_list), len(iseg2.tre_list))):
+                is_same = nitf_diff.compare_obj(iseg1.tre_list[i],
+                                                iseg2.tre_list[i]) and is_same
+            nitf_diff.compare_obj(iseg1.data, iseg2.data)
+            return (True, is_same)
+
+NitfDiffHandleSet.add_default_handle(ImageSegmentDiff())
+                           
+class GraphicSegmentDiff(NitfDiffHandle):
+    '''Compare two graphics segments.'''
+    def handle_diff(self, gseg1, gseg2, nitf_diff):
+        if(not isinstance(gseg1, NitfGraphicSegment) or
+           not isinstance(gseg2, NitfGraphicSegment)):
+            return (False, None)
+        logger.warning("Skipping GraphicSegment, we don't currently handle this")
+        return (True, True)
+
+NitfDiffHandleSet.add_default_handle(GraphicSegmentDiff())
+
+class TextSegmentDiff(NitfDiffHandle):
+    '''Compare two text segments.'''
+    def handle_diff(self, tseg1, tseg2, nitf_diff):
+        if(not isinstance(tseg1, NitfTextSegment) or
+           not isinstance(tseg2, NitfTextSegment)):
+            return (False, None)
+        with nitf_diff.diff_context("TextSegment '%s'" % tseg1.subheader.textid):
+            is_same = nitf_diff.compare_obj(tseg1.subheader, tseg2.subheader)
+            if(len(tseg1.tre_list) != len(tseg2.tre_list)):
+                logger.difference("Segment 1 has %d TREs while Segment 2 has %d",
+                                  len(tseg1.tre_list), len(tseg2.tre_list))
+                is_same = False
+            for i in range(min(len(tseg1.tre_list), len(tseg2.tre_list))):
+                is_same = nitf_diff.compare_obj(tseg1.tre_list[i],
+                                                tseg2.tre_list[i]) and is_same
+            # TODO Perhaps use difflib in python to calculate differences
+            if(tseg1.data != tseg2.data):
+                is_same = False
+                logger.difference("Text data is different")
+            return (True, is_same)
+
+NitfDiffHandleSet.add_default_handle(TextSegmentDiff())
+
+class DesSegmentDiff(NitfDiffHandle):
+    '''Compare two DES segments.'''
+    def handle_diff(self, dseg1, dseg2, nitf_diff):
+        if(not isinstance(dseg1, NitfDesSegment) or
+           not isinstance(dseg2, NitfDesSegment)):
+            return (False, None)
+        logger.warning("Skipping DesSegment, we don't currently handle this")
+        return (True, True)
+
+NitfDiffHandleSet.add_default_handle(DesSegmentDiff())
+
+class ResSegmentDiff(NitfDiffHandle):
+    '''Compare two Reserved segments.'''
+    def handle_diff(self, rseg1, rseg2, nitf_diff):
+        if(not isinstance(rseg1, NitfResSegment) or
+           not isinstance(rseg2, NitfResSegment)):
+            return (False, None)
+        logger.warning("Skipping ResSegment, we don't currently handle this")
+        return (True, True)
+
+NitfDiffHandleSet.add_default_handle(ResSegmentDiff())
+
+__all__ = ["NitfDiff", "NitfFileHandle", "ImageSegmentDiff",
+           "GraphicSegmentDiff", "TextSegmentDiff", "DesSegmentDiff",
+           "ResSegmentDiff"]
+

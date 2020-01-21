@@ -2,9 +2,11 @@ from .nitf_image_subheader import (NitfImageSubheader,
                                    set_default_image_subheader)
 from .priority_handle_set import PriorityHandleSet
 from .nitf_security import security_unclassified
+from .nitf_diff_handle import (NitfDiffHandle, NitfDiffHandleSet)
 import abc, six
 import numpy as np
 import collections
+import logging
 
 class NitfImageCannotHandle(RuntimeError):
     '''Exception that indicates we can't read a particular image. Note that
@@ -179,6 +181,18 @@ class NitfImagePlaceHolder(NitfImage):
                 #This may go negative on the last loop but that's fine
                 bytes_left = bytes_left - buffer_size
 
+logger = logging.getLogger('nitf_diff')
+class ImagePlaceHolderDiff(NitfDiffHandle):
+    def handle_diff(self, d1, d2, nitf_diff):
+        if(not isinstance(d1, NitfImagePlaceHolder) or
+           not isinstance(d2, NitfImagePlaceHolder)):
+            return (False, None)
+        logger.warn("Skipping image '%s', don't know how to read it.",
+                    d1.image_subheader.iid1)
+        return (True, True)
+
+NitfDiffHandleSet.add_default_handle(ImagePlaceHolderDiff())
+    
 class NitfImageReadNumpy(NitfImageWithSubset):
     '''Implementation of NitfImage that reads data into a numpy array. We 
     can either read the data into memory, or do a memory map.
@@ -248,6 +262,24 @@ class NitfImageReadNumpy(NitfImageWithSubset):
 
                 #This may go negative on the last loop but that's fine
                 bytes_left = bytes_left - buffer_size
+
+class ImageReadNumpyDiff(NitfDiffHandle):
+    def handle_diff(self, d1, d2, nitf_diff):
+        if(not isinstance(d1, NitfImageReadNumpy) or
+           not isinstance(d2, NitfImageReadNumpy)):
+            return (False, None)
+        is_same = True
+        t1 = d1[:,:,:]
+        t2 = d2[:,:,:]
+        # TODO Expose tolerance as configuration parameters
+        if(not np.allclose(t1, t2)):
+            logger.difference("Image '%s is different",
+                              d1.image_subheader.iid1)
+            is_same = False
+        return (True, is_same)
+
+NitfDiffHandleSet.add_default_handle(ImageReadNumpyDiff())
+                
 
 class NitfImageWriteDataOnDemand(NitfImageWithSubset):
 

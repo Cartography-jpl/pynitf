@@ -1,6 +1,7 @@
 from __future__ import print_function
 from .nitf_field import *
 from .nitf_security import NitfSecurity
+from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
 import six
 import numpy as np
 import math
@@ -12,11 +13,8 @@ cryptic, but these are documented in detail in the NITF 2.10 documentation
 The NITF image subheader is described in Table A-3, starting page 78.
 '''
 
-def eq_string_ignore_case(s1, s2):
-    return s1.casefold() == s2.casefold()
-    
 desc = [['im', "File Part Type", 2, str],
-        ['iid1', "Image Identifier 1", 10, str, {'eq_fun' : (eq_string_ignore_case,), 'name' : 'image.iid1'}],
+        ['iid1', "Image Identifier 1", 10, str],
         ['idatim', "Image Date and Time", 14, str],
         ['tgtid', "Target Identifier", 17, str],
         ['iid2', "Image Identifier 2", 80, str],
@@ -93,10 +91,6 @@ NitfImageSubheader.im_value = hardcoded_value("IM")
 NitfImageSubheader.ifc_value = hardcoded_value("N")
 NitfImageSubheader.imflt_value = hardcoded_value("   ")
 NitfImageSubheader.isync_value = hardcoded_value(0)
-
-def __eq__(self, other):
-    return str(self) == str(other)
-
 
 def _summary(self):
     res = six.StringIO()
@@ -422,4 +416,30 @@ def _set_security(self, s):
 
 NitfImageSubheader.security = property(_get_security, _set_security)
 
-__all__ = ["NitfImageSubheader", "set_default_image_subheader"]
+class ImageSubheaderDiff(FieldStructDiff):
+    '''Compare two image subheaders.'''
+    def configuration(self, nitf_diff):
+        return nitf_diff.config.get("Image Subheader", {})
+
+    def handle_diff(self, h1, h2, nitf_diff):
+        with nitf_diff.diff_context("Subheader", add_text = True):
+            if(not isinstance(h1, NitfImageSubheader) or
+               not isinstance(h2, NitfImageSubheader)):
+                return (False, None)
+            return (True, self.compare_obj(h1, h2, nitf_diff))
+
+NitfDiffHandleSet.add_default_handle(ImageSubheaderDiff())
+_default_config = {}
+# Ignore all the structural differences about the file. We compare all
+# the individual pieces, so this will get reported as we go through each
+# element. But it is not useful to also report that udhd varies if we are
+# already saying the TREs are different.
+_default_config["exclude"] = ['udidl', 'udofl', 'udid', 
+                              'ixshdl', 'ixofl', 'ixshd'] 
+ 
+
+NitfDiffHandleSet.default_config["Image Subheader"] = _default_config
+
+
+__all__ = ["NitfImageSubheader", "set_default_image_subheader",
+           "ImageSubheaderDiff"]

@@ -8,11 +8,14 @@
 # from word to Excel. For some reason, you can't go directly to Excel. You
 # can then cut and paste from excel to emacs
 from __future__ import print_function
-from .nitf_field import (_FieldStruct, _FieldLoopStruct, 
+from .nitf_field import (_FieldStruct, _FieldLoopStruct,
+                         FieldStructDiff,
                          _create_nitf_field_structure)
+from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
 import copy
 import io,six
 from .nitf_des import TreOverflow
+import logging
 
 class Tre(_FieldStruct):
     '''Add a little extra structure unique to Tres'''
@@ -331,8 +334,23 @@ def add_find_tre_function(cls):
     cls.find_tre = _find_tre
     cls.find_one_tre = _find_one_tre
     cls.find_exactly_one_tre = _find_exactly_one_tre
+
+# Temp, we'll come back to this
+logger = logging.getLogger('nitf_diff')
+class TreDiff(FieldStructDiff):
+    '''Compare two TREs.'''
+    def handle_diff(self, h1, h2, nitf_diff):
+        if(not isinstance(h1, Tre) or
+           not isinstance(h2, Tre)):
+            return (False, None)
+        logger.warning("Skipping TRE, we don't currently handle this")
+        return (True, True)
+
+NitfDiffHandleSet.add_default_handle(TreDiff())
     
-__all__ = [ "Tre", "TreObjectImplementation", "TreUnknown", "tre_object",
+__all__ = [ "Tre", "TreObjectImplementation", "TreUnknown",
+            "TreDiff",
+            "tre_object",
             "read_tre", "prepare_tre_write", "read_tre_data",
             "create_nitf_tre_structure", "add_find_tre_function"]
 
