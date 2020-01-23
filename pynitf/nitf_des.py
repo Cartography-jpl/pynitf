@@ -12,14 +12,19 @@ from .nitf_field import (FieldData, _FieldStruct, _FieldLoopStruct,
                          _create_nitf_field_structure,
                          create_nitf_field_structure)
 from .nitf_des_subheader import NitfDesSubheader
+from .nitf_diff_handle import (NitfDiffHandle, NitfDiffHandleSet,
+                               DiffContextFilter)
 from .priority_handle_set import PriorityHandleSet
 from .nitf_security import security_unclassified
 import copy
 import io,six
 import abc
 import collections
+import logging
 
 DEBUG = False
+
+logger = logging.getLogger('nitf_diff')
 
 class NitfDesCannotHandle(RuntimeError):
     '''Exception that indicates we can't read a particular Des. Note that
@@ -320,6 +325,18 @@ class NitfDesPlaceHolder(NitfDes):
         '''Write an DES to a file.'''
         raise NotImplementedError("Can't write a NitfDesPlaceHolder")
 
+class DesPlaceHolderDiff(NitfDiffHandle):
+    '''Compare two NitfDesPlaceHolder.'''
+    def handle_diff(self, des1, des2, nitf_diff):
+        if(not isinstance(des1, NitfDesPlaceHolder) or
+           not isinstance(des2, NitfDesPlaceHolder)):
+            return (False, None)
+        logger.warning("Skipping DES %s, don't know how to read it.",
+                       des1.des_subheader.desid)
+        return (True, True)
+
+NitfDiffHandleSet.add_default_handle(DesPlaceHolderDiff())
+    
 class NitfDesCopy(NitfDes):
     '''Implementation that reads from one file and just copies to the other.
     Not normally registered, but can be useful to use for some test cases (e.g.

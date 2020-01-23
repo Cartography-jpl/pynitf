@@ -11,8 +11,6 @@ def create_basic_nitf():
     create_text_segment(f)
     return f
 
-# Haven't gotten nitf_diff working yet, we'll come back to this
-@skip
 def test_nitf_diff(isolated_dir):
     f = NitfFile()
     create_tre(f)
@@ -20,6 +18,7 @@ def test_nitf_diff(isolated_dir):
     f = NitfFile()
     create_tre(f, 290)
     f.write("basic2_nitf.ntf")
+    print("Results of nitf_diff.")
     t = subprocess.run([program_dir + "nitf_diff", "basic_nitf.ntf",
                         "basic2_nitf.ntf"])
     assert t.returncode == 1

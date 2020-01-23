@@ -335,7 +335,6 @@ def add_find_tre_function(cls):
     cls.find_one_tre = _find_one_tre
     cls.find_exactly_one_tre = _find_exactly_one_tre
 
-# Temp, we'll come back to this
 logger = logging.getLogger('nitf_diff')
 class TreDiff(FieldStructDiff):
     '''Compare two TREs.'''
@@ -343,10 +342,34 @@ class TreDiff(FieldStructDiff):
         if(not isinstance(h1, Tre) or
            not isinstance(h2, Tre)):
             return (False, None)
-        logger.warning("Skipping TRE, we don't currently handle this")
-        return (True, True)
+        if(h1.tre_tag != h2.tre_tag):
+            logger.difference("TREs tags don't match. TRE 1 '%s' and TRE 2 '%s'",
+                              h1.tre_tag, h2.tre_tag)
+            return (True, False)
+        with nitf_diff.diff_context("TRE '%s'" % h1.tre_tag, add_text = True):
+            return (True, self.compare_obj(h1, h2, nitf_diff))
 
 NitfDiffHandleSet.add_default_handle(TreDiff())
+        
+class TreUnknownDiff(FieldStructDiff):
+    '''Compare two unknown TREs.'''
+    def handle_diff(self, h1, h2, nitf_diff):
+        if(not isinstance(h1, TreUnknown) or
+           not isinstance(h2, TreUnknown)):
+            return (False, None)
+        if(h1.tre_tag != h2.tre_tag):
+            logger.difference("TREs tags don't match. TRE 1 '%s' and TRE 2 '%s'",
+                              h1.tre_tag, h2.tre_tag)
+            return (True, False)
+        if(h1.tre_bytes != h2.tre_bytes):
+            logger.difference("TREs bytes don't match. TRE 1 '%s' and TRE 2 '%s'",
+                              h1.tre_bytes.decode('utf-8'),
+                              h2.tre_bytes.decode('utf-8'))
+            return (True, False)
+        return (True, True)
+
+# Look for TreUnknown first, before handling the generic TRE case    
+NitfDiffHandleSet.add_default_handle(TreUnknownDiff(), priority_order = 1)
     
 __all__ = [ "Tre", "TreObjectImplementation", "TreUnknown",
             "TreDiff",

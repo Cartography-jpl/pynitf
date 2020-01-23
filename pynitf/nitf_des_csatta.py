@@ -1,6 +1,7 @@
 from __future__ import print_function
 from .nitf_field import *
 from .nitf_des import *
+from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
 import six
 
 '''WARNING!!! Do NOT use CSATTA. It's been deprecated and it hasn't kept up with the new DES design
@@ -43,5 +44,22 @@ def summary(self):
 DesCSATTA.summary = summary
 
 register_des_class(DesCSATTA)
+
+class CsattaDiff(FieldStructDiff):
+    '''Compare two DesCSATTA.'''
+    def configuration(self, nitf_diff):
+        return nitf_diff.config.get("DesCSATTA", {})
+
+    def handle_diff(self, h1, h2, nitf_diff):
+        with nitf_diff.diff_context("DesCSATTB"):
+            if(not isinstance(h1, DesCSATTA) or
+               not isinstance(h2, DesCSATTA)):
+                return (False, None)
+            return (True, self.compare_obj(h1, h2, nitf_diff))
+
+NitfDiffHandleSet.add_default_handle(CsattaDiff())
+# No default configuration
+_default_config = {}
+NitfDiffHandleSet.default_config["DesCSATTB"] = _default_config
 
 __all__ = ["DesCSATTA"]

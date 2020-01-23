@@ -2,6 +2,7 @@ from __future__ import print_function
 from .nitf_field import *
 from .nitf_des import *
 from .nitf_des_csattb import udsh, add_uuid_des_function
+from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
 import six
 
 hlp = '''This is a NITF CSSFAB DES. The field names can be pretty
@@ -161,4 +162,42 @@ DesCSSFAB.summary = _summary
 
 add_uuid_des_function(DesCSSFAB)    
 register_des_class(DesCSSFAB)
+
+class CsattbDiff(FieldStructDiff):
+    '''Compare two DesCSSFAB.'''
+    def configuration(self, nitf_diff):
+        return nitf_diff.config.get("DesCSSFAB", {})
+
+    def handle_diff(self, h1, h2, nitf_diff):
+        with nitf_diff.diff_context("DesCSSFAB"):
+            if(not isinstance(h1, DesCSSFAB) or
+               not isinstance(h2, DesCSSFAB)):
+                return (False, None)
+            return (True, self.compare_obj(h1, h2, nitf_diff))
+
+NitfDiffHandleSet.add_default_handle(CsattbDiff())
+# No default configuration
+_default_config = {}
+NitfDiffHandleSet.default_config["DesCSSFAB"] = _default_config
+
+class CsattbUserheaderDiff(FieldStructDiff):
+    '''Compare two user headers.'''
+    def configuration(self, nitf_diff):
+        return nitf_diff.config.get("DesCSSFAB_UH", {})
+
+    def handle_diff(self, h1, h2, nitf_diff):
+        with nitf_diff.diff_context("DesCSSFAB_UH"):
+            if(not isinstance(h1, DesCSSFAB_UH) or
+               not isinstance(h2, DesCSSFAB_UH)):
+                return (False, None)
+            return (True, self.compare_obj(h1, h2, nitf_diff))
+
+NitfDiffHandleSet.add_default_handle(CsattbUserheaderDiff())
+_default_config = {}
+# UUID change each time they are generated, so don't include in
+# check
+_default_config["exclude"] = ['id', 'assoc_elem_id']
+ 
+NitfDiffHandleSet.default_config["DesCSSFAB_UH"] = _default_config
+
 __all__ = ["DesCSSFAB", "DesCSSFAB_UH"]

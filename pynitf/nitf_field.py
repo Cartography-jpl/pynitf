@@ -86,23 +86,25 @@ class FieldValueArray(object):
         '''Iterate through values. This uses the 'C' like order, where we
         vary the last. This is like doing a flatten on the results of 
         to_list'''
-        if(len(lead) == self.dim_size() - 1):
-            for i in range(self.shape(lead=lead)):
-                yield self[(*lead,i)]
-        else:
-            for i in range(self.shape(lead=lead)):
-                for j in self.values(lead=(*lead,i)):
-                    yield j
+        if(self.shape(lead=lead) is not None):
+            if(len(lead) == self.dim_size() - 1):
+                for i in range(self.shape(lead=lead)):
+                    yield self[(*lead,i)]
+            else:
+                for i in range(self.shape(lead=lead)):
+                    for j in self.values(lead=(*lead,i)):
+                        yield j
     def items(self,lead=()):
         '''Likes values(), but iterator through a tuple of the (index,value)
         instead of just values.'''
-        if(len(lead) == self.dim_size() - 1):
-            for i in range(self.shape(lead=lead)):
-                yield ((*lead,i), self[(*lead,i)])
-        else:
-            for i in range(self.shape(lead=lead)):
-                for j in self.items(lead=(*lead,i)):
-                    yield j
+        if(self.shape(lead=lead) is not None):
+            if(len(lead) == self.dim_size() - 1):
+                for i in range(self.shape(lead=lead)):
+                    yield ((*lead,i), self[(*lead,i)])
+            else:
+                for i in range(self.shape(lead=lead)):
+                    for j in self.items(lead=(*lead,i)):
+                        yield j
     @classmethod
     def is_shape_equal(cls, arr1, arr2, lead=()):
         '''Return True if the shape of arr1 and arr2 are the same,
@@ -111,9 +113,10 @@ class FieldValueArray(object):
             return False
         if(len(lead) == arr1.dim_size() - 1):
             return arr1.shape(lead=lead) == arr2.shape(lead=lead)
-        for i in range(arr1.shape(lead=lead)):
-            if not cls.is_shape_equal(arr1, arr2, lead=(*lead,i)):
-                return False
+        if(arr1.shape(lead=lead) is not None):
+            for i in range(arr1.shape(lead=lead)):
+                if not cls.is_shape_equal(arr1, arr2, lead=(*lead,i)):
+                    return False
         return True
 
 class _FieldValueAccess(object):
@@ -926,15 +929,15 @@ class FieldStructDiff(NitfDiffHandle):
                     continue
                 diff_count = 0
                 total_count = 0
-                # TODO add a verbose mode
-                for (ind, av1), av2 in itertools.zip_longest(v1.items(),
-                                                             v2.values()):
-                    total_count += 1
-                    if(not cmp_fun(av1, av2)):
-                        ind_str = ", ".join(str(i) for i in ind)
-                        logger.difference_detail("%s[%s]: %s != %s",
-                                                 fn1, ind_str, av1, av2)
-                        diff_count += 1
+                if(v1.shape() is not None):
+                    for (ind, av1), av2 in itertools.zip_longest(v1.items(),
+                                                                 v2.values()):
+                        total_count += 1
+                        if(not cmp_fun(av1, av2)):
+                            ind_str = ", ".join(str(i) for i in ind)
+                            logger.difference_detail("%s[%s]: %s != %s",
+                                                     fn1, ind_str, av1, av2)
+                            diff_count += 1
                 if(diff_count > 0):
                     rep_diff("%s: array had %d of %d different", fn1, 
                              diff_count, total_count)

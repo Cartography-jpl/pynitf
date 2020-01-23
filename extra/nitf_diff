@@ -71,12 +71,6 @@ if "NITF_PLUGIN" in os.environ:
 
 nitf_diff = pynitf.NitfDiff()
 
-# TODO Remove this
-
-# Temporarily skip things we haven't yet implemented. This will go away once
-# we have all the parts of the nitf file checked.
-nitf_diff.handle_set.add_handle(pynitf.AlwaysTrueHandle(), priority_order = -1)
-
 if(args.config_file_json):
     with open(args.config_file_json) as json_file:
         nitf_diff.update_config(json.load(json_file))
@@ -107,7 +101,10 @@ else:
 is_same = nitf_diff.compare(args.file1, args.file2)
 
 if(not is_same):
-    logging.getLogger("nitf_diff").error("Files differ")
+    if(not args.quiet):
+        print("Files differ")
     sys.exit(1)
-logging.getLogger("nitf_diff").info("Files are the same")
+    
+if(not args.quiet):
+    print("Files are the same")
     

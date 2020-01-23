@@ -11,8 +11,8 @@ logger = logging.getLogger('nitf_diff')
 class NitfDiff(object):
     '''Class that handles the overall NITF diff between two files.'''
     def __init__(self):
-        self.config = copy.copy(NitfDiffHandleSet.default_config)
-        self.handle_set = copy.copy(NitfDiffHandleSet.default_handle_set())
+        self.config = copy.deepcopy(NitfDiffHandleSet.default_config)
+        self.handle_set = copy.deepcopy(NitfDiffHandleSet.default_handle_set())
         self.context_filter = DiffContextFilter("File level")
 
     @contextmanager
@@ -159,8 +159,19 @@ class DesSegmentDiff(NitfDiffHandle):
         if(not isinstance(dseg1, NitfDesSegment) or
            not isinstance(dseg2, NitfDesSegment)):
             return (False, None)
-        logger.warning("Skipping DesSegment, we don't currently handle this")
-        return (True, True)
+        if(dseg1.subheader.desid == "TRE_OVERFLOW" and
+           dseg2.subheader.desid == "TRE_OVERFLOW"):
+            # Skip checking this DES, we already check this when
+            # we compare TREs
+            return (True, True)
+        with nitf_diff.diff_context("DES"):
+            is_same = nitf_diff.compare_obj(dseg1.subheader,
+                                            dseg2.subheader)
+            if(dseg1.des.user_subheader):
+                is_same = nitf_diff.compare_obj(dseg1.des.user_subheader,
+                                       dseg2.des.user_subheader) and is_same
+            is_same = nitf_diff.compare_obj(dseg1.des, dseg2.des) and is_same
+            return (True, is_same)
 
 NitfDiffHandleSet.add_default_handle(DesSegmentDiff())
 

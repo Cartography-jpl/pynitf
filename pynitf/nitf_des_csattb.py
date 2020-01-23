@@ -1,6 +1,7 @@
 from __future__ import print_function
 from .nitf_field import *
 from .nitf_des import *
+from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
 import time
 import uuid
 import six
@@ -143,4 +144,42 @@ def add_uuid_des_function(cls):
 
 add_uuid_des_function(DesCSATTB)    
 register_des_class(DesCSATTB)
+
+class CsattbDiff(FieldStructDiff):
+    '''Compare two DesCSATTB.'''
+    def configuration(self, nitf_diff):
+        return nitf_diff.config.get("DesCSATTB", {})
+
+    def handle_diff(self, h1, h2, nitf_diff):
+        with nitf_diff.diff_context("DesCSATTB"):
+            if(not isinstance(h1, DesCSATTB) or
+               not isinstance(h2, DesCSATTB)):
+                return (False, None)
+            return (True, self.compare_obj(h1, h2, nitf_diff))
+
+NitfDiffHandleSet.add_default_handle(CsattbDiff())
+# No default configuration
+_default_config = {}
+NitfDiffHandleSet.default_config["DesCSATTB"] = _default_config
+
+class CsattbUserheaderDiff(FieldStructDiff):
+    '''Compare two user headers.'''
+    def configuration(self, nitf_diff):
+        return nitf_diff.config.get("DesCSATTB_UH", {})
+
+    def handle_diff(self, h1, h2, nitf_diff):
+        with nitf_diff.diff_context("DesCSATTB_UH"):
+            if(not isinstance(h1, DesCSATTB_UH) or
+               not isinstance(h2, DesCSATTB_UH)):
+                return (False, None)
+            return (True, self.compare_obj(h1, h2, nitf_diff))
+
+NitfDiffHandleSet.add_default_handle(CsattbUserheaderDiff())
+_default_config = {}
+# UUID change each time they are generated, so don't include in
+# check
+_default_config["exclude"] = ['id', 'assoc_elem_id']
+ 
+NitfDiffHandleSet.default_config["DesCSATTB_UH"] = _default_config
+
 __all__ = ["DesCSATTB", "DesCSATTB_UH", "add_uuid_des_function"]

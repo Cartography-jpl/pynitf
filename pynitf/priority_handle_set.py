@@ -72,7 +72,7 @@ class PriorityHandleSet(collections.abc.Set):
             could_handle, res = self.handle_h(h, *args, **keywords)
             if(could_handle):
                 return res
-        raise RuntimeError("No handle was found")
+        raise RuntimeError("No handle was found. args=%s, keywords=%s" % (args, keywords))
 
     def handle_h(self, h, *args, **keywords):
         raise NotImplementedError
