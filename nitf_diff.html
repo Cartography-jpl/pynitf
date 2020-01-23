@@ -1,0 +1,298 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>NITF File Differences &#8212; pynitf 0.62 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Software Design" href="design.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="nitf-file-differences">
+<h1>NITF File Differences<a class="headerlink" href="#nitf-file-differences" title="Permalink to this headline">¶</a></h1>
+<p>We want to be able compare two NITF files to know if they are the “same”.</p>
+<p>What is the “same” really depends on the application. For example, two files
+with images that have a difference of 1e-4 might be different because the data
+isn’t identical, or might be the same because they are close enough.</p>
+<p>Likewise, if we generate GLAS/GFM DESs, we don’t expect the UUIDs to be the
+same between 2 runs, even if the actual GLAS/GFM is the “same”. And the file
+date time (fdt) will generally change from one run to the next.</p>
+<p>The output from nitf_diff will be an overall status code (normal or 0 exit code
+for identical, 1 for different), along with log information describing
+what if any differences there are.</p>
+<p>We use the same pluggable set of handles like we do for NitfDesHandleSet etc.
+The design is shown in <a class="reference internal" href="#nitf-diff"><span class="std std-numref">Fig. 4</span></a>.</p>
+<div class="figure align-default" id="id1">
+<span id="nitf-diff"></span><p class="plantuml">
+<img src="_images/plantuml-56a1f2305f37591ee1151af35bbd0159d25032e8.png" alt="class NitfDiff {
+   +config
+   +handle_set
+   +compare(fname1, fname2)
+   +compare_obj(self, obj1, obj2)
+}
+note top
+   This class contains a general dict &quot;config&quot;
+   that can be used by any of the handles to
+   record whatever.
+
+   There is a NitfDiffHandleSet &quot;handle_set&quot;
+   available, which contains the list of handles
+   used to compare two objects.
+
+   Both of these are set to initial default values
+   stored in NitfDiffHandleSet class.
+end note
+
+abstract class PriorityHandleSet
+
+class NitfDiffHandleSet {
+   +handle_h(h, nitf_diff, obj1, obj2)
+   {static} default_config
+}
+note bottom
+   Handle comparing two objects. Logs differences,
+   and return True if the objects are the same, False
+   if different.
+end note
+
+class NitfDiffHandle {
+  +handle_diff(self, obj1, obj2, nitf_diff)
+}
+note bottom
+   Base class for handling difference between
+   two NITF object. Like always, you don't
+   need to actually derive from this class if
+   for whatever reason this isn't convenient
+   but you should provide this interface.
+
+   handle_diff returns (False, None) if it can't
+   handle obj1 and obj2, (True, Comparison_result)
+   if it can. Comparison_result is True if objects
+   are the &quot;same&quot;, False otherwise.
+end note
+
+PriorityHandleSet &lt;|-- NitfDiffHandleSet
+NitfDiff *-- NitfDiffHandleSet : Has a handle_set
+NitfDiffHandleSet *-- &quot;many&quot; NitfDiffHandle"/>
+</p>
+<p class="caption"><span class="caption-number">Fig. 4 </span><span class="caption-text">nitf_diff</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</div>
+<p>Most of the time there is a known set of handles and configuration parameters,
+with a user adding or modifying a few. So we have both the default handles
+for NitfDiffHandleSet and default configuration. NitfDiff object can then
+have their handle and/or config objects modified to change the behavior for
+a specific comparison. The program nitf_diff (which is a wrapper around
+NitfDiff) can take a JSON file and/or arbitrary python code to change this.</p>
+<div class="section" id="nitfdiffhandle">
+<h2>NitfDiffHandle<a class="headerlink" href="#nitfdiffhandle" title="Permalink to this headline">¶</a></h2>
+<p>There are a number of NitfDiffHandle objects defined in pynitf:</p>
+<table class="docutils align-default" id="id2">
+<caption><span class="caption-number">Table 1 </span><span class="caption-text">NitfDiffHandle objects</span><a class="headerlink" href="#id2" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col style="width: 30%" />
+<col style="width: 70%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head" rowspan="2"><p>Class</p></th>
+<th class="head" rowspan="2"><p>Description</p></th>
+</tr>
+<tr class="row-even"></tr>
+</thead>
+<tbody>
+<tr class="row-odd"><td><p>NitfFileHandle</p></td>
+<td><p>Top level class that handles comparing NitfFile
+Compares matching items, so first image segment
+in file 1 compared to first image segment in
+file 2, etc. We could create more sophisticated
+classes (e.g., compare by matching iid1), which
+is why even the files are handled by a plugin</p></td>
+</tr>
+<tr class="row-even"><td><p>AlwaysTrueHandle</p></td>
+<td><p>Always say things are equal. Nice for various
+test cases (e.g. test some object types, skip
+other types).</p></td>
+</tr>
+<tr class="row-odd"><td><p>FieldStructDiff</p></td>
+<td><p>Base class for various FieldStruct objects
+(e.g DiffFileHeader )</p></td>
+</tr>
+<tr class="row-even"><td><p>DiffFileHeader</p></td>
+<td><p>Compare NitfFileHeader</p></td>
+</tr>
+</tbody>
+</table>
+<p>The handles should return an overall status of the comparison, so True for
+objects are the same, False otherwise.</p>
+</div>
+<div class="section" id="nitf-difference-logging">
+<h2>Nitf difference logging<a class="headerlink" href="#nitf-difference-logging" title="Permalink to this headline">¶</a></h2>
+<p>In addition to an overall status results, differences should be
+reported to the users. We do this through the python logger:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;nitf-diff&quot;</span><span class="p">)</span>
+
+<span class="n">logger</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="s2">&quot;This is a difference&quot;</span><span class="p">)</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">difference_ignored</span><span class="p">(</span><span class="s2">&quot;This difference is reported but ignored&quot;</span><span class="p">)</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">difference_detail</span><span class="p">(</span><span class="s2">&quot;This is more detailed information about differences&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The functions “difference”, “difference_ignored” and
+“difference_detail” have the same arguments as python logger “info”.</p>
+<p>While we could add new level names using
+<cite>logging.addLevelName &lt;https://docs.python.org/3/library/logging.html#logging.addLevelName&gt;</cite>
+the python documentation
+<cite>points out &lt;https://docs.python.org/3/howto/logging.html#custom-levels&gt;</cite>
+that this is a global namespace. We don’t want to have any other library
+that uses pynitf forced to use the new level names. So instead, we have a
+special formatter DifferenceFormatter that handles this without adding
+new names.</p>
+<p>To display the new levels, DifferenceFormatter should be used as the formatter:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;nitf_diff&#39;</span><span class="p">)</span>
+<span class="n">h</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">StreamHandler</span><span class="p">()</span>
+<span class="n">h</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">DifferenceFormatter</span><span class="p">())</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">h</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Note to see detailed information about differences you should set the
+logging level (in both the handler and the logger) to logging.INFO:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">h</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If for whatever reason the specific level choosen for the new levels
+causes a problem you can redefine the levels used by changing the value
+of “DIFFERENCE_FOUND”, “DIFFERENCE_FOUND_BUT_IGNORED” and “DIFFERENCE_DETAIL”</p>
+<p>Internally, we use a logging filter DiffContextFilter to pass the context
+of the differences (e.g., “NITF File Header”, “Image Segment ‘blah’, TRE ‘blahblah’). You can use the the context manager in NitfDiff called diff_context
+for setting this.</p>
+</div>
+<div class="section" id="fieldstructdiff">
+<h2>FieldStructDiff<a class="headerlink" href="#fieldstructdiff" title="Permalink to this headline">¶</a></h2>
+<p>There are various handles to check the different FieldStruct objects.</p>
+<p>While we could just create new NitfDiffHandle objects for each
+field structure (e.g., each of the TREs in the file), we instead try to
+provide a good deal of functionality through “configuration”. The
+configuration is a dictionary type object that derived class get
+from the nitf_diff object.  This then contains keyword/value pairs
+for controlling things. While derived classes can others, these
+are things that can be defined:</p>
+<ul class="simple">
+<li><p><strong>exclude</strong> - List of fields to exclude from comparing</p></li>
+<li><p><strong>exclude_but_warn</strong> - List of field to exclude from comparing, but
+warn if different.</p></li>
+<li><p><strong>include</strong> - If nonempty, only include the given fields</p></li>
+<li><p><strong>eq_fun</strong> - A dictionary going from field name to a function to compare.</p></li>
+<li><p><strong>rel_tol</strong> - A dictionary going from field name to a relative tolerance.
+Only used for fields with float type.</p></li>
+<li><p><strong>abs_tol</strong> - A dictionary going from field name to absolute tolerance.
+Only used for fields with float type.</p></li>
+</ul>
+<p>If a function isn’t otherwise defined in eq_fun, we use operator.eq,
+except for floating point numbers. For floating point numbers we use
+math.isclose. The rel_tol and/or abs_tol can be supplied. The default
+values are used for math.isclose if not supplied (so 1e-9 and 0.0).</p>
+<p>For array/loop fields we compare the shape, and if the same we compare
+each element in the array. The default it to provide a summary of differences
+(e.g., array had 1 of 42 difference). We also provide information about all
+the difference found at the logging level of DIFFERENCE_DETAIL.</p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">pynitf</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="design.html">Software Design</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">NITF File Differences</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#nitfdiffhandle">NitfDiffHandle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#nitf-difference-logging">Nitf difference logging</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#fieldstructdiff">FieldStructDiff</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="design.html" title="previous chapter">Software Design</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Mike Smyth, Philip Yoon, Walt Bunch.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/nitf_diff.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

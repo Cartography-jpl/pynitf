@@ -34,7 +34,7 @@ The design for this is shown in :numref:`priority_handle_set`.
       +discard_handle(h)
       {static} add_default_handle(cls, h, priority_order=0)
       {static} discard_default_handle(cls, h, priority_order=0)
-      {static} default_handle_list()
+      {static} default_handle_set()
       +handle(*args, **keywords)
       {abstract} handle_h(h, *args, **keywords)
    }
@@ -91,65 +91,3 @@ The function handle forwards work to the function handle_h, as shown in
        end note
    end
    
-nitf_diff
----------
-We want to be able compare two NITF files to know if they are the "same".
-
-What is the "same" really depends on the application. For example, two files
-with images that have a difference of 1e-4 might be different because the data
-isn't identical, or might be the same because they are close enough.
-
-Likewise, if we generate GLAS/GFM DESs, we don't expect the UUIDs to be the
-same between 2 runs, even if the actual GLAS/GFM is the "same". And the file
-date time (fdt) will generally change from one run to the next.
-
-The output from nitf_diff will be an overall status code (normal or 0 exit code
-for identical, 1 for different), along with log information describing
-what if any differences there are.
-
-We use the same pluggable set of handles like we do for NitfDesHandleSet etc.
-The design is shown in :numref:`nitf_diff`.
-
-.. _nitf_diff:
-.. uml::
-   :caption: nitf_diff
-
-   class NitfDiff {
-      +config
-      +handle_set
-      +run(fname1, fname2)
-   }
-   note top
-      This class contains a general dict "config"
-      that can be used by any of the handles to
-      record whatever.
-
-      There is a NitfDiffHandleSet "handle_set"
-      available, which contains the list of handles
-      used to compare two objects.
-
-      Both of these
-   end note
-
-   abstract class PriorityHandleSet
-
-   class NitfDiffHandleSet {
-      +handle_h(h, nitf_diff, obj1, obj2)
-      {static} default_config
-   }
-   note bottom
-      Handle comparing two objects. Logs differences,
-      and return True if the objects are the same, False
-      if different.
-   end note
-
-   PriorityHandleSet <|-- NitfDiffHandleSet
-   NitfDiff *-- NitfDiffHandleSet : Has a handle_set
-
-Most of the time there is a known set of handles and configuration parameters,
-with a user adding or modifying a few. So we have both the default handles
-for NitfDiffHandleSet and default configuration. NitfDiff object can then
-have their handle and/or config objects modified to change the behavior for
-a specific comparison. The program nitf_diff (which is a wrapper around
-NitfDiff) can take a JSON file and/or arbitrary python code to change this.
-
