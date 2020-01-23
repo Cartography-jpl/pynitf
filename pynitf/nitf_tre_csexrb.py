@@ -1,6 +1,7 @@
 from __future__ import print_function
 from .nitf_field import *
 from .nitf_tre import *
+from .nitf_diff_handle import NitfDiffHandleSet
 import time
 import uuid
 import six
@@ -176,5 +177,13 @@ TreCSEXRB.generate_uuid_if_needed = _generate_uuid_if_needed
 TreCSEXRB.add_assoc_elem_id = _add_assoc_elem_id
 TreCSEXRB.add_assoc_elem = _add_assoc_elem
 TreCSEXRB.id = property(_id)
+
+_default_config = {}
+
+# UUID change each time they are generated, so don't include in
+# check
+_default_config["exclude"] = ['image_uuid', 'assoc_des_id']
+
+NitfDiffHandleSet.default_config["TRE"]["CSEXRB"] = _default_config
 
 __all__ = [ "TreCSEXRB" ]

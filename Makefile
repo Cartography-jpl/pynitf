@@ -8,6 +8,16 @@ SPHINXOPTS =
 install:
 	$(PYTHON) -m pip install . --no-deps --ignore-installed --no-cache-dir --no-index -vvv
 
+# install to "develop" mode. This sets up a link to the source code, so we
+# can modify the source and immediately see the results in using pynitf
+install-develop:
+	$(PYTHON) setup.py develop
+
+# variation that installs the source into $AFIDSPYTHONTOP, since this
+# is something we commonly do during development.
+install-develop-afids:
+	$(PYTHON) setup.py develop --prefix $(AFIDSPYTHONTOP)
+
 check:
 	export PYTHONPATH=$(shell pwd) && $(PYTEST) -rxXs tests
 

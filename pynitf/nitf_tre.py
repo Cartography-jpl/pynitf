@@ -338,6 +338,8 @@ def add_find_tre_function(cls):
 logger = logging.getLogger('nitf_diff')
 class TreDiff(FieldStructDiff):
     '''Compare two TREs.'''
+    def configuration(self, nitf_diff):
+        return self._config
     def handle_diff(self, h1, h2, nitf_diff):
         if(not isinstance(h1, Tre) or
            not isinstance(h2, Tre)):
@@ -346,10 +348,12 @@ class TreDiff(FieldStructDiff):
             logger.difference("TREs tags don't match. TRE 1 '%s' and TRE 2 '%s'",
                               h1.tre_tag, h2.tre_tag)
             return (True, False)
+        self._config = nitf_diff.config.get("TRE", {}).get(h1.tre_tag, {})
         with nitf_diff.diff_context("TRE '%s'" % h1.tre_tag, add_text = True):
             return (True, self.compare_obj(h1, h2, nitf_diff))
 
 NitfDiffHandleSet.add_default_handle(TreDiff())
+NitfDiffHandleSet.default_config["TRE"] = {}
         
 class TreUnknownDiff(FieldStructDiff):
     '''Compare two unknown TREs.'''

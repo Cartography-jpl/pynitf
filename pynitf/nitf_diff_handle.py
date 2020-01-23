@@ -27,22 +27,53 @@ DIFFERENCE_FOUND_BUT_IGNORED = 38
 DIFFERENCE_DETAIL = 21
 
 class DifferenceFormatter(logging.Formatter):
+    def __init__(self, add_color = True):
+        self.add_color = add_color
+
+    def color_text(self, text, levelno):
+        # ANSI colors
+        HEADER = '\033[95m'
+        OKBLUE = '\033[94m'
+        OKGREEN = '\033[92m'
+        WARNING = '\033[93m'
+        FAIL = '\033[91m'
+        ENDC = '\033[0m'
+        BOLD = '\033[1m'
+        UNDERLINE = '\033[4m'
+        if(not self.add_color):
+            return text
+        if(levelno == DIFFERENCE_FOUND):
+            return FAIL + text + ENDC
+        elif(levelno == DIFFERENCE_FOUND_BUT_IGNORED):
+            return OKGREEN + text + ENDC
+        elif(levelno == DIFFERENCE_DETAIL):
+            return OKBLUE + text + ENDC
+        elif(levelno == logging.WARNING):
+            return WARNING + text + ENDC
+        elif(levelno == logging.ERROR):
+            return FAIL + text + ENDC
+        return text
     def format(self, record):
+        if(hasattr(record, "ctx")):
+            ctx = record.ctx + ": "
+        else:
+            ctx = ""
         if(record.levelno == DIFFERENCE_FOUND):
-            if(hasattr(record, "ctx")):
-                return record.ctx + ": Difference found: " + record.getMessage()
-            else:
-                return "Difference found: " + record.getMessage()
+            return (self.color_text(ctx + "Difference found: ",
+                                    DIFFERENCE_FOUND) +
+                    record.getMessage())
         if(record.levelno == DIFFERENCE_FOUND_BUT_IGNORED):
-            if(hasattr(record, "ctx")):
-                return record.ctx + ": Difference found, but ignored: " + record.getMessage() + " (not considering files different)"
-            else:
-                return "Difference found, but ignored: " + record.getMessage() + " Not considering files different."
+            return (self.color_text(ctx + "Difference found, but ignored: ",
+                                    DIFFERENCE_FOUND_BUT_IGNORED) +
+                    record.getMessage() +
+                    " (not considering files different)")
         elif(record.levelno == DIFFERENCE_DETAIL):
             # Less information printed for DIFFERENCE_DETAIL, there will be
             # an overall difference reported.
-            return "      - " + record.getMessage()
-        return "%s: %s" % (record.levelname, record.getMessage())
+            return self.color_text(self.diff_detailed, record.levelno +
+                                   record.getMessage(), DIFFERENCE_DETAIL)
+        return (self.color(record.levelname + ": ", record.levelno) +
+                record.getMessage())
         
 def _log_difference(msg, *args, **kwargs):
     logger.log(DIFFERENCE_FOUND, msg, *args, **kwargs)
@@ -102,4 +133,5 @@ class AlwaysTrueHandle(NitfDiffHandle):
         return (True, True)
 
 __all__ = ["AlwaysTrueHandle", "NitfDiffHandle", "NitfDiffHandleSet",
-           "DifferenceFormatter",]
+           "DifferenceFormatter", "DIFFERENCE_DETAIL",
+           "DIFFERENCE_FOUND_BUT_IGNORED", "DIFFERENCE_FOUND"]

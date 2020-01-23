@@ -52,6 +52,9 @@ Options:
   --log-file=f
        Give a path for the logs to be written to
 
+  --no-color
+       Don't colorize output
+
   --quiet
        Don't print any messages, just return an overall status code.
 
@@ -68,6 +71,37 @@ args = pynitf.docopt_simple.docopt_simple(usage, version=version)
 if "NITF_PLUGIN" in os.environ:
     for m in os.environ["NITF_PLUGIN"].split(":"):
         exec("import %s" % m)
+        
+# TODO Remove this
+# Temporary kludge, some extra pieces for geocal that will get
+# added in the next geocal update
+try:
+    geocal.DesCSEPHB_geocal.uh_class = pynitf.DesCSEPHB.uh_class
+    geocal.DesCSATTB_geocal.uh_class = pynitf.DesCSATTB.uh_class
+
+    import logging
+    import numpy as np
+    logger = logging.getLogger('nitf_diff')
+    class ImageGdalDiff(pynitf.NitfDiffHandle):
+        def handle_diff(self, d1, d2, nitf_diff):
+            if(not isinstance(d1, geocal.NitfImageGdal) or
+               not isinstance(d2, geocal.NitfImageGdal)):
+                return (False, None)
+            is_same = True
+            t1 = d1[:,:,:]
+            t2 = d2[:,:,:]
+            # TODO Expose tolerance as configuration parameters
+            if(not np.allclose(t1, t2)):
+                logger.difference("Image '%s is different",
+                                  d1.image_subheader.iid1)
+                is_same = False
+            return (True, is_same)
+
+    pynitf.NitfDiffHandleSet.add_default_handle(ImageGdalDiff())
+    
+except NameError:
+    pass
+    
 
 nitf_diff = pynitf.NitfDiff()
 
@@ -78,12 +112,13 @@ if(args.config_file_python):
     spec = importlib.util.spec_from_file_location("config_file",
                                                   args.config_file_python)
     module = importlib.util.module_from_spec(spec)
-    nspec.loader.exec_module(module)
+    spec.loader.exec_module(module)
     sys.modules["config_file"] = module
 
 logger = logging.getLogger('nitf_diff')
 h = logging.StreamHandler()
-h.setFormatter(pynitf.DifferenceFormatter())
+dformat = pynitf.DifferenceFormatter(add_color = not args.no_color)
+h.setFormatter(dformat)
 logger.addHandler(h)
 if(args.debug):
     h.setLevel(logging.DEBUG)
@@ -102,9 +137,9 @@ is_same = nitf_diff.compare(args.file1, args.file2)
 
 if(not is_same):
     if(not args.quiet):
-        print("Files differ")
+        print(dformat.color_text("Files are the different", logging.ERROR))
     sys.exit(1)
     
 if(not args.quiet):
-    print("Files are the same")
+    print(dformat.color_text("Files are the same", pynitf.DIFFERENCE_DETAIL))
     

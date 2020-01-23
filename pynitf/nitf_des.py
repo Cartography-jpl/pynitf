@@ -305,7 +305,20 @@ class NitfDesObjectHandle(NitfDes):
     def summary(self):
         res = six.StringIO()
         #print("TRE - %s" % self.tre_tag, file=res)
-        
+
+# TODO May want to rework this, not sure if having handle_diff in the
+# object is the right way to handle this.
+
+class DesObjectDiff(NitfDiffHandle):
+    '''Compare two NitfDesObjectHandle.'''
+    def handle_diff(self, des1, des2, nitf_diff):
+        if(not isinstance(des1, NitfDesObjectHandle) or
+           not isinstance(des2, NitfDesObjectHandle)):
+            return (False, None)
+        return (True, des1.handle_diff(des2))
+
+NitfDiffHandleSet.add_default_handle(DesObjectDiff())
+    
 class NitfDesPlaceHolder(NitfDes):
     '''Implementation that doesn't actually read any data, useful as a
     final place holder if none of our other NitfDes classes can handle
