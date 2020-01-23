@@ -276,6 +276,8 @@ class ImageReadNumpyDiff(NitfDiffHandle):
             logger.difference("Image '%s is different",
                               d1.image_subheader.iid1)
             is_same = False
+        # TODO Copy over other work by Derek, currently in
+        # nitf_diff_support
         return (True, is_same)
 
 NitfDiffHandleSet.add_default_handle(ImageReadNumpyDiff())

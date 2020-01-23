@@ -420,3 +420,5 @@ def test_loop_conditional(nitf_diff_field_struct):
     t2.udhofl[2] = 50
     assert d.compare_obj(t, t2) == False
     
+# TODO Add a test like Walt had where we override the equality function
+# for a field to match ignoring case

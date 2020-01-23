@@ -6,6 +6,13 @@ import numpy as np
 from .nitf_image import NitfImagePlaceHolder
 from .nitf_tre import TreUnknown
 
+#********************************************************
+# NOTE! This code is all being replaced with a reorganization
+# of NitfDiff. Left in place here until we get all the
+# functionality moved over
+#********************************************************
+
+
 @six.add_metaclass(abc.ABCMeta)
 class DiffHandle(object):
     '''Base class of handlers for looking at differences. We can have
