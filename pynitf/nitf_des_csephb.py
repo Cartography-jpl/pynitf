@@ -52,7 +52,7 @@ DesCSEPHB.summary = _summary
 add_uuid_des_function(DesCSEPHB)    
 register_des_class(DesCSEPHB)
 
-class CsattbDiff(FieldStructDiff):
+class CsephbDiff(FieldStructDiff):
     '''Compare two DesCSEPHB.'''
     def configuration(self, nitf_diff):
         return nitf_diff.config.get("DesCSEPHB", {})
@@ -64,12 +64,12 @@ class CsattbDiff(FieldStructDiff):
                 return (False, None)
             return (True, self.compare_obj(h1, h2, nitf_diff))
 
-NitfDiffHandleSet.add_default_handle(CsattbDiff())
+NitfDiffHandleSet.add_default_handle(CsephbDiff())
 # No default configuration
 _default_config = {}
 NitfDiffHandleSet.default_config["DesCSEPHB"] = _default_config
 
-class CsattbUserheaderDiff(FieldStructDiff):
+class CsephbUserheaderDiff(FieldStructDiff):
     '''Compare two user headers.'''
     def configuration(self, nitf_diff):
         return nitf_diff.config.get("DesCSEPHB_UH", {})
@@ -81,7 +81,7 @@ class CsattbUserheaderDiff(FieldStructDiff):
                 return (False, None)
             return (True, self.compare_obj(h1, h2, nitf_diff))
 
-NitfDiffHandleSet.add_default_handle(CsattbUserheaderDiff())
+NitfDiffHandleSet.add_default_handle(CsephbUserheaderDiff())
 _default_config = {}
 # UUID change each time they are generated, so don't include in
 # check
