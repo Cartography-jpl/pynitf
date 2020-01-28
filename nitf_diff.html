@@ -112,17 +112,16 @@ NitfDiff) can take a JSON file and/or arbitrary python code to change this.</p>
 <table class="docutils align-default" id="id2">
 <caption><span class="caption-number">Table 1 </span><span class="caption-text">NitfDiffHandle objects</span><a class="headerlink" href="#id2" title="Permalink to this table">¶</a></caption>
 <colgroup>
-<col style="width: 30%" />
-<col style="width: 70%" />
+<col style="width: 31%" />
+<col style="width: 69%" />
 </colgroup>
 <thead>
-<tr class="row-odd"><th class="head" rowspan="2"><p>Class</p></th>
-<th class="head" rowspan="2"><p>Description</p></th>
+<tr class="row-odd"><th class="head"><p>Class</p></th>
+<th class="head"><p>Description</p></th>
 </tr>
-<tr class="row-even"></tr>
 </thead>
 <tbody>
-<tr class="row-odd"><td><p>NitfFileHandle</p></td>
+<tr class="row-even"><td><p>NitfFileHandle</p></td>
 <td><p>Top level class that handles comparing NitfFile
 Compares matching items, so first image segment
 in file 1 compared to first image segment in
@@ -130,17 +129,71 @@ file 2, etc. We could create more sophisticated
 classes (e.g., compare by matching iid1), which
 is why even the files are handled by a plugin</p></td>
 </tr>
-<tr class="row-even"><td><p>AlwaysTrueHandle</p></td>
+<tr class="row-odd"><td><p>AlwaysTrueHandle</p></td>
 <td><p>Always say things are equal. Nice for various
 test cases (e.g. test some object types, skip
 other types).</p></td>
 </tr>
-<tr class="row-odd"><td><p>FieldStructDiff</p></td>
+<tr class="row-even"><td><p>FieldStructDiff</p></td>
 <td><p>Base class for various FieldStruct objects
-(e.g DiffFileHeader )</p></td>
+(e.g DiffFileHeader ).</p></td>
 </tr>
-<tr class="row-even"><td><p>DiffFileHeader</p></td>
-<td><p>Compare NitfFileHeader</p></td>
+<tr class="row-odd"><td><p>DiffFileHeader</p></td>
+<td><p>Compare NitfFileHeader.</p></td>
+</tr>
+<tr class="row-even"><td><p>DesObjectDiff</p></td>
+<td><p>Compare NitfDesObjectHandle.</p></td>
+</tr>
+<tr class="row-odd"><td><p>DesPlaceHolderDiff</p></td>
+<td><p>Compare NitfDesPlaceHolder.</p></td>
+</tr>
+<tr class="row-even"><td><p>CsattaDiff</p></td>
+<td><p>Compare DesCSATTA.</p></td>
+</tr>
+<tr class="row-odd"><td><p>CsattbDiff</p></td>
+<td><p>Compare DesCSATTB.</p></td>
+</tr>
+<tr class="row-even"><td><p>CsattbUserheaderDiff</p></td>
+<td><p>Compare DesCSATTB_UH.</p></td>
+</tr>
+<tr class="row-odd"><td><p>CsscdbDiff</p></td>
+<td><p>Compare DesCSSCDB.</p></td>
+</tr>
+<tr class="row-even"><td><p>CsscdbUserheaderDiff</p></td>
+<td><p>Compare DesCSSCDB_UH.</p></td>
+</tr>
+<tr class="row-odd"><td><p>CsephbDiff</p></td>
+<td><p>Compare DesCSEPHB.</p></td>
+</tr>
+<tr class="row-even"><td><p>CsephbUserheaderDiff</p></td>
+<td><p>Compare DesCSEPHB_UH.</p></td>
+</tr>
+<tr class="row-odd"><td><p>CssfabDiff</p></td>
+<td><p>Compare DesCSSFAB.</p></td>
+</tr>
+<tr class="row-even"><td><p>CssfabUserheaderDiff</p></td>
+<td><p>Compare DesCSSFAB_UH.</p></td>
+</tr>
+<tr class="row-odd"><td><p>DesSubheaderDiff</p></td>
+<td><p>Compare NitfDesSubheader.</p></td>
+</tr>
+<tr class="row-even"><td><p>ImagePlaceHolderDiff</p></td>
+<td><p>Compare NitfImagePlaceHolder.</p></td>
+</tr>
+<tr class="row-odd"><td><p>ImageReadNumpyDiff</p></td>
+<td><p>Compare NitfImageReadNumpy.</p></td>
+</tr>
+<tr class="row-even"><td><p>ImageSubheaderDiff</p></td>
+<td><p>Compare NitfImageSubheader.</p></td>
+</tr>
+<tr class="row-odd"><td><p>TextSubheaderDiff</p></td>
+<td><p>Compare NitfTextSubheader.</p></td>
+</tr>
+<tr class="row-even"><td><p>TreDiff</p></td>
+<td><p>Compare Tre.</p></td>
+</tr>
+<tr class="row-odd"><td><p>TreUnknownDiff</p></td>
+<td><p>Compare TreUnknown.</p></td>
 </tr>
 </tbody>
 </table>
@@ -161,9 +214,9 @@ reported to the users. We do this through the python logger:</p>
 <p>The functions “difference”, “difference_ignored” and
 “difference_detail” have the same arguments as python logger “info”.</p>
 <p>While we could add new level names using
-<cite>logging.addLevelName &lt;https://docs.python.org/3/library/logging.html#logging.addLevelName&gt;</cite>
+<a class="reference external" href="https://docs.python.org/3/library/logging.html#logging.addLevelName">logging.addLevelName</a>
 the python documentation
-<cite>points out &lt;https://docs.python.org/3/howto/logging.html#custom-levels&gt;</cite>
+<a class="reference external" href="https://docs.python.org/3/howto/logging.html#custom-levels">points out</a>
 that this is a global namespace. We don’t want to have any other library
 that uses pynitf forced to use the new level names. So instead, we have a
 special formatter DifferenceFormatter that handles this without adding
@@ -191,13 +244,13 @@ for setting this.</p>
 <div class="section" id="fieldstructdiff">
 <h2>FieldStructDiff<a class="headerlink" href="#fieldstructdiff" title="Permalink to this headline">¶</a></h2>
 <p>There are various handles to check the different FieldStruct objects.</p>
-<p>While we could just create new NitfDiffHandle objects for each
-field structure (e.g., each of the TREs in the file), we instead try to
+<p>While we could just create new NitfDiffHandle objects for each field
+structure (e.g., each of the TREs in the file), we instead try to
 provide a good deal of functionality through “configuration”. The
-configuration is a dictionary type object that derived class get
-from the nitf_diff object.  This then contains keyword/value pairs
-for controlling things. While derived classes can others, these
-are things that can be defined:</p>
+configuration is a dictionary type object that derived class get from
+the nitf_diff object.  This then contains keyword/value pairs for
+controlling things. While derived classes can supply other parameters,
+these are things that can be defined:</p>
 <ul class="simple">
 <li><p><strong>exclude</strong> - List of fields to exclude from comparing</p></li>
 <li><p><strong>exclude_but_warn</strong> - List of field to exclude from comparing, but
