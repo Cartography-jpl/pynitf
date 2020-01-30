@@ -14,7 +14,7 @@
     <script type="text/javascript" src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="prev" title="Software Design" href="design.html" />
+    <link rel="prev" title="NITF File" href="nitf_file.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -44,7 +44,7 @@ date time (fdt) will generally change from one run to the next.</p>
 for identical, 1 for different), along with log information describing
 what if any differences there are.</p>
 <p>We use the same pluggable set of handles like we do for NitfDesHandleSet etc.
-The design is shown in <a class="reference internal" href="#nitf-diff"><span class="std std-numref">Fig. 4</span></a>.</p>
+The design is shown in <a class="reference internal" href="#nitf-diff"><span class="std std-numref">Fig. 10</span></a>.</p>
 <div class="figure align-default" id="id1">
 <span id="nitf-diff"></span><p class="plantuml">
 <img src="_images/plantuml-56a1f2305f37591ee1151af35bbd0159d25032e8.png" alt="class NitfDiff {
@@ -98,7 +98,7 @@ PriorityHandleSet &lt;|-- NitfDiffHandleSet
 NitfDiff *-- NitfDiffHandleSet : Has a handle_set
 NitfDiffHandleSet *-- &quot;many&quot; NitfDiffHandle"/>
 </p>
-<p class="caption"><span class="caption-number">Fig. 4 </span><span class="caption-text">nitf_diff</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-number">Fig. 10 </span><span class="caption-text">nitf_diff</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
 </div>
 <p>Most of the time there is a known set of handles and configuration parameters,
 with a user adding or modifying a few. So we have both the default handles
@@ -110,7 +110,7 @@ NitfDiff) can take a JSON file and/or arbitrary python code to change this.</p>
 <h2>NitfDiffHandle<a class="headerlink" href="#nitfdiffhandle" title="Permalink to this headline">¶</a></h2>
 <p>There are a number of NitfDiffHandle objects defined in pynitf:</p>
 <table class="docutils align-default" id="id2">
-<caption><span class="caption-number">Table 1 </span><span class="caption-text">NitfDiffHandle objects</span><a class="headerlink" href="#id2" title="Permalink to this table">¶</a></caption>
+<caption><span class="caption-number">Table 2 </span><span class="caption-text">NitfDiffHandle objects</span><a class="headerlink" href="#id2" title="Permalink to this table">¶</a></caption>
 <colgroup>
 <col style="width: 31%" />
 <col style="width: 69%" />
@@ -294,6 +294,7 @@ the difference found at the logging level of DIFFERENCE_DETAIL.</p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="design.html">Software Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nitf_file.html">NITF File</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">NITF File Differences</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#nitfdiffhandle">NitfDiffHandle</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#nitf-difference-logging">Nitf difference logging</a></li>
@@ -306,7 +307,7 @@ the difference found at the logging level of DIFFERENCE_DETAIL.</p>
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="design.html" title="previous chapter">Software Design</a></li>
+      <li>Previous: <a href="nitf_file.html" title="previous chapter">NITF File</a></li>
   </ul></li>
 </ul>
 </div>
