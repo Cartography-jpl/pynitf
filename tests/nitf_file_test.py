@@ -1,3 +1,4 @@
+import cProfile
 from pynitf.nitf_file import *
 from pynitf.nitf_tre_csde import *
 from pynitf.nitf_tre_csepha import *
@@ -408,4 +409,27 @@ def test_full_file_security(isolated_dir):
 
     print("Text Data:")
     print(f2.text_segment[0].data)        
+
+# May expand this to check a large file, or we might just separately
+# profile reading large files we already have. Can also do
+# "python -m cProfile script.py" to test a standalone script
+# Can spit into out using:
+# python -m cProfile -o prof.dat script.py
+# Then things like:
+# import pstats
+# from pstats import SortKey
+# p = pstats.Stats("prof.dat")
+# p.sort_stats(SortKey.CUMULATIVE).print_stats(10)
+# p.sort_stats(SortKey.TIME).print_stats(10)
+# Interactive version with "python -m pstats prof.dat"
+@skip
+def test_profile(isolated_dir):
+    f = NitfFile()
+    create_image_seg(f)
+    create_tre(f)
+    create_tre2(f)
+    create_text_segment(f)
+    create_des(f)
+    f.write("basic_nitf.ntf")
+    cProfile.run('import pynitf; pynitf.NitfFile("basic_nitf.ntf")')
     
