@@ -2,6 +2,7 @@ from pynitf.nitf_file import *
 from pynitf.nitf_file_header import *
 from pynitf.nitf_image_subheader import *
 from pynitf.nitf_image import *
+from pynitf.nitf_file_diff import NitfDiff
 from pynitf_test_support import *
 import io,six
 
@@ -146,5 +147,38 @@ def test_write_data_on_demand(isolated_dir):
     ov = np.array(offset[:,:,:])
     np.testing.assert_almost_equal(radv, gv * dnv + ov)
     
+def test_diff(print_logging):
+    nband = 1
+    nrow = 10
+    ncol = 20
+    dn = NitfImageWriteNumpy(nrow, ncol, np.float32, numbands=nband,
+                              iid1="DN", idlvl=0)
+    for r in range(nrow):
+        dn[0, r,:] = np.arange(100 * r, 100 * r + dn.shape[2])
+    f = NitfFile()
+    f.image_segment.append(NitfImageSegment(dn))
+    f.write("file1.ntf")
+    dn2 = NitfImageWriteNumpy(nrow, ncol, np.float32, numbands=nband,
+                              iid1="DN", idlvl=0)
+    for r in range(nrow):
+        dn2[0, r,:] = np.arange(100 * r, 100 * r + dn2.shape[2])
+    f = NitfFile()
+    f.image_segment.append(NitfImageSegment(dn2))
+    f.write("file2.ntf")
+    dn2[0,0,0] = dn2[0,0,0] + 1.0
+    f = NitfFile()
+    f.image_segment.append(NitfImageSegment(dn2))
+    f.write("file3.ntf")
+    dn3 = NitfImageWriteNumpy(nrow+1, ncol, np.float32, numbands=nband,
+                              iid1="DN", idlvl=0)
+    for r in range(nrow+1):
+        dn3[0, r,:] = np.arange(100 * r, 100 * r + dn3.shape[2])
+    f = NitfFile()
+    f.image_segment.append(NitfImageSegment(dn3))
+    f.write("file4.ntf")
+    d = NitfDiff()
+    assert d.compare("file1.ntf", "file2.ntf") == True
+    assert d.compare("file1.ntf", "file3.ntf") == False
+    assert d.compare("file1.ntf", "file4.ntf") == False
     
     

@@ -272,8 +272,12 @@ class ImageReadNumpyDiff(NitfDiffHandle):
         t1 = d1[:,:,:]
         t2 = d2[:,:,:]
         # TODO Expose tolerance as configuration parameters
-        if(not np.allclose(t1, t2)):
-            logger.difference("Image '%s is different",
+        if(t1.shape != t2.shape):
+            logger.difference("Image '%s' shape different: %s != %s",
+                              d1.image_subheader.iid1, t1.shape, t2.shape)
+            is_same = False
+        elif(not np.allclose(t1, t2)):
+            logger.difference("Image '%s' is different",
                               d1.image_subheader.iid1)
             is_same = False
         # TODO Copy over other work by Derek, currently in
@@ -435,11 +439,7 @@ class NitfImageHandleSet(PriorityHandleSet):
         return (True, t)
         
 def register_image_class(cls, priority_order=0):
-    # TODO Temporary, reverse order of priority. This is because we
-    # use to use lower priority executed first, and we are using this logic
-    # in geocal. Want to be able to deliver just pynitf w/o geocal. Once
-    # geocal is changed, we can change this behavior.
-    NitfImageHandleSet.add_default_handle(cls, -priority_order)
+    NitfImageHandleSet.add_default_handle(cls, priority_order)
 
 def unregister_image_class(cls):
     '''Remove a handler from the list. This isn't used all that often,
@@ -447,7 +447,7 @@ def unregister_image_class(cls):
     NitfImageHandleSet.discard_default_handle(cls)
     
 register_image_class(NitfImageReadNumpy)
-register_image_class(NitfImagePlaceHolder, priority_order=1000)
+register_image_class(NitfImagePlaceHolder, priority_order=-1000)
         
 __all__ = ["NitfImageCannotHandle", "NitfImage", "NitfImageWithSubset",
            "NitfImagePlaceHolder",

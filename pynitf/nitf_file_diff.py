@@ -52,6 +52,7 @@ class NitfDiff(object):
         f1 = NitfFile(file1)
         f2 = NitfFile(file2)
         return self.compare_obj(f1, f2)
+    
 
     def compare_obj(self, obj1, obj2):
         '''Convenience short hand for calling self.handle_set.handle because
@@ -114,7 +115,7 @@ class ImageSegmentDiff(NitfDiffHandle):
             for i in range(min(len(iseg1.tre_list), len(iseg2.tre_list))):
                 is_same = nitf_diff.compare_obj(iseg1.tre_list[i],
                                                 iseg2.tre_list[i]) and is_same
-            nitf_diff.compare_obj(iseg1.data, iseg2.data)
+            is_same = nitf_diff.compare_obj(iseg1.data, iseg2.data) and is_same
             return (True, is_same)
 
 NitfDiffHandleSet.add_default_handle(ImageSegmentDiff())

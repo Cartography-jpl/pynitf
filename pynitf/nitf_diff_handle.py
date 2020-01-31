@@ -70,9 +70,9 @@ class DifferenceFormatter(logging.Formatter):
         elif(record.levelno == DIFFERENCE_DETAIL):
             # Less information printed for DIFFERENCE_DETAIL, there will be
             # an overall difference reported.
-            return self.color_text(self.diff_detailed, record.levelno +
-                                   record.getMessage(), DIFFERENCE_DETAIL)
-        return (self.color(record.levelname + ": ", record.levelno) +
+            return self.color_text("      - " + record.getMessage(),
+                                   DIFFERENCE_DETAIL)
+        return (self.color_text(record.levelname + ": ", record.levelno) +
                 record.getMessage())
         
 def _log_difference(msg, *args, **kwargs):
