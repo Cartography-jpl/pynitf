@@ -445,8 +445,59 @@ in :numref:`nitf_file_convenience`.
    :caption: NitfFile Convenience Functions
 
    class NitfFile {
-      iseg_by_idlv(idlvl)
-      iseg_by_iid1(iid1)
-      iseg_by_iid1_single(iid1)
+      +engrda
+      +find_tre(tre_tag)
+      +find_one_tre(tre_tag)
+      +find_exactly_one_tre(tre_tag)
+      +iseg_by_idlv(idlvl)
+      +iseg_by_iid1(iid1)
+      +iseg_by_iid1_single(iid1)
+   }
+
+   note left of NitfFile::engrda
+      ENGRDA data returned as a
+      dict like interface (e.g.,
+      f.engrda["My_sensor 1"]["TEMP1"])
+
+      Both reading and setting values
+      supported
+   end note
+   note right of NitfFile::find_tre
+      Return list of TREs of the
+      given tag. Possibly empty
+   end note
+   note right of NitfFile::find_one_tre
+      Find at most one TRE of the
+      given tag. Return None if not
+      found, error if multiple found
+   end note
+   note right of NitfFile::find_exactly_one_tre
+      Like find_one_tre, but not finding
+      TRE is treated as an error.
+   end note
+
+   class NitfImageSegment {
+      +engrda
+      +find_tre(tre_tag)
+      +find_one_tre(tre_tag)
+      +find_exactly_one_tre(tre_tag)
+   }
+
+   class NitfTextSegment {
+      +engrda
+      +find_tre(tre_tag)
+      +find_one_tre(tre_tag)
+      +find_exactly_one_tre(tre_tag)
    }
    
+   class NitfGraphicSegment {
+      +engrda
+      +find_tre(tre_tag)
+      +find_one_tre(tre_tag)
+      +find_exactly_one_tre(tre_tag)
+   }
+   NitfFile o-- "many" NitfImageSegment
+   NitfFile o-- "many" NitfGraphicSegment
+   NitfFile o-- "many" NitfTextSegment
+   
+
