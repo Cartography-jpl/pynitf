@@ -3,6 +3,7 @@ from pynitf.nitf_file_diff import NitfDiff
 from pynitf_test_support import *
 import io, six
 import copy
+import pickle
 
 def test_basic(print_logging):
     t = NitfFileHeader()
@@ -60,4 +61,15 @@ def test_write():
             t.write_to_file(fh)
     assert fh.getvalue() == b'NITF02.1003BF01          20021216151629                                                                                U                                                                                                                                                                      00000000000\x00\x00\x00                                          0000000000000000000000000000000000000000000000'
 
-        
+# Note this doesn't currently work. We may rework FieldStruct stuff to fix
+# this, so leave the test in place for use later.
+def test_pickle():
+    '''Test pickling of NitfFileHeader'''
+    t = NitfFileHeader()
+    with open(unit_test_data + "sample.ntf", 'rb') as fh:
+        t.read_from_file(fh)
+    p = pickle.dumps(t)
+    t2 = pickle.load(t)
+    d = NitfDiff()
+    assert d.compare_obj(t, t2) == True
+    

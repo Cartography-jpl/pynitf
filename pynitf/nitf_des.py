@@ -495,11 +495,7 @@ class NitfDesHandleSet(PriorityHandleSet):
         return (True, t)
 
 def register_des_class(cls, priority_order=0):
-    # TODO Temporary, reverse order of priority. This is because we
-    # use to use lower priority executed first, and we are using this logic
-    # in geocal. Want to be able to deliver just pynitf w/o geocal. Once
-    # geocal is changed, we can change this behavior.
-    NitfDesHandleSet.add_default_handle(cls, -priority_order)
+    NitfDesHandleSet.add_default_handle(cls, priority_order)
 
 def unregister_des_class(cls):
     '''Remove a handler from the list. This isn't used all that often,
@@ -507,9 +503,9 @@ def unregister_des_class(cls):
     NitfDesHandleSet.discard_default_handle(cls)
     
 register_des_class(TreOverflow)
-register_des_class(NitfDesPlaceHolder, priority_order=1000)
+register_des_class(NitfDesPlaceHolder, priority_order=-1000)
 # Don't normally use, but you can add this if desired
-#register_des_class(NitfDesCopy, priority_order=999)
+#register_des_class(NitfDesCopy, priority_order=-999)
 
 __all__ = [ "NitfDesCannotHandle", "NitfDes", "NitfDesPlaceHolder",
             "NitfDesCopy",
