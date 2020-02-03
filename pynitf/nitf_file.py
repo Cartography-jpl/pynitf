@@ -30,15 +30,14 @@ class ListNitfFileReference(collections.UserList):
 class NitfFile(object):
     '''This is used to read and write a NITF File.
 
-    Attributes:
-        file_header     The NitfFileHeader for the file
-        file_name       The NITF file name
-        image_segment   List of NitfImageSegment objects for the file.
-        graphic_segment List of NitfGraphicSegment objects for the file.
-        text_segment    List of NitfTextSegment objects for the file.
-        des_segment     List of NitfDesSegment objects for the file.
-        res_segment     List of NitfResSegment objects for the file.
-        tre_list        List of Tre objects for the file level TREs.
+       :ivar file_header:     The NitfFileHeader for the file
+       :ivar file_name:       The NITF file name
+       :ivar image_segment:   List of NitfImageSegment objects for the file.
+       :ivar graphic_segment: List of NitfGraphicSegment objects for the file.
+       :ivar text_segment:    List of NitfTextSegment objects for the file.
+       :ivar des_segment:     List of NitfDesSegment objects for the file.
+       :ivar res_segment:     List of NitfResSegment objects for the file.
+       :ivar tre_list:        List of Tre objects for the file level TREs.
     '''        
     # List of hook objects to extend the handling in the various types of
     # segments. Right now we only do this for image_segment and text_segment,

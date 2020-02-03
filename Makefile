@@ -23,16 +23,16 @@ check:
 
 # Put it first so that "make" without argument is like "make help".
 doc-help:
-	@$(SPHINXBUILD) -M help doc doc/_build $(SPHINXOPTS)
+	@export PYTHONPATH=$(shell pwd) && $(SPHINXBUILD) -M help doc doc/_build $(SPHINXOPTS)
 
 doc-html: 
-	@$(SPHINXBUILD) -M html doc doc/_build $(SPHINXOPTS)
+	@export PYTHONPATH=$(shell pwd) && $(SPHINXBUILD) -M html doc doc/_build $(SPHINXOPTS)
 
 doc-latex: 
-	@$(SPHINXBUILD) -M latex doc doc/_build $(SPHINXOPTS)
+	@export PYTHONPATH=$(shell pwd) && $(SPHINXBUILD) -M latex doc doc/_build $(SPHINXOPTS)
 
 doc-latexpdf: 
-	@$(SPHINXBUILD) -M latexpdf doc doc/_build $(SPHINXOPTS)
+	@export PYTHONPATH=$(shell pwd) && $(SPHINXBUILD) -M latexpdf doc doc/_build $(SPHINXOPTS)
 
 #=================================================================
 # Upload documentation to github pages
