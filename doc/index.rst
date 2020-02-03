@@ -12,6 +12,7 @@ Welcome to pynitf's documentation!
 
    introduction
    design
+   nitf_file
    nitf_diff
 
 Indices and tables

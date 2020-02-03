@@ -2,6 +2,8 @@
 Software Design
 ****************************************************
 
+.. _priority-handle-set-section:
+
 Priority Handle Set
 -------------------
 

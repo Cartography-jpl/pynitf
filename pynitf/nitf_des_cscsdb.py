@@ -214,7 +214,7 @@ add_uuid_des_function(DesCSCSDB)
 register_des_class(DesCSCSDB)
 
 
-class CsattbDiff(FieldStructDiff):
+class CsscdbDiff(FieldStructDiff):
     '''Compare two DesCSCSDB.'''
     def configuration(self, nitf_diff):
         return nitf_diff.config.get("DesCSCSDB", {})
@@ -226,12 +226,12 @@ class CsattbDiff(FieldStructDiff):
                 return (False, None)
             return (True, self.compare_obj(h1, h2, nitf_diff))
 
-NitfDiffHandleSet.add_default_handle(CsattbDiff())
+NitfDiffHandleSet.add_default_handle(CsscdbDiff)
 # No default configuration
 _default_config = {}
 NitfDiffHandleSet.default_config["DesCSCSDB"] = _default_config
 
-class CsattbUserheaderDiff(FieldStructDiff):
+class CsscdbUserheaderDiff(FieldStructDiff):
     '''Compare two user headers.'''
     def configuration(self, nitf_diff):
         return nitf_diff.config.get("DesCSCSDB_UH", {})
@@ -243,7 +243,7 @@ class CsattbUserheaderDiff(FieldStructDiff):
                 return (False, None)
             return (True, self.compare_obj(h1, h2, nitf_diff))
 
-NitfDiffHandleSet.add_default_handle(CsattbUserheaderDiff())
+NitfDiffHandleSet.add_default_handle(CsscdbUserheaderDiff())
 _default_config = {}
 # UUID change each time they are generated, so don't include in
 # check
