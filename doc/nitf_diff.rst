@@ -88,25 +88,61 @@ There are a number of NitfDiffHandle objects defined in pynitf:
 
 .. table:: NitfDiffHandle objects
 	   
-  +---------------------+-------------------------------------------------+
-  | Class               | Description                                     +
-  +=====================+=================================================+
-  | NitfFileHandle      | Top level class that handles comparing NitfFile |
-  |                     | Compares matching items, so first image segment |
-  |  		        | in file 1 compared to first image segment in    |
-  |		        | file 2, etc. We could create more sophisticated |
-  |	   	        | classes (e.g., compare by matching iid1), which |
-  |                     | is why even the files are handled by a plugin   |
-  +---------------------+-------------------------------------------------+
-  | AlwaysTrueHandle    | Always say things are equal. Nice for various   |
-  |                     | test cases (e.g. test some object types, skip   |
-  |                     | other types).                                   |
-  +---------------------+-------------------------------------------------+
-  | FieldStructDiff     | Base class for various FieldStruct objects      |
-  |                     | (e.g DiffFileHeader )                           |
-  +---------------------+-------------------------------------------------+
-  | DiffFileHeader      | Compare NitfFileHeader                          |
-  +---------------------+-------------------------------------------------+
+  +----------------------+-------------------------------------------------+
+  | Class                | Description                                     |
+  +======================+=================================================+
+  | NitfFileHandle       | Top level class that handles comparing NitfFile |
+  |                      | Compares matching items, so first image segment |
+  |  		         | in file 1 compared to first image segment in    |
+  |		         | file 2, etc. We could create more sophisticated |
+  |	   	         | classes (e.g., compare by matching iid1), which |
+  |                      | is why even the files are handled by a plugin   |
+  +----------------------+-------------------------------------------------+
+  | AlwaysTrueHandle     | Always say things are equal. Nice for various   |
+  |                      | test cases (e.g. test some object types, skip   |
+  |                      | other types).                                   |
+  +----------------------+-------------------------------------------------+
+  | FieldStructDiff      | Base class for various FieldStruct objects      |
+  |                      | (e.g DiffFileHeader ).                          |
+  +----------------------+-------------------------------------------------+
+  | DiffFileHeader       | Compare NitfFileHeader.                         |
+  +----------------------+-------------------------------------------------+
+  | DesObjectDiff        | Compare NitfDesObjectHandle.                    |
+  +----------------------+-------------------------------------------------+
+  | DesPlaceHolderDiff   | Compare NitfDesPlaceHolder.                     |
+  +----------------------+-------------------------------------------------+
+  | CsattaDiff           | Compare DesCSATTA.                              |
+  +----------------------+-------------------------------------------------+
+  | CsattbDiff           | Compare DesCSATTB.                              |
+  +----------------------+-------------------------------------------------+
+  | CsattbUserheaderDiff | Compare DesCSATTB_UH.                           |
+  +----------------------+-------------------------------------------------+
+  | CsscdbDiff           | Compare DesCSSCDB.                              |
+  +----------------------+-------------------------------------------------+
+  | CsscdbUserheaderDiff | Compare DesCSSCDB_UH.                           |
+  +----------------------+-------------------------------------------------+
+  | CsephbDiff           | Compare DesCSEPHB.                              |
+  +----------------------+-------------------------------------------------+
+  | CsephbUserheaderDiff | Compare DesCSEPHB_UH.                           |
+  +----------------------+-------------------------------------------------+
+  | CssfabDiff           | Compare DesCSSFAB.                              |
+  +----------------------+-------------------------------------------------+
+  | CssfabUserheaderDiff | Compare DesCSSFAB_UH.                           |
+  +----------------------+-------------------------------------------------+
+  |  DesSubheaderDiff    | Compare NitfDesSubheader.                       |
+  +----------------------+-------------------------------------------------+
+  | ImagePlaceHolderDiff | Compare NitfImagePlaceHolder.                   |
+  +----------------------+-------------------------------------------------+
+  | ImageReadNumpyDiff   | Compare NitfImageReadNumpy.                     |
+  +----------------------+-------------------------------------------------+
+  | ImageSubheaderDiff   | Compare NitfImageSubheader.                     |
+  +----------------------+-------------------------------------------------+
+  | TextSubheaderDiff    | Compare NitfTextSubheader.                      |
+  +----------------------+-------------------------------------------------+
+  | TreDiff              | Compare Tre.                                    |
+  +----------------------+-------------------------------------------------+
+  | TreUnknownDiff       | Compare TreUnknown.                             |
+  +----------------------+-------------------------------------------------+
 
 The handles should return an overall status of the comparison, so True for
 objects are the same, False otherwise.
@@ -129,9 +165,9 @@ The functions "difference", "difference_ignored" and
 "difference_detail" have the same arguments as python logger "info".
 
 While we could add new level names using
-`logging.addLevelName <https://docs.python.org/3/library/logging.html#logging.addLevelName>`
+`logging.addLevelName <https://docs.python.org/3/library/logging.html#logging.addLevelName>`_
 the python documentation
-`points out <https://docs.python.org/3/howto/logging.html#custom-levels>`
+`points out <https://docs.python.org/3/howto/logging.html#custom-levels>`_
 that this is a global namespace. We don't want to have any other library
 that uses pynitf forced to use the new level names. So instead, we have a
 special formatter DifferenceFormatter that handles this without adding
@@ -167,13 +203,13 @@ FieldStructDiff
   
 There are various handles to check the different FieldStruct objects.
 
-While we could just create new NitfDiffHandle objects for each
-field structure (e.g., each of the TREs in the file), we instead try to
+While we could just create new NitfDiffHandle objects for each field
+structure (e.g., each of the TREs in the file), we instead try to
 provide a good deal of functionality through "configuration". The
-configuration is a dictionary type object that derived class get
-from the nitf_diff object.  This then contains keyword/value pairs
-for controlling things. While derived classes can others, these
-are things that can be defined:
+configuration is a dictionary type object that derived class get from
+the nitf_diff object.  This then contains keyword/value pairs for
+controlling things. While derived classes can supply other parameters,
+these are things that can be defined:
 
 * **exclude** - List of fields to exclude from comparing
 * **exclude_but_warn** - List of field to exclude from comparing, but
