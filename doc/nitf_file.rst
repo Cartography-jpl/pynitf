@@ -2,6 +2,10 @@
 NITF File
 ****************************************************
 
+This section describes the overall software design. You can
+also :ref:`nitf-file-ref-section` for descriptions of the class member
+functions.
+
 We want to be able to read an write NITF files.
 
 The NitfFile class structure is shown in :numref:`nitf_file`.
