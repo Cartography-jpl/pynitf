@@ -25,6 +25,11 @@ class NitfSegmentHookSet(collections.abc.Set):
         '''Called at the end of NitfSegment.__init__'''
         for h in self:
             h.after_init_hook(seg, nitf_file)
+
+    def after_append_hook(self, seg, nitf_file):
+        '''Called after a segment is added to a NitfFile'''
+        for h in self:
+            h.after_append_hook(seg, nitf_file)
             
     def before_write_hook(self, seg, nitf_file):
         '''Called before NitfFile writes a file'''
@@ -85,6 +90,9 @@ class NitfSegmentHook(object):
     '''
     def after_init_hook(self, seg, nitf_file):
         '''Called at the end of NitfSegment.__init__'''
+        pass
+    def after_append_hook(self, seg, nitf_file):
+        '''Called when a segment is added to a NitfFile'''
         pass
     def before_write_hook(self, seg, nitf_file):
         '''Called before NitfFile writes a file'''

@@ -26,6 +26,8 @@ class ListNitfFileReference(collections.UserList):
     def append(self, v):
         super().append(v)
         v._nitf_file = self.nitf_file
+        if(v.nitf_file):
+            v.nitf_file.segment_hook_set.after_append_hook(v, v.nitf_file)
         
 class NitfFile(object):
     '''This is used to read and write a NITF File.

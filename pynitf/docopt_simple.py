@@ -54,11 +54,11 @@ class DocOptSimple(object):
         '''Find the type of the value, and return in'''
         v = self.args[key]
         if(isinstance(v, str)):
-            if(re.match('[+-]?\d+$', v)):
+            if(re.match(r'[+-]?\d+$', v)):
                 return int(v)
-            if(re.match('[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$', v)):
+            if(re.match(r'[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$', v)):
                 return float(v)
-            if(re.match('[-+]?[0-9]+\.([eE][-+]?[0-9]+)?$', v)):
+            if(re.match(r'[-+]?[0-9]+\.([eE][-+]?[0-9]+)?$', v)):
                 return float(v)
         return v
     

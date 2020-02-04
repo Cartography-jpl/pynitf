@@ -14,6 +14,10 @@ class NitfSegment(object):
     def __init__(self, subheader, data, nitf_file = None):
         self.subheader = subheader
         self.data = data
+        # For simplicity, always have a tre_list. For types that don't have
+        # TREs (NitfDesSegment and NitfResSegment) this is just an empty
+        # list. But having this means we can avoid special handling.
+        self.tre_list = []
         # Only keep a weak reference. We don't want to keep a NitfFile from
         # garbage collection just because a NitfSegment points back to it.
         if(nitf_file is not None):
@@ -394,14 +398,10 @@ class NitfResSegment(NitfPlaceHolder):
 
 
 # Add engrda to give hash access to ENGRDA TREs
-add_engrda_function(NitfImageSegment)
-add_engrda_function(NitfTextSegment)
-add_engrda_function(NitfGraphicSegment)
+add_engrda_function(NitfSegment)
 
 # Add TRE finding functions
-add_find_tre_function(NitfImageSegment)
-add_find_tre_function(NitfTextSegment)
-add_find_tre_function(NitfGraphicSegment)
+add_find_tre_function(NitfSegment)
 
 __all__ = ["NitfSegment",
            "NitfPlaceHolder", "NitfImageSegment", "NitfGraphicSegment",
