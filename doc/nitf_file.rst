@@ -15,8 +15,8 @@ The NitfFile class structure is shown in :numref:`nitf_file`.
    :caption: NitfFile class structure
 
    class NitfFile {
-      NitfFile(file_name=None,\n         security = security_unclassified,\n         use_raw=False)
-      read(file_name, use_raw=False)
+      NitfFile(file_name=None,\n         security = security_unclassified)
+      read(file_name)
       write(file_name)
       NitfFileHeader file_header
       file_name
@@ -193,6 +193,7 @@ See :numref:`nitf_segment_hook`.
 
    class NitfSegmentHookSet {
       +after_init_hook(seg, nitf_file)
+      +after_append_hook(seg, nitf_file)
       +before_write_hook(seg, nitf_file)
       +after_read_hook(seg, nitf_file)
       +before_str_hook(seg, nitf_file, fh)
@@ -210,11 +211,12 @@ See :numref:`nitf_segment_hook`.
 
    class NitfSegmentHook {
       +after_init_hook(seg, nitf_file)
+      +after_append_hook(seg, nitf_file)
       +before_write_hook(seg, nitf_file)
       +after_read_hook(seg, nitf_file)
       +before_str_hook(seg, nitf_file, fh)
       +before_str_tre_hook(seg, tre, nitf_file, fh)
-      +remove_for_raw_print()
+      +remove_for_report_raw()
    }
    note bottom
       Hook object to extend handling of
@@ -245,7 +247,7 @@ Note that when printing out a NitfSegment, most of the time we want the higher
 level objects printed. However, there may be instances where we want the "raw"
 data (e.g., nitfinfofull reporting raw TRE data). NitfSegmentHookSet will
 skip calling before_str_hook and before_tre_str_hook if
-"remove_for_raw_print" is True for the NitfSegmentHook.
+"remove_for_report_raw" is True for the NitfSegmentHook.
 
 NitfSegmentUserSubheaderHandleSet
 ---------------------------------

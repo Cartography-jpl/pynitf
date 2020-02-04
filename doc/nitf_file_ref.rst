@@ -11,3 +11,21 @@ NitfFile
 
 .. autoclass:: NitfFile
    :members:	       
+
+NitfSegmentHookSet
+------------------
+
+.. autoclass:: NitfSegmentHookSet
+   :members:	       
+
+NitfSegmentHook
+---------------
+
+.. autoclass:: NitfSegmentHook
+   :members:	       
+
+PriorityHandleSet
+-----------------
+
+.. autoclass:: PriorityHandleSet
+   :members:	       
