@@ -14,7 +14,6 @@ setup(name='pynitf',
       scripts=["extra/nitf_diff", "extra/nitfinfofull",
                "extra/explore_nitf.py"],
       install_requires=[
-          'six',
           'numpy',
           'docopt'
       ],

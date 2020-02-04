@@ -1,7 +1,7 @@
 from pynitf.nitf_file_header import *
 from pynitf.nitf_image_subheader import *
 from pynitf_test_support import *
-import io,six
+import io
 
 def test_basic():
     t = NitfFileHeader()
@@ -40,10 +40,10 @@ def test_basic():
     assert t2.udidl == 0
     assert t2.ixshdl == 0
     # check that we can write and read the same values again
-    fh = six.BytesIO()
+    fh = io.BytesIO()
     t2.write_to_file(fh)
     t2 = NitfImageSubheader()
-    fh2 = six.BytesIO(fh.getvalue())
+    fh2 = io.BytesIO(fh.getvalue())
     t2.read_from_file(fh2)
     assert t2.im == "IM"
     assert t2.iid1 == "Missing"
@@ -91,10 +91,10 @@ def test_geolo_corner():
     assert t.icords == "G"
     assert t.igeolo == "405030N0503020E405030N0503040E405040N0503040E405040N0503020E"
     print(t.igeolo)
-    fh = six.BytesIO()
+    fh = io.BytesIO()
     t.write_to_file(fh)
     t2 = NitfImageSubheader()
-    fh2 = six.BytesIO(fh.getvalue())
+    fh2 = io.BytesIO(fh.getvalue())
     t2.read_from_file(fh2)
     print(t2.geolo_corner)
     t.geolo_corner = 'D', [[50 + 30 / 60.0 + 20 / (60 * 60),
@@ -108,10 +108,10 @@ def test_geolo_corner():
     assert t.icords == "D"
     assert t.igeolo == "+40.842+050.506+40.842+050.511+40.844+050.511+40.844+050.506"
     print(t.igeolo)
-    fh = six.BytesIO()
+    fh = io.BytesIO()
     t.write_to_file(fh)
     t2 = NitfImageSubheader()
-    fh2 = six.BytesIO(fh.getvalue())
+    fh2 = io.BytesIO(fh.getvalue())
     t2.read_from_file(fh2)
     print(t2.geolo_corner)
     

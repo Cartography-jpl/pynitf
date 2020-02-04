@@ -1,7 +1,7 @@
 from pynitf.nitf_tre import *
 from pynitf.nitf_tre_illumb import *
 from pynitf_test_support import *
-import io, six
+import io
 
 #@pytest.mark.skip
 def test_tre_illumb_basic():
@@ -22,12 +22,12 @@ def test_tre_illumb_basic():
     t.target_lon[0] = -130.0
     t.target_hgt[0] = 1000.0
 
-    fh = six.BytesIO()
+    fh = io.BytesIO()
     t.write_to_file(fh)
     print('getvalue returns:', fh.getvalue())
     assert fh.getvalue() == b'ILLUMB004650001Some band unit of measure                   1.700000E+01    4.200000E+01001Blah blah blah                                                                  World Geodetic System 1984                                                      WGE World Geodetic System 1984                                                      WE Geodetic                                                                        GEOD\x00\x00\x00001Today         +35.000000-130.000000 +1.000000E+03'
 
-    fh2 = six.BytesIO(fh.getvalue())
+    fh2 = io.BytesIO(fh.getvalue())
     t2 = TreILLUMB()
     t2.read_from_file(fh2)
 

@@ -1,7 +1,6 @@
-from __future__ import print_function
 from .nitf_field import *
 from .nitf_tre import *
-import six
+import io
 
 hlp = '''This is the MICIDA TRE, Motion Imagery Core Identification
 
@@ -26,7 +25,7 @@ TreMICIDA = create_nitf_tre_structure("TreMICIDA",desc,hlp=hlp)
 TreMICIDA.miis_core_id_version = hardcoded_value(1)
 
 def _summary(self):
-    res = six.StringIO()
+    res = io.StringIO()
     print("MICIDA:", file=res)
     print("MISB ST 1204 Version Number: %02d" % (self.miis_core_id_version()), file=res)
     print("Number of MIIS Core Identifiers: %d" % (self.num_camera_ids), file=res)

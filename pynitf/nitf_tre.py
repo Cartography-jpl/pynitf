@@ -7,13 +7,12 @@
 # To do this, cute and paste the table into *Word*, and then cut and paste
 # from word to Excel. For some reason, you can't go directly to Excel. You
 # can then cut and paste from excel to emacs
-from __future__ import print_function
 from .nitf_field import (_FieldStruct, _FieldLoopStruct,
                          FieldStructDiff,
                          _create_nitf_field_structure)
 from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
 import copy
-import io,six
+import io
 from .nitf_des import TreOverflow
 import logging
 
@@ -25,11 +24,11 @@ class Tre(_FieldStruct):
         return len(self.tre_bytes())
     def tre_bytes(self):
         '''All of the TRE expect for the front two cetag and cel fields'''
-        fh = six.BytesIO()
+        fh = io.BytesIO()
         _FieldStruct.write_to_file(self, fh)
         return fh.getvalue()
     def read_from_tre_bytes(self, bt, nitf_literal = False):
-        fh = six.BytesIO(bt)
+        fh = io.BytesIO(bt)
         _FieldStruct.read_from_file(self,fh, nitf_literal)
     def read_from_file(self, fh, nitf_literal = False):
         tag = fh.read(6).rstrip().decode("utf-8")
@@ -65,7 +64,7 @@ class Tre(_FieldStruct):
         except ValueError:
             # We have no _FieldValue, so just set maxlen to a fixed value
             maxlen = 10
-        res = six.StringIO()
+        res = io.StringIO()
         print("TRE - %s" % self.tre_tag, file=res)
         self.str_hook(res)
         for f in self.field_value_list:
@@ -78,7 +77,7 @@ class Tre(_FieldStruct):
         return res.getvalue()
 
     def summary(self):
-        res = six.StringIO()
+        res = io.StringIO()
         print("TRE - %s" % self.tre_tag, file=res)
 
 class TreObjectImplementation(Tre):
@@ -92,7 +91,7 @@ class TreObjectImplementation(Tre):
         return t.encode("utf-8")
     def read_from_tre_bytes(self, bt, nitf_literal = False):
         t = bt
-        if not isinstance(t, six.string_types):
+        if not isinstance(t, str):
             t = t.decode("utf-8")
         setattr(self, self.tre_implementation_field, self.tre_implementation_class.read_tre_string(t))
         self.update_raw_field()
@@ -112,7 +111,7 @@ class TreObjectImplementation(Tre):
 
     def update_raw_field(self):
         '''Update the raw fields after a change to tre_implementation_field'''
-        fh = six.BytesIO(self.tre_bytes())
+        fh = io.BytesIO(self.tre_bytes())
         _FieldStruct.read_from_file(self, fh)
 
 class TreUnknown(Tre):
@@ -139,7 +138,7 @@ class TreUnknown(Tre):
     def __str__(self):
         '''Text description of structure, e.g., something you can print
         out.'''
-        res = six.StringIO()
+        res = io.StringIO()
         print("TRE - %s" % self.tre_tag, file=res)
         print( "   String: %s" % self.tre_bytes, file=res)
         return res.getvalue()
@@ -187,11 +186,15 @@ def prepare_tre_write(tre_list, header, des_list, field_list = [],
                       seg_index = 0):
     '''This prepares TREs for writing, placing them in the right place
     in a header and/or creating TRE_OVERFLOW DES. This is the reverse
-    of read_tre, the field_list should be the same as for that.'''
-    head_fh = [six.BytesIO() for i in range(len(field_list))]
-    des_fh = six.BytesIO()
+    of read_tre, the field_list should be the same as for that.
+
+    The seg_index should be the normal 0 based index used in python for
+    lists. We internally translate this too and from the 1 based indexing
+    used in the NITF file.'''
+    head_fh = [io.BytesIO() for i in range(len(field_list))]
+    des_fh = io.BytesIO()
     for tre in tre_list:
-        fht = six.BytesIO()
+        fht = io.BytesIO()
         tre.write_to_file(fht)
         t = fht.getvalue()
         wrote = False
@@ -228,7 +231,7 @@ def prepare_tre_write(tre_list, header, des_list, field_list = [],
     
 def read_tre_data(data):
     '''Read a blob of data, and translate into a series of TREs'''
-    fh = six.BytesIO(data)
+    fh = io.BytesIO(data)
     res = []
     while True:
         st = fh.tell()

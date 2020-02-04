@@ -1,8 +1,7 @@
-from __future__ import print_function
 from .nitf_field import *
 from .nitf_tre import *
-import six
 from struct import *
+import io
 
 hlp = '''This is the MTIMSA TRE, Motion Imagery File
 
@@ -36,7 +35,7 @@ desc = ["MTIMSA",
 TreMTIMSA = create_nitf_tre_structure("TreMTIMSA",desc,hlp=hlp)
 
 def _summary(self):
-    res = six.StringIO()
+    res = io.StringIO()
     print("MTIMSA:", file=res)
     print("Image Segment Index: %d" % (self.image_seg_index), file=res)
     print("Static GeoCoords Flag: %d" % (self.geocoords_static), file=res)

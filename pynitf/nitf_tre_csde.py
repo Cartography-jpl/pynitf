@@ -1,6 +1,5 @@
-from __future__ import print_function
 from .nitf_tre import *
-import six
+import io
 
 hlp = '''This is the STDIDC TRE, Standard ID
 
@@ -39,7 +38,7 @@ desc = ["STDIDC",
 TreSTDIDC = create_nitf_tre_structure("TreSTDIDC", desc, hlp=hlp)
 
 def _summary(self):
-    res = six.StringIO()
+    res = io.StringIO()
     print("STDIDC: %s, %s, %s, %d" \
                   % (self.acquisition_date, self.mission, self.pass_, self.op_num), file=res)
     return res.getvalue()
@@ -89,7 +88,7 @@ desc = ["USE00A",
 TreUSE00A = create_nitf_tre_structure("TreUSE00A",desc,hlp=hlp)
 
 def _summary(self):
-    res = six.StringIO()
+    res = io.StringIO()
     print("USE00A", file=res)
     return res.getvalue()
 

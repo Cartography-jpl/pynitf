@@ -7,7 +7,6 @@
 # To do this, cut and paste the table into *Word*, and then cut and paste
 # from word to Excel. For some reason, you can't go directly to Excel. You
 # can then cut and paste from excel to emacs
-from __future__ import print_function
 from .nitf_field import (FieldData, _FieldStruct, _FieldLoopStruct, 
                          _create_nitf_field_structure,
                          create_nitf_field_structure)
@@ -17,7 +16,7 @@ from .nitf_diff_handle import (NitfDiffHandle, NitfDiffHandleSet,
 from .priority_handle_set import PriorityHandleSet
 from .nitf_security import security_unclassified
 import copy
-import io,six
+import io
 import abc
 import collections
 import logging
@@ -33,8 +32,7 @@ class NitfDesCannotHandle(RuntimeError):
     def __init__(self, msg = "Can't handle this type of des"):
         RuntimeError.__init__(self, msg)
 
-@six.add_metaclass(abc.ABCMeta)
-class NitfDes(object):
+class NitfDes(object, metaclass=abc.ABCMeta):
     '''This contains a DES that we want to read or write from NITF.
     
     This class supplies a basic interface, a specific type of DES can
@@ -91,7 +89,7 @@ class NitfDes(object):
     # Derived classes may want to override this to give a more detailed
     # description of what kind of image this is.
     def __str__(self):
-        fh = six.StringIO()
+        fh = io.StringIO()
         self.str_hook(fh)
         if(self.user_subheader):
             print("User-Defined Subheader: ", file=fh)
@@ -106,7 +104,7 @@ class NitfDes(object):
            self.user_subheader_class is not None):
             raise RuntimeError("The expected user defined subheader was not found")
         if(self.des_subheader.desshl > 0):
-            fh = six.BytesIO(self.des_subheader.desshf)
+            fh = io.BytesIO(self.des_subheader.desshf)
             self.user_subheader.read_from_file(fh)
 
     @property
@@ -114,7 +112,7 @@ class NitfDes(object):
         '''Return the size of the user subheader. This can be used to
         make sure we aren't exceeding the size supported by desshl'''
         if(self.user_subheader_class):
-            fh = six.BytesIO()
+            fh = io.BytesIO()
             self.user_subheader.write_to_file(fh)
             return len(fh.getvalue())
         else:
@@ -127,7 +125,7 @@ class NitfDes(object):
         in that function (unlike read_from_file). Instead, the NitfDesSegment
         class calls this function.'''
         if(self.user_subheader_class):
-            fh = six.BytesIO()
+            fh = io.BytesIO()
             self.user_subheader.write_to_file(fh)
             sh.desshf = fh.getvalue()
         else:
@@ -228,7 +226,7 @@ class NitfDesFieldStruct(NitfDes, _FieldStruct):
         except ValueError:
             # We have no _FieldValue, so just set maxlen to a fixed value
             maxlen = 10
-        res = six.StringIO()
+        res = io.StringIO()
         self.str_hook(res)
         if(self.user_subheader):
             print("User-Defined Subheader: ", file=res)
@@ -246,7 +244,7 @@ class NitfDesFieldStruct(NitfDes, _FieldStruct):
         return res.getvalue()
 
     def summary(self):
-        res = six.StringIO()
+        res = io.StringIO()
         #print("TRE - %s" % self.tre_tag, file=res)
 
 class NitfDesObjectHandle(NitfDes):
@@ -293,7 +291,7 @@ class NitfDesObjectHandle(NitfDes):
     def __str__(self):
         '''Text description of structure, e.g., something you can print
         out.'''
-        res = six.StringIO()
+        res = io.StringIO()
         self.str_hook(res)
         if(self.user_subheader):
             print("User-Defined Subheader: ", file=res)
@@ -303,7 +301,7 @@ class NitfDesObjectHandle(NitfDes):
         return res.getvalue()
 
     def summary(self):
-        res = six.StringIO()
+        res = io.StringIO()
         #print("TRE - %s" % self.tre_tag, file=res)
 
 # TODO May want to rework this, not sure if having handle_diff in the
@@ -381,13 +379,16 @@ class TreOverflow(NitfDes):
     '''DES used to handle TRE overflow.'''
     def __init__(self, des_subheader=None, header_size=None, data_size=None,
                  seg_index=None, overflow=None):
+        '''Note that seg_index should be the normal 0 based index python
+        uses elsewhere. Internal to the DES we translate this to the 1 based
+        index that NITF uses.'''
         NitfDes.__init__(self, "TRE_OVERFLOW", des_subheader,
                          header_size, data_size)
         if(self.des_subheader.desid.encode("utf-8") != b'TRE_OVERFLOW'):
             raise NitfDesCannotHandle()
         if(des_subheader is None):
             self.des_subheader.desoflw = str.upper(overflow)
-            self.des_subheader.desitem = seg_index
+            self.des_subheader.desitem = seg_index+1
         self.data = None
 
     def read_from_file(self, fh):

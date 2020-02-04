@@ -2,7 +2,7 @@ from pynitf.nitf_des import *
 from pynitf.nitf_des_csattb import *
 from pynitf.nitf_file import NitfDesSegment, NitfFile
 from pynitf_test_support import *
-import io, six
+import io
 
 def test_des_snip_user_header():
 
@@ -13,12 +13,12 @@ def test_des_snip_user_header():
         ds.aisdlvl[i] = 5 + i
     ds.reservedsubh_len = 0
 
-    fh_ds = six.BytesIO()
+    fh_ds = io.BytesIO()
     ds.write_to_file(fh_ds)
     print(fh_ds.getvalue())
     assert fh_ds.getvalue() == b'4385ab47-f3ba-40b7-9520-13d6b7a7f3110100050060070080090100110120130140000000'
 
-    fh2_ds = six.BytesIO(fh_ds.getvalue())
+    fh2_ds = io.BytesIO(fh_ds.getvalue())
     d2_ds = DesCSATTB_UH()
     d2_ds.read_from_file(fh2_ds)
 
@@ -47,13 +47,13 @@ def test_des_csattb_basic():
     d.reserved_len = 0
     assert d.user_subheader_size == 46 
 
-    fh = six.BytesIO()
+    fh = io.BytesIO()
     dseg = NitfDesSegment(des=d);
-    hs, ds = dseg.write_to_file(fh)
+    hs, ds = dseg.write_to_file(fh, 0, None)
     print(fh.getvalue())
     assert fh.getvalue() == b'DECSATTB                   01U                                                                                                                                                                      0046                                    0  00000001110900.50000000020170501235959.10000100000005-0.111110000000000-0.111110000000000+0.111110000000000+0.111110000000000-0.111110000000000-0.111110000000000+0.111110000000000+0.111110000000000-0.111110000000000-0.111110000000000+0.111110000000000+0.111110000000000-0.111110000000000-0.111110000000000+0.111110000000000+0.111110000000000-0.111110000000000-0.111110000000000+0.111110000000000+0.111110000000000000000000'
 
-    fh2 = six.BytesIO(fh.getvalue())
+    fh2 = io.BytesIO(fh.getvalue())
     dseg2 = NitfDesSegment(header_size=hs, data_size=ds)
     dseg2.read_from_file(fh2)
     d2 = dseg2.des

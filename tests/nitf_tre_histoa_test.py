@@ -1,7 +1,7 @@
 from pynitf.nitf_tre import *
 from pynitf.nitf_tre_histoa import *
 from pynitf_test_support import *
-import io, six
+import io
     
 def test_basic():
 
@@ -25,11 +25,11 @@ def test_basic():
         t.ipcom[i, 0] = "HELLO1"
         t.ipcom[i, 1] = "HELLO2"
 
-    fh = six.BytesIO()
+    fh = io.BytesIO()
     t.write_to_file(fh)
     print(fh.getvalue())
     assert fh.getvalue() == b'HISTOA00509SYSTEM_TYPE         NO_COMPRESSINONE0000220170615121212ABCDEFGHIJAAAAAAAAAA2HELLO1                                                                          HELLO2                                                                          00              0 00000000             20170615121212ABCDEFGHIJAAAAAAAAAA2HELLO1                                                                          HELLO2                                                                          00              0 00000000             '
-    fh2 = six.BytesIO(fh.getvalue())
+    fh2 = io.BytesIO(fh.getvalue())
     t2 = TreHISTOA()
     t2.read_from_file(fh2)
     assert t2.systype == "SYSTEM_TYPE"

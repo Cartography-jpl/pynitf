@@ -1,7 +1,6 @@
-from __future__ import print_function
 from .nitf_field import *
 from .nitf_des import *
-import six
+import io
 import os
 import datetime
 import shutil
@@ -77,7 +76,7 @@ class DesEXTContentHeader(object):
             self._set_snippet(k, v)
 
     def __str__(self):
-        fh = six.StringIO()
+        fh = io.StringIO()
         print("Content Header:", file=fh)
         for (nm, var) in DesEXTContentHeader.hlist:
             t = self._snippet(nm, var)
@@ -107,7 +106,7 @@ class DesEXT_DEF_CONTENT(NitfDes):
         print("DesEXT_DEF_CONTENT", file=file)
 
     def __str__(self):
-        fh = six.StringIO()
+        fh = io.StringIO()
         self.str_hook(fh)
         print(self.content_header, file=fh)
         return fh.getvalue()
@@ -140,7 +139,7 @@ class DesEXT_DEF_CONTENT(NitfDes):
         super().write_user_subheader(sh)
         
     def summary(self):
-        res = six.StringIO()
+        res = io.StringIO()
         print("DesEXT_DEF_CONTENT", file=res)
         return res.getvalue()
         
@@ -197,7 +196,7 @@ class DesEXT_h5(DesEXT_DEF_CONTENT):
         print("DesEXT_h5", file=file)
 
     def summary(self):
-        res = six.StringIO()
+        res = io.StringIO()
         print("DesEXT_h5", file=res)
         return res.getvalue()
 

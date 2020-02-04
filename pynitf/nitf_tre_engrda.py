@@ -1,7 +1,6 @@
-from __future__ import print_function
 from .nitf_field import *
 from .nitf_tre import *
-import six
+import io
 from collections.abc import MutableMapping
 import numpy as np
 
@@ -68,7 +67,7 @@ def _getEngLblByIndex(self, i):
     return self.englbl[i]
 
 def _summary(self):
-    res = six.StringIO()
+    res = io.StringIO()
     print("ENGRDA %s: %d Entries:" \
           % (self.resrc, self.recnt), file=res)
     for i in range(self.recnt):

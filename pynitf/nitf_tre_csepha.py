@@ -1,7 +1,6 @@
-from __future__ import print_function
 from .nitf_field import *
 from .nitf_tre import *
-import six
+import io
 
 hlp = '''This is the CSEPHA TRE, Ephemeris Data. 
 
@@ -30,7 +29,7 @@ desc = ["CSEPHA",
 TreCSEPHA = create_nitf_tre_structure("TreCSEPHA",desc,hlp=hlp)
 
 def _summary(self):
-    res = six.StringIO()
+    res = io.StringIO()
     print("CSEPHA: %s %d ephemeris vectors" % (self.ephem_flag, self.num_ephem), file=res)
     return res.getvalue()
 

@@ -1,8 +1,7 @@
-from __future__ import print_function
 from .nitf_field import *
 from .nitf_des import *
 from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
-import six
+import io
 
 '''WARNING!!! Do NOT use CSATTA. It's been deprecated and it hasn't kept up with the new DES design
 It will be fixed eventually and we can use it if we need to for legacy applications'''
@@ -37,7 +36,7 @@ desc2 =["CSATTA",
 DesCSATTA.desver = hardcoded_value("01")
 
 def summary(self):
-    res = six.StringIO()
+    res = io.StringIO()
     print("CSATTA %s:  %d points" % (self.att_type, self.num_att), file=res)
     return res.getvalue()
 

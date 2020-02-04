@@ -1,7 +1,7 @@
 from pynitf.nitf_tre import *
 from pynitf.nitf_tre_micida import *
 from pynitf_test_support import *
-import io, six
+import io
     
 def test_tre_micida_basic():
 
@@ -22,7 +22,7 @@ def test_tre_micida_basic():
 
     print (t.summary())
 
-    fh = six.BytesIO()
+    fh = io.BytesIO()
     t.write_to_file(fh)
     print(fh.getvalue())
     assert fh.getvalue() == b'MICIDA0011000002First camera ID                     013First core IDSecond camera ID                    014Second core ID'

@@ -2,7 +2,7 @@ from pynitf.nitf_tre import *
 from pynitf.nitf_tre_engrda import *
 from pynitf.nitf_file import *
 from pynitf_test_support import *
-import io, six
+import io
 
 def test_tre_engrda():
     '''Basic test of engrda. This comes from N.6 of the documentation, 
@@ -40,11 +40,11 @@ def test_tre_engrda():
     assert t.engdatc[2] == t.engmtxc[2]*t.engmtxr[2]
     t.engdata[2]= b"10.7 DEG C"
     
-    fh = six.BytesIO()
+    fh = io.BytesIO()
     t.write_to_file(fh)
     print(fh.getvalue())
     assert fh.getvalue() == b"ENGRDA00125My_sensor           00305TEMP100010001I2tC00000001\x01%05TEMP200010001R4tK00000001\x03'\x12v10TEMP3 Wall00100001A1NA0000001010.7 DEG C"
-    fh2 = six.BytesIO(fh.getvalue())
+    fh2 = io.BytesIO(fh.getvalue())
     t2 = TreENGRDA()
     t2.read_from_file(fh2)
     assert t2.resrc == "My_sensor"

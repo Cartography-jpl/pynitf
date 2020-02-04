@@ -1,7 +1,6 @@
-from __future__ import print_function
 from .nitf_field import *
 from .nitf_tre import *
-import six
+import io
 
 hlp = '''This is the PIXQLA TRE, Pixel Quality.
 
@@ -29,7 +28,7 @@ TrePIXQLA = create_nitf_tre_structure("TrePIXQLA",desc,hlp=hlp)
 TrePIXQLA.pq_bit_value_value = hardcoded_value("1")
 
 def _summary(self):
-    res = six.StringIO()
+    res = io.StringIO()
     print("PIXQLA %s Associated ISs, %d Quality Conditions" % (self.numais, self.npixqual), file=res)
     return res.getvalue()
 

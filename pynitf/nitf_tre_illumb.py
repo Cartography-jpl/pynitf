@@ -1,7 +1,6 @@
-from __future__ import print_function
 from .nitf_field import *
 from .nitf_tre import *
-import six
+import io
 
 hlp = '''This is the ILLUMB TRE, Illumination Conditions.
 
@@ -76,7 +75,7 @@ desc = ["ILLUMB",
 TreILLUMB = create_nitf_tre_structure("TreILLUMB",desc,hlp=hlp)
 
 def _summary(self):
-    res = six.StringIO()
+    res = io.StringIO()
     print("ILLUMB:", file=res)
     print("Number of Bands: %d" % (self.num_bands), file=res)
     print("Band Unit of Measure: %s" % (self.band_unit), file=res)

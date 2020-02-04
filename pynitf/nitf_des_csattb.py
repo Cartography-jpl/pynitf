@@ -1,10 +1,9 @@
-from __future__ import print_function
 from .nitf_field import *
 from .nitf_des import *
 from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
 import time
 import uuid
-import six
+import io
 
 hlp = '''This is a NITF CSATTB DES. The field names can be pretty
 cryptic, but these are documented in detail in the NITF 2.10 documentation
@@ -54,7 +53,7 @@ DesCSATTB.desid = hardcoded_value("CSATTB")
 DesCSATTB.desver = hardcoded_value("01")
 
 def _summary(self):
-    res = six.StringIO()
+    res = io.StringIO()
     print("CSATTB %s:  %d points" % (self.att_type, self.num_att), file=res)
     return res.getvalue()
 

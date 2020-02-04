@@ -1,9 +1,8 @@
-from __future__ import print_function
 from .nitf_field import *
 from .nitf_des import *
 from .nitf_des_csattb import udsh, add_uuid_des_function
 from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
-import six
+import io
 
 hlp = '''This is a NITF CSSFAB DES. The field names can be pretty
 cryptic, but these are documented in detail in the NITF 2.10 documentation
@@ -154,7 +153,7 @@ DesCSSFAB.desid = hardcoded_value("CSSFAB")
 DesCSSFAB.desver = hardcoded_value("01")
 
 def _summary(self):
-    res = six.StringIO()
+    res = io.StringIO()
     print("CSSFAB", file=res)
     return res.getvalue()
 

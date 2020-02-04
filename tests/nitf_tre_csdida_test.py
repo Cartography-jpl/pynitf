@@ -1,7 +1,7 @@
 from pynitf.nitf_tre import *
 from pynitf.nitf_tre_csdida import *
 from pynitf_test_support import *
-import io, six
+import io
 
 def test_tre_csdida():
 
@@ -21,12 +21,12 @@ def test_tre_csdida():
     t.process_time = 20190709231259
     t.software_version_number = '1.0.0'
 
-    fh = six.BytesIO()
+    fh = io.BytesIO()
     t.write_to_file(fh)
     print(fh.getvalue())
     assert fh.getvalue() == b'CSDIDA0007012MAY2019AB1103341CDEF000020190709231159201907092312590001NN1.0.0     '
 
-    fh2 = six.BytesIO(fh.getvalue())
+    fh2 = io.BytesIO(fh.getvalue())
     t2 = TreCSDIDA()
     t2.read_from_file(fh2)
     assert t.day == 12

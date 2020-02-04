@@ -1,7 +1,6 @@
-from __future__ import print_function
 from .nitf_field import *
 from .nitf_tre import *
-import six
+import io
 
 hlp = '''This is the SENSRB TRE, Sensor parameters.
 
@@ -251,7 +250,7 @@ desc = ["SENSRB",
 TreSENSRB = create_nitf_tre_structure("TreSENSRB",desc,hlp=hlp)
 
 def _summary(self):
-    res = six.StringIO()
+    res = io.StringIO()
     print("SENSRB Flags 1:%s 2:%s 3:%s 4:%s ... 7:%s 8:%s 9:%s 10:%s 11:%d 12:%d 13:%d 14:%d 15:%d " % (self.general_data, \
             self.sensor_array_data, self.sensor_calibration_data, self.image_formation_data, \
             self.attitude_euler_angles, self.attitude_unit_vectors, self.attitude_quaternion, \

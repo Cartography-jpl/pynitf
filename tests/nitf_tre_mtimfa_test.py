@@ -1,7 +1,7 @@
 from pynitf.nitf_tre import *
 from pynitf.nitf_tre_mtimfa import *
 from pynitf_test_support import *
-import io, six
+import io
     
 def test_tre_mtimfa_basic():
 
@@ -30,7 +30,7 @@ def test_tre_mtimfa_basic():
 
     print (t.summary())
 
-    fh = six.BytesIO()
+    fh = io.BytesIO()
     t.write_to_file(fh)
     print(fh.getvalue())
     assert fh.getvalue() == b'MTIMFA00279Some Layer                          042000017002Camera A                            002today                   tomorrow                314now                     later                   159Camera B                            001hoy                     manana                  123'

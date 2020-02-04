@@ -1,7 +1,7 @@
 from pynitf.nitf_tre import *
 from pynitf.nitf_tre_pixmta import *
 from pynitf_test_support import *
-import io, six
+import io
 
 def test_tre_pixmta():
     '''Basic test pf pixmta'''
@@ -26,11 +26,11 @@ def test_tre_pixmta():
     t.fittype[1] = 'D'
     t.fittype[2] = 'D'
     t.reserved_len = 0
-    fh = six.BytesIO()
+    fh = io.BytesIO()
     t.write_to_file(fh)
     print(fh.getvalue())
     assert fh.getvalue() == b'PIXMTA0034410 005006007008009010011012013014+1.2340000E-03-6.0012340E+00+1.0000000E+00+1.0000000E+00F00003ANESR                                    W/(m m um sr)                           DCENTER WAVELENGTH                       um                                      DCENTER WAVENUMBER                       1/cm                                    D00000'
-    fh2 = six.BytesIO(fh.getvalue())
+    fh2 = io.BytesIO(fh.getvalue())
     t2 = TrePIXMTA()
     t2.read_from_file(fh2)
     assert t2.numais == '10'
@@ -82,11 +82,11 @@ def test_tre_pixmta_fittype_p():
     t.coef[2, 1] = -0.00123
     t.coef[2, 2] = -7.00123
     t.reserved_len = 0
-    fh = six.BytesIO()
+    fh = io.BytesIO()
     t.write_to_file(fh)
     print(fh.getvalue())
     assert fh.getvalue() == b'PIXMTA0039010 005006007008009010011012013014+1.2340000E-03-6.0012340E+00+1.0000000E+00+1.0000000E+00F00003ANESR                                    W/(m m um sr)                           DCENTER WAVELENGTH                       um                                      DCENTER WAVENUMBER                       1/cm                                    P3+1.23000000E-03-1.23000000E-03-7.00123000E+0000000'
-    fh2 = six.BytesIO(fh.getvalue())
+    fh2 = io.BytesIO(fh.getvalue())
     t2 = TrePIXMTA()
     t2.read_from_file(fh2)
     assert t2.numais == '10'

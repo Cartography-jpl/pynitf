@@ -2,7 +2,6 @@
 
 import copy
 import json
-import six
 import numpy as np
 import hashlib
 import h5py

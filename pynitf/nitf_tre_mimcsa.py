@@ -1,7 +1,6 @@
-from __future__ import print_function
 from .nitf_field import *
 from .nitf_tre import *
-import six
+import io
 
 hlp = '''This is the MIMCSA TRE, Motion Imagery Collection Summary.
 
@@ -25,7 +24,7 @@ desc = ["MIMCSA",
 TreMIMCSA = create_nitf_tre_structure("TreMIMCSA",desc,hlp=hlp)
 
 def _summary(self):
-    res = six.StringIO()
+    res = io.StringIO()
     print("MIMCSA:", file=res)
     print("Layer ID: %s" % (self.layer_id), file=res)
     print("Nominal Frame Rate: %f" % (self.nominal_frame_rate), file=res)

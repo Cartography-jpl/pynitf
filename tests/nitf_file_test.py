@@ -16,7 +16,6 @@ import pynitf.nitf_des
 import subprocess
 import os
 import json
-import six
 import numpy as np
 import filecmp
 

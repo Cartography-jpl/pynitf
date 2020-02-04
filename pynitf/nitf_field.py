@@ -25,9 +25,8 @@
 # is if we have one object for all _FieldStruct objects, or if the objects
 # are per _FieldStruct.
 
-from __future__ import print_function
 import copy
-import io,six
+import io
 from collections import defaultdict
 import sys
 from struct import *
@@ -415,7 +414,7 @@ class _FieldLoopStruct(object):
             maxlen = 10
         maxi1 = self.shape(parent_object)
         maxlen += 2 + len(str(maxi1))
-        res = six.StringIO()
+        res = io.StringIO()
         lead = "  " * (len(self.size) - 1)
         print(lead + "Loop - " + self.size[-1], file=res)
         for f in self.field_value_list:
@@ -555,7 +554,7 @@ class _FieldStruct(object):
         except ValueError:
             # We have no _FieldValue, so just set maxlen to a fixed value
             maxlen = 10
-        res = six.StringIO()
+        res = io.StringIO()
         for f in self.field_value_list:
             if(not isinstance(f, _FieldLoopStruct) and f.field_name is not None):
                 print(f.field_name.ljust(maxlen) + ": " + f.get_print(self,()),

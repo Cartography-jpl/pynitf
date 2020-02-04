@@ -1,7 +1,6 @@
-from __future__ import print_function
 from .nitf_field import *
 from .nitf_tre import *
-import six
+import io
 
 hlp = '''This is the CAMSDA TRE, Camera Set Definition
 
@@ -33,7 +32,7 @@ desc = ["CAMSDA",
 TreCAMSDA = create_nitf_tre_structure("TreCAMSDA",desc,hlp=hlp)
 
 def _summary(self):
-    res = six.StringIO()
+    res = io.StringIO()
     print("CAMSDA:", file=res)
     print("Number of Camera Sets: %d" % (self.num_camera_sets), file=res)
     print("Number of Camera Sets in TRE: %d" % (self.num_camera_sets_in_tre), file=res)

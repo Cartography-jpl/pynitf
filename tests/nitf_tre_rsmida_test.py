@@ -1,7 +1,7 @@
 from pynitf.nitf_tre import *
 from pynitf.nitf_tre_rsmida import *
 from pynitf_test_support import *
-import io, six
+import io
 
 def test_tre_rsmida():
     t = TreRSMIDA()
@@ -83,11 +83,11 @@ def test_tre_rsmida():
     t.spz = 0.1234567890
     t.svz = 0.1234567890
     t.saz = 0.1234567890
-    fh = six.BytesIO()
+    fh = io.BytesIO()
     t.write_to_file(fh)
     # This can vary depending on roundoff, so don't compare.
     #assert fh.getvalue() == b'Blah'
-    fh2 = six.BytesIO(fh.getvalue())
+    fh2 = io.BytesIO(fh.getvalue())
     t2 = TreRSMIDA()
     t2.read_from_file(fh2)
     print(t2)

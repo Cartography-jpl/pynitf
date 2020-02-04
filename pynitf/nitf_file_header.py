@@ -1,9 +1,8 @@
-from __future__ import print_function
 from .nitf_field import *
 from .nitf_security import NitfSecurity
 from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
 
-import six
+import io
 
 hlp = '''This is a NITF File header. The field names can be pretty
 cryptic, but these are documented in detail in the NITF 2.10 documentation
@@ -87,7 +86,7 @@ def _set_security(self, s):
 NitfFileHeader.security = property(_get_security, _set_security)
 
 def summary(self):
-    res = six.StringIO()
+    res = io.StringIO()
     print("%s %s %s MD5: " % (self.fhdr, self.fver, self.ftitle), file=res)
     print("%d Image Segments, %d Graphic Segments, %d Text Segments, %d DESs"
           % (self.numi, self.nums, self.numt, self.numdes), file=res)

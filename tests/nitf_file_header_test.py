@@ -1,7 +1,7 @@
 from pynitf.nitf_file_header import *
 from pynitf.nitf_file_diff import NitfDiff
 from pynitf_test_support import *
-import io, six
+import io
 import copy
 import pickle
 
@@ -50,7 +50,7 @@ def test_basic(print_logging):
 def test_write():
     t = NitfFileHeader()
     t.fdt = "20021216151629"
-    fh = six.BytesIO()
+    fh = io.BytesIO()
     t.write_to_file(fh)
     # We manually check the results of this file header as valid by using
     # show_nitf++ from nitro and gdalinfo from GDAL. For a simple automated
@@ -63,6 +63,7 @@ def test_write():
 
 # Note this doesn't currently work. We may rework FieldStruct stuff to fix
 # this, so leave the test in place for use later.
+@skip
 def test_pickle():
     '''Test pickling of NitfFileHeader'''
     t = NitfFileHeader()

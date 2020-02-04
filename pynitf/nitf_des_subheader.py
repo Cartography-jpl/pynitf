@@ -1,8 +1,7 @@
-from __future__ import print_function
 from .nitf_field import *
 from .nitf_security import NitfSecurity
 from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
-import six
+import io
 
 hlp = '''This is a NITF DES subheader. The field names can be pretty
 cryptic, but these are documented in detail in the NITF 2.10 documentation
@@ -39,7 +38,7 @@ NitfDesSubheader = create_nitf_field_structure("NitfDesSubheader", des_desc, hlp
 NitfDesSubheader.de_value = hardcoded_value("DE")
 
 def summary(self):
-    res = six.StringIO()
+    res = io.StringIO()
     print("%s %s %s " % (self.de, self.desid, self.dsver), file=res)
     return res.getvalue()
 

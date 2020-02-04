@@ -1,7 +1,7 @@
 from pynitf.nitf_tre import *
 from pynitf.nitf_tre_csde import *
 from pynitf_test_support import *
-import io, six
+import io
 
 def test_tre_stdidc_basic():
 
@@ -24,13 +24,13 @@ def test_tre_stdidc_basic():
     t.wac = 1866
     t.location = '8959N17959E'
 
-    fh = six.BytesIO()
+    fh = io.BytesIO()
     t.write_to_file(fh)
     #print(fh.getvalue())
     v = b'STDIDC0008920170102090000abcd          Z1001AA00000 00100001AA00100001US18668959N17959E             '
     assert fh.getvalue() == v
 
-    fh2 = six.BytesIO(fh.getvalue())
+    fh2 = io.BytesIO(fh.getvalue())
     t2 = TreSTDIDC()
     t2.read_from_file(fh2)
 

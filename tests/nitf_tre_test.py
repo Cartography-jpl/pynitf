@@ -3,7 +3,7 @@ from pynitf.nitf_tre_csde import *
 from pynitf.nitf_file_header import *
 from pynitf.nitf_image_subheader import *
 from pynitf_test_support import *
-import io, six
+import io
 
 def test_tre():
     # This is part of USE00A, but we give it a different name so it
@@ -19,10 +19,10 @@ def test_tre():
     t.angle_to_north = 270
     t.mean_gsd = 105.2
     t.dynamic_range = 2047
-    fh = six.BytesIO()
+    fh = io.BytesIO()
     t.write_to_file(fh)
     assert fh.getvalue() == b'USETST00014270105.2 02047'
-    fh2 = six.BytesIO(fh.getvalue())
+    fh2 = io.BytesIO(fh.getvalue())
     t2 = TestUSE00A()
     t2.read_from_file(fh2)
     assert t2.angle_to_north == 270

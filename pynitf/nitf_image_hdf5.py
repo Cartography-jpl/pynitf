@@ -1,6 +1,6 @@
 from .nitf_image import NitfImage
 from .nitf_image_subheader import NitfImageSubheader
-import abc, six
+import abc
 import numpy as np
         
 class NitfImageHDF5(NitfImage):

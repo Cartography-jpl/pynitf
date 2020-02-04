@@ -1,17 +1,17 @@
 from pynitf.nitf_tre import *
 from pynitf.nitf_tre_rsmpca import *
 from pynitf_test_support import *
-import io, six
+import io
 
 def test_tre_rsmpca():
     t = TreRSMPCA()
     t.rsn = 1
     t.csn = 1
     t.rnrmo = 2881.0
-    fh = six.BytesIO()
+    fh = io.BytesIO()
     t.write_to_file(fh)
     print(fh.getvalue())
-    fh2 = six.BytesIO(fh.getvalue())
+    fh2 = io.BytesIO(fh.getvalue())
     t2 = TreRSMPCA()
     t2.read_from_file(fh2)
     print(t2)

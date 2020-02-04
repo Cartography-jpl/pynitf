@@ -3,7 +3,7 @@ from .nitf_image_subheader import (NitfImageSubheader,
 from .priority_handle_set import PriorityHandleSet
 from .nitf_security import security_unclassified
 from .nitf_diff_handle import (NitfDiffHandle, NitfDiffHandleSet)
-import abc, six
+import abc
 import numpy as np
 import collections
 import logging
@@ -15,8 +15,7 @@ class NitfImageCannotHandle(RuntimeError):
     def __init__(self, msg = "Can't handle this type of image"):
         RuntimeError.__init__(self, msg)
         
-@six.add_metaclass(abc.ABCMeta)
-class NitfImage(object):
+class NitfImage(object, metaclass=abc.ABCMeta):
     '''This contains a image that we want to read or write from NITF.
 
     This class supplies a basic interface, a specific type of image can

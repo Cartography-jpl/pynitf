@@ -1,7 +1,7 @@
 from pynitf.nitf_tre import *
 from pynitf.nitf_tre_matesa import *
 from pynitf_test_support import *
-import io, six
+import io
 
 def test_tre_matesa_basic():
 
@@ -35,11 +35,11 @@ def test_tre_matesa_basic():
     t.mate_id_len[1, 1] = 3
     t.mate_id[1, 1] = b"I23"
 
-    fh = six.BytesIO()
+    fh = io.BytesIO()
     t.write_to_file(fh)
     print(fh.getvalue())
     assert fh.getvalue() == b'MATESA00323Some file                                 Some type       0008abcdefgh0002R1                      0001S1                                        T1              0002I1R1                      0002S1                                        T1              0002I1S2                                        T2              0003I23'
-    fh2 = six.BytesIO(fh.getvalue())
+    fh2 = io.BytesIO(fh.getvalue())
     t2 = TreMATESA()
     t2.read_from_file(fh2)
 

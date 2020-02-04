@@ -1,8 +1,7 @@
-from __future__ import print_function
 from .nitf_field import *
 from .nitf_security import NitfSecurity
 from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
-import six
+import io
 
 hlp = '''This is a NITF text subheader. The field names can be pretty
 cryptic, but these are documented in detail in the NITF 2.10 documentation
@@ -50,7 +49,7 @@ NitfTextSubheader = create_nitf_field_structure("NitfTextSubheader", desc, hlp=h
 NitfTextSubheader.te_value = hardcoded_value("TE")
 
 def _summary(self):
-    res = six.StringIO()
+    res = io.StringIO()
     print("%s %s %s" % (self.te, self.textid, self.txtitl), file=res)
     return res.getvalue()
 

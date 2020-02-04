@@ -20,7 +20,6 @@ from pynitf.nitf_des_ext_def_content import *
 from pynitf_test_support import *
 import copy
 import json
-import six
 import numpy as np
 import hashlib
 import time

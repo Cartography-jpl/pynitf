@@ -1,7 +1,6 @@
 # Just import any files we find in this directory, rather than listing
 # everything
 
-from __future__ import absolute_import
 import os as _os
 import glob as _glob
 from .version import __version__

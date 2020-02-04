@@ -1,7 +1,5 @@
-from __future__ import print_function
 from .nitf_field import *
 from .nitf_tre import *
-import six
 
 hlp = '''This is the BANDSB TRE. 
 

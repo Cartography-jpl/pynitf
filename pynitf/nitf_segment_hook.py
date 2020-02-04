@@ -39,7 +39,7 @@ class NitfSegmentHookSet(collections.abc.Set):
     def before_str_hook(self, seg, nitf_file, fh):
         '''Called at the start of NitfSegment.__str__'''
         for h in self:
-            if(not (nitf_file.use_raw and h.remove_for_raw_print())):
+            if(not (nitf_file.report_raw and h.remove_for_report_raw())):
                 h.before_str_hook(seg, nitf_file, fh)
 
     def before_str_tre_hook(self, seg, tre, nitf_file, fh):
@@ -48,7 +48,7 @@ class NitfSegmentHookSet(collections.abc.Set):
         call print on the tre'''
         res = False
         for h in self:
-            if(not (nitf_file.use_raw and h.remove_for_raw_print())):
+            if(not (nitf_file.report_raw and h.remove_for_report_raw())):
                 res = res or h.before_str_tre_hook(seg, tre, nitf_file, fh)
         return res
     
@@ -95,7 +95,7 @@ class NitfSegmentHook(object):
     def before_str_hook(self, seg, nitf_file, fh):
         '''Called at the start of NitfSegment.__str__'''
         pass
-    def remove_for_raw_print(self):
+    def remove_for_report_raw(self):
         '''Hooks usually map to some higher level object (e.g., Geocal
         handling RSM. Normally you want this, but for certain contexts it
         can be useful to suppress this behavior, e.g., nitfinfofull reporting
@@ -103,7 +103,7 @@ class NitfSegmentHook(object):
         data.
 
         This skips before_str_hook and before_str_tre_hook if we are
-        printing raw information if this function returns True. The
+        reporting raw information if this function returns True. The
         hooks are by default marked as "True" for removing, but if you
         have some special case where you want to avoid removing the
         hook you can have the derived class change this to False.
@@ -115,5 +115,5 @@ class NitfSegmentHook(object):
         call print on the tre'''
         return False
 
-__all__ = ["NitfSegmentHook", ]
+__all__ = ["NitfSegmentHook", "NitfSegmentHookSet"]
     

@@ -4,7 +4,7 @@ from pynitf.nitf_image_subheader import *
 from pynitf.nitf_image import *
 from pynitf.nitf_file_diff import NitfDiff
 from pynitf_test_support import *
-import io,six
+import io
 
 def test_basic_read():
     t = NitfFileHeader()
@@ -22,7 +22,7 @@ def test_basic_read():
     for i in range(10):
         for j in range(10):
             t2[0, i,j] = i + j
-    fh = six.BytesIO()
+    fh = io.BytesIO()
     t2.write_to_file(fh)
     assert fh.getvalue() == b'\x00\x01\x02\x03\x04\x05\x06\x07\x08\t\x01\x02\x03\x04\x05\x06\x07\x08\t\n\x02\x03\x04\x05\x06\x07\x08\t\n\x0b\x03\x04\x05\x06\x07\x08\t\n\x0b\x0c\x04\x05\x06\x07\x08\t\n\x0b\x0c\r\x05\x06\x07\x08\t\n\x0b\x0c\r\x0e\x06\x07\x08\t\n\x0b\x0c\r\x0e\x0f\x07\x08\t\n\x0b\x0c\r\x0e\x0f\x10\x08\t\n\x0b\x0c\r\x0e\x0f\x10\x11\t\n\x0b\x0c\r\x0e\x0f\x10\x11\x12'
 

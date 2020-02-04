@@ -1,7 +1,7 @@
 from pynitf.nitf_tre import *
 from pynitf.nitf_tre_mtimsa import *
 from pynitf_test_support import *
-import io, six
+import io
 import struct
 
 def test_tre_mtimsa_basic():
@@ -29,12 +29,12 @@ def test_tre_mtimsa_basic():
 
     print (t.summary())
 
-    fh = six.BytesIO()
+    fh = io.BytesIO()
     t.write_to_file(fh)
     print(fh.getvalue())
     assert fh.getvalue() == b'MTIMSA0016004299Some Layer                          043Camera A                            00001704433.3300000000000000045today                   \x00\x00\x00\x00\x00\x00\x04\xd2\x04\x00\x00\x00d\x00\x00\x00\x02\x00\x00\x00{\x00\x00\x00|'
 
-    fh2 = six.BytesIO(fh.getvalue())
+    fh2 = io.BytesIO(fh.getvalue())
     t2 = TreMTIMSA()
     t2.read_from_file(fh2)
 
@@ -80,12 +80,12 @@ def test_tre_mtimsa_size_2():
 
     print (t.summary())
 
-    fh = six.BytesIO()
+    fh = io.BytesIO()
     t.write_to_file(fh)
     print(fh.getvalue())
     assert fh.getvalue() == b'MTIMSA0015604299Some Layer                          043Camera A                            00001704433.3300000000000000045today                   \x00\x00\x00\x00\x00\x00\x04\xd2\x02\x00\x00\x00d\x00\x00\x00\x02\x00{\x00|'
 
-    fh2 = six.BytesIO(fh.getvalue())
+    fh2 = io.BytesIO(fh.getvalue())
     t2 = TreMTIMSA()
     t2.read_from_file(fh2)
 

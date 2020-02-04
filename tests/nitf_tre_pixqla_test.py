@@ -1,7 +1,7 @@
 from pynitf.nitf_tre import *
 from pynitf.nitf_tre_pixqla import *
 from pynitf_test_support import *
-import io, six
+import io
 
 def test_tre_pixqla():
     '''Basic test pf pixqla'''
@@ -12,10 +12,10 @@ def test_tre_pixqla():
     t.npixqual = 2
     t.pq_condition[0] = "Condition 1"
     t.pq_condition[1] = "Condition 2"
-    fh = six.BytesIO()
+    fh = io.BytesIO()
     t.write_to_file(fh)
     assert fh.getvalue() == b'PIXQLA0011810 00500600700800901001101201301400021Condition 1                             Condition 2                             '
-    fh2 = six.BytesIO(fh.getvalue())
+    fh2 = io.BytesIO(fh.getvalue())
     t2 = TrePIXQLA()
     t2.read_from_file(fh2)
     assert t.numais == "10"
@@ -34,10 +34,10 @@ def test_tre_pixqla_with_all():
     t.npixqual = 2
     t.pq_condition[0] = "Condition 1"
     t.pq_condition[1] = "Condition 2"
-    fh = six.BytesIO()
+    fh = io.BytesIO()
     t.write_to_file(fh)
     assert fh.getvalue() == b'PIXQLA00088ALL00021Condition 1                             Condition 2                             '
-    fh2 = six.BytesIO(fh.getvalue())
+    fh2 = io.BytesIO(fh.getvalue())
     t2 = TrePIXQLA()
     t2.read_from_file(fh2)
     assert t.numais == "ALL"

@@ -1,7 +1,7 @@
 from pynitf.nitf_tre import *
 from pynitf.nitf_tre_mimcsa import *
 from pynitf_test_support import *
-import io, six
+import io
     
 def test_tre_mimcsa_basic():
 
@@ -19,7 +19,7 @@ def test_tre_mimcsa_basic():
 
     print (t.summary())
 
-    fh = six.BytesIO()
+    fh = io.BytesIO()
     t.write_to_file(fh)
     print(fh.getvalue())
     assert fh.getvalue() == b'MIMCSA00121Some layer ID                       22.200000000010.100000000029.900000000000NCN/A                                 N/A   '

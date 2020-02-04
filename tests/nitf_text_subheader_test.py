@@ -1,6 +1,6 @@
 from pynitf.nitf_text_subheader import *
 from pynitf_test_support import *
-import io, six
+import io
 
 def test_text_subheader_basic():
 
@@ -10,10 +10,10 @@ def test_text_subheader_basic():
     t.txtalvl = 1
     t.txtitl = 'ABCDEFG'
 
-    fh = six.BytesIO()
+    fh = io.BytesIO()
     t.write_to_file(fh)
     assert fh.getvalue() == b'TEabcdefg001              ABCDEFG                                                                                                                                                                                                                                                0   00000'
-    fh2 = six.BytesIO(fh.getvalue())
+    fh2 = io.BytesIO(fh.getvalue())
     t2 = NitfTextSubheader()
     t2.read_from_file(fh2)
 

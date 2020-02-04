@@ -1,7 +1,6 @@
-from __future__ import print_function
 from .nitf_field import *
 from .nitf_tre import *
-import six
+import io
 
 hlp = '''This is the HISTOA TRE, History version A.
 
@@ -59,7 +58,7 @@ desc = ["HISTOA",
 TreHISTOA = create_nitf_tre_structure("TreHISTOA",desc,hlp=hlp)
 
 def _summary(self):
-    res = six.StringIO()
+    res = io.StringIO()
     print("HISTOA: %d events:" % (self.nevents), file=res)
     for i in range(self.nevents):
         for j in range(self.nipcom[i]):

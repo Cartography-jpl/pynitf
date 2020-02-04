@@ -1,10 +1,8 @@
-from __future__ import print_function
 from .nitf_field import *
 from .nitf_tre import *
 from .nitf_diff_handle import NitfDiffHandleSet
 import time
 import uuid
-import six
 
 hlp = '''This is the CSEXRB TRE. 
 

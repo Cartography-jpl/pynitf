@@ -1,7 +1,6 @@
-from __future__ import print_function
 from .nitf_field import *
 from .nitf_tre import *
-import six
+import io
 
 hlp = '''This is the PIXMTA TRE, Pixel Metric.
 
@@ -42,7 +41,7 @@ desc = ["PIXMTA",
 TrePIXMTA = create_nitf_tre_structure("TrePIXMTA",desc,hlp=hlp)
 
 def _summary(self):
-    res = six.StringIO()
+    res = io.StringIO()
     print("PIXMTA %s Associated ISs, %d Metrics" % (self.numais, self.nummetrics), file=res)
     return res.getvalue()
 

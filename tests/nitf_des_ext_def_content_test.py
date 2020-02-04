@@ -1,7 +1,7 @@
 from pynitf.nitf_des_ext_def_content import *
 from pynitf.nitf_file import *
 from pynitf_test_support import *
-import io, six, os
+import io, os
 
 def test_basic():
 
@@ -15,11 +15,11 @@ def test_udsh():
     d.content_headers_len = 4
     d.content_headers = b'\x03\x27\x12\x76'
 
-    fh = six.BytesIO()
+    fh = io.BytesIO()
     d.write_to_file(fh)
 
     assert fh.getvalue() == b'0004\x03\'\x12v'
-    fh2 = six.BytesIO(fh.getvalue())
+    fh2 = io.BytesIO(fh.getvalue())
     d2 = DesEXT_DEF_CONTENT_UH()
     d2.read_from_file(fh2)
 

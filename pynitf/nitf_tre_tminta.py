@@ -1,7 +1,6 @@
-from __future__ import print_function
 from .nitf_field import *
 from .nitf_tre import *
-import six
+import io
 
 hlp = '''This is the TMINTA TRE, Time Interval Definition
 
@@ -23,7 +22,7 @@ desc = ["TMINTA",
 TreTMINTA = create_nitf_tre_structure("TreTMINTA",desc,hlp=hlp)
 
 def _summary(self):
-    res = six.StringIO()
+    res = io.StringIO()
     print("TMINTA:", file=res)
     print("Number of Time Intervals: %d" % (self.num_time_int), file=res)
     for i in range(self.num_time_int):

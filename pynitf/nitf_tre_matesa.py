@@ -1,7 +1,6 @@
-from __future__ import print_function
 from .nitf_field import *
 from .nitf_tre import *
-import six
+import io
 
 hlp = '''This is the MATESA TRE, Mates.
 
@@ -38,7 +37,7 @@ desc = ["MATESA",
 TreMATESA = create_nitf_tre_structure("TreMATESA",desc,hlp=hlp)
 
 def _summary(self):
-    res = six.StringIO()
+    res = io.StringIO()
     print("MATESA num_groups:%d" % (self.num_groups), file=res)
     return res.getvalue()
 

@@ -1,7 +1,7 @@
 from pynitf.nitf_tre import *
 from pynitf.nitf_tre_tminta import *
 from pynitf_test_support import *
-import io, six
+import io
     
 def test_tre_tminta_basic():
 
@@ -20,7 +20,7 @@ def test_tre_tminta_basic():
 
     print (t.summary())
 
-    fh = six.BytesIO()
+    fh = io.BytesIO()
     t.write_to_file(fh)
     print(fh.getvalue())
     assert fh.getvalue() == b'TMINTA001120002000017now                     later                   000042today                   tomorrow                '

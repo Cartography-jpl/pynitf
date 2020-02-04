@@ -1,8 +1,7 @@
-from __future__ import print_function
 from .nitf_field import *
 from .nitf_security import NitfSecurity
 from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
-import six
+import io
 import numpy as np
 import math
 
@@ -93,7 +92,7 @@ NitfImageSubheader.imflt_value = hardcoded_value("   ")
 NitfImageSubheader.isync_value = hardcoded_value(0)
 
 def _summary(self):
-    res = six.StringIO()
+    res = io.StringIO()
     print("%s %s %s" % (self.im, self.iid1, self.iid2), file=res)
     numBands = self.nbands
     if (numBands == 0):

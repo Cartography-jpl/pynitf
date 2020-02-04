@@ -1,7 +1,6 @@
-from __future__ import print_function
 from .nitf_field import *
 from .nitf_tre import *
-import six
+import io
 
 hlp = '''This is the MTIMFA TRE, Motion Imagery File
 
@@ -30,7 +29,7 @@ desc = ["MTIMFA",
 TreMTIMFA = create_nitf_tre_structure("TreMTIMFA",desc,hlp=hlp)
 
 def _summary(self):
-    res = six.StringIO()
+    res = io.StringIO()
     print("MTIMFA:", file=res)
     print("Layer Identifier: %s" % (self.layer_id), file=res)
     print("Camera Set Index: %d" % (self.camera_set_index), file=res)

@@ -1,8 +1,5 @@
 numpy
 docopt
-# We can probably remove six if needed. This is really left over from
-# 2.7 support which we don't have anymore. But for now, leave this
-six
 # h5py isn't strictly required, without this there is just a few
 # functions that aren't implemented
 h5py

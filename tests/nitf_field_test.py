@@ -2,7 +2,7 @@ from pynitf.nitf_field import *
 from pynitf.nitf_file_diff import NitfDiff
 from pynitf.nitf_diff_handle import AlwaysTrueHandle, NitfDiffHandle
 from pynitf_test_support import *
-import io, six
+import io
 import math
 from pynitf_test_support import *
 import copy
@@ -40,11 +40,11 @@ def test_basic(nitf_diff_field_struct):
     assert t.fhdr == "FOO"
     t.clevel = 1
     assert list(t.items()) == [('fhdr', 'FOO'), ('clevel', 1)]
-    fh = six.BytesIO()
+    fh = io.BytesIO()
     t.write_to_file(fh)
     assert d.compare_obj(t, t) == True
     assert fh.getvalue() == b'FOO 01'
-    fh2 = six.BytesIO(b'BOO 02')
+    fh2 = io.BytesIO(b'BOO 02')
     t2 = TestField()
     t2.read_from_file(fh2)
     assert t2.fhdr == "BOO"
@@ -116,10 +116,10 @@ Loop - f.numi
   li[3]  : 8
 '''
     assert list(t.items()) == [('fhdr', 'NITF'), ('numi', 4), ('lish', [1, 2, 3, 4]), ('li', [5, 6, 7, 8])]
-    fh = six.BytesIO()
+    fh = io.BytesIO()
     t.write_to_file(fh)
     assert fh.getvalue() == b'NITF0040000010000000005000002000000000600000300000000070000040000000008'
-    fh2 = six.BytesIO(b'NITF00200001300000000150000140000000016')
+    fh2 = io.BytesIO(b'NITF00200001300000000150000140000000016')
     t2 = TestField()
     t2.read_from_file(fh2)
     assert t2.numi == 2
@@ -181,10 +181,10 @@ def test_nested_loop(nitf_diff_field_struct):
     with pytest.raises(IndexError):
         t.li[2,1]
     assert list(t.items()) == [('fhdr', 'NITF'), ('numi', 2), ('lish', [0, 0]), ('numj', [3, 4]), ('li', [[0, 10, 0], [0, 0, 0, 20]])]
-    fh = six.BytesIO()
+    fh = io.BytesIO()
     t.write_to_file(fh)
     assert fh.getvalue() == b'NITF0020000000030000000000000000001000000000000000000040000000000000000000000000000000000000020' 
-    fh2 = six.BytesIO(fh.getvalue())
+    fh2 = io.BytesIO(fh.getvalue())
     t2 = TestField()
     t2.read_from_file(fh2)
     assert str(t) == str(t2)
@@ -244,13 +244,13 @@ def test_nested_loop2(nitf_diff_field_struct):
             for i3 in range(t.numk[i1,i2]):
                 assert t.li[i1,i2,i3] == val
                 val += 1
-    fh = six.BytesIO()
+    fh = io.BytesIO()
     t.write_to_file(fh)
     assert fh.getvalue() == b'NITF002mark1000000002mark2003mark30000000010mark30000000011mark30000000012mark2003mark30000000013mark30000000014mark30000000015mark1000000004mark2004mark30000000016mark30000000017mark30000000018mark30000000019mark2004mark30000000020mark30000000021mark30000000022mark30000000023mark2004mark30000000024mark30000000025mark30000000026mark30000000027mark2004mark30000000028mark30000000029mark30000000030mark30000000031'
-    fh2 = six.BytesIO(fh.getvalue())
+    fh2 = io.BytesIO(fh.getvalue())
     t2 = TestField()
     t2.read_from_file(fh2)
-    fh2 = six.BytesIO()
+    fh2 = io.BytesIO()
     t2.write_to_file(fh2)
     val = 10
     for i1 in range(t.numi):
@@ -328,13 +328,13 @@ def test_nested_loop3(nitf_diff_field_struct):
                     assert t.li[i1,i2,i3,i4] == val
                     val += 1
     assert list(t.items()) == [('fhdr', 'NITF'), ('numi', 2), ('mark1', ['mark1', 'mark1']), ('numj', [2, 4]), ('mark2', [['mark2', 'mark2'], ['mark2', 'mark2', 'mark2', 'mark2']]), ('numk', [[2, 2], [2, 2, 2, 2]]), ('mark3', [[['mark3', 'mark3'], ['mark3', 'mark3']], [['mark3', 'mark3'], ['mark3', 'mark3'], ['mark3', 'mark3'], ['mark3', 'mark3']]]), ('numl', [[[3, 3], [3, 3]], [[3, 3], [3, 3], [3, 3], [3, 3]]]), ('li', [[[[10, 11, 12], [13, 14, 15]], [[16, 17, 18], [19, 20, 21]]], [[[22, 23, 24], [25, 26, 27]], [[28, 29, 30], [31, 32, 33]], [[34, 35, 36], [37, 38, 39]], [[40, 41, 42], [43, 44, 45]]]])]
-    fh = six.BytesIO()
+    fh = io.BytesIO()
     t.write_to_file(fh)
     assert fh.getvalue() == b'NITF002mark1002mark2002mark3003000000001000000000110000000012mark3003000000001300000000140000000015mark2002mark3003000000001600000000170000000018mark3003000000001900000000200000000021mark1004mark2002mark3003000000002200000000230000000024mark3003000000002500000000260000000027mark2002mark3003000000002800000000290000000030mark3003000000003100000000320000000033mark2002mark3003000000003400000000350000000036mark3003000000003700000000380000000039mark2002mark3003000000004000000000410000000042mark3003000000004300000000440000000045'
-    fh2 = six.BytesIO(fh.getvalue())
+    fh2 = io.BytesIO(fh.getvalue())
     t2 = TestField()
     t2.read_from_file(fh2)
-    fh2 = six.BytesIO()
+    fh2 = io.BytesIO()
     t2.write_to_file(fh2)
     val = 10
     expected_items = []
@@ -367,7 +367,7 @@ def test_conditional(nitf_diff_field_struct):
     t = TestField()
     with pytest.raises(RuntimeError):
         t.udhofl = 1
-    fh = six.BytesIO()
+    fh = io.BytesIO()
     t.write_to_file(fh)
     assert fh.getvalue() == b'NITF00000'
     assert t.udhofl is None
@@ -379,7 +379,7 @@ def test_conditional(nitf_diff_field_struct):
     t.udhofl = 20
     t.flttst = 1.123467
     assert d.compare_obj(t, t) == True
-    fh = six.BytesIO()
+    fh = io.BytesIO()
     t.write_to_file(fh)
     assert fh.getvalue() == b'NITF000100201.12346700'
     assert t.udhofl == 20
@@ -412,7 +412,7 @@ def test_loop_conditional(nitf_diff_field_struct):
     t.udhofl[2] = 40
     assert list(t.udhofl) == [None, 30, 40]
     assert list(t.items()) == [('fhdr', 'NITF'), ('numi', 3), ('udhdl', [0, 10, 20]), ('udhofl', [None, 30, 40])]
-    fh = six.BytesIO()
+    fh = io.BytesIO()
     t.write_to_file(fh)
     assert fh.getvalue() == b'NITF003000000001003000020040'
     t2 = copy.deepcopy(t)
