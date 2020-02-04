@@ -36,7 +36,7 @@ class NitfFile(object):
        :ivar file_name:        The NITF file name
        :ivar segment_hook_set: The NitfSegmentHookSet to use for the file.
        :ivar report_raw:       If True, suppress NitfSegmentHook when printing
-       :ivar image_segment :   List of NitfImageSegment objects for the file.
+       :ivar image_segment:    List of NitfImageSegment objects for the file.
        :ivar graphic_segment:  List of NitfGraphicSegment objects for the file.
        :ivar text_segment:     List of NitfTextSegment objects for the file.
        :ivar des_segment:      List of NitfDesSegment objects for the file.
