@@ -208,8 +208,9 @@ class DesEXT_h5(DesEXT_DEF_CONTENT):
                 shutil.copyfileobj(fhin, fh)
         elif (self.data is not None):
             fh.write(self.data)
-    
-register_des_class(DesEXT_DEF_CONTENT, priority_order=500)
+
+# Try DesEXT_h5 before falling back to more generic DesEXT_DEF_CONTENT
+register_des_class(DesEXT_DEF_CONTENT, priority_order=-1)
 register_des_class(DesEXT_h5)
 
 __all__ = ["DesEXT_DEF_CONTENT", "DesEXT_DEF_CONTENT_UH",

@@ -78,6 +78,7 @@ def test_h5py_file(isolated_dir):
     assert f2.des_segment[0].des.content_header.content_description == b"hi there"
     assert f2.des_segment[0].des.content_header.content_length == str(os.path.getsize("test.h5")).encode("utf-8")
     assert f2.des_segment[0].des.data_size == os.path.getsize("test.h5")
+    print(f2.des_segment[0].des)
     assert isinstance(f2.des_segment[0].des, DesEXT_h5)
     print(f2.des_segment[0].des)
     assert f2.des_segment[0].des.h5py_fh["TestGroup/test_data"][()] == b'hi there'
