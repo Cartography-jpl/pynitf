@@ -42,6 +42,7 @@ class NitfFile(object):
        :ivar des_segment:      List of NitfDesSegment objects for the file.
        :ivar res_segment:      List of NitfResSegment objects for the file.
        :ivar tre_list:         List of Tre objects for the file level TREs.
+
     '''        
     def __init__(self, file_name = None, security = security_unclassified):
         '''Create a NitfFile for reading or writing. Because it is common, if

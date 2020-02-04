@@ -1,5 +1,22 @@
 import collections
 class NitfSegmentHookSet(collections.abc.Set):
+    '''To allow special handling of TREs etc. we allow a hook_list of
+    these objects to be passed to NitfSegment. These then are called in
+    each function of NitfSegment.
+
+    See for example geocal_nitf_rsm.py in geocal for an example of using
+    these hooks to add in support for the geocal Rsm object.
+
+    This class handles the full set of NitfSegmentHook that are applied.
+    NitfFile contains a NitfSegmentHookSet as the variable segment_hook_set. 
+    The initial default value of this is given by default_hook_set, an 
+    individual NitfFile object might modify this for some reason (e.g., 
+    add a special hook, remove a hook).
+
+   :ivar hook_set: The set of NitfSegmentHook to apply to NitfSegments 
+                   in a NitfFile
+
+    '''
     def __init__(self, iterable=()):
         self.hook_set = set(iterable)
 
