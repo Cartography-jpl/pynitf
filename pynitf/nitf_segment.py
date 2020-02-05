@@ -18,6 +18,10 @@ class NitfSegment(object):
         # TREs (NitfDesSegment and NitfResSegment) this is just an empty
         # list. But having this means we can avoid special handling.
         self.tre_list = []
+        # In the same way, we have user_subheader, even though only
+        # NitfDesSegment and NitfDesSegment support this. For other types,
+        # this stays None.
+        self.user_subheader = None
         # Only keep a weak reference. We don't want to keep a NitfFile from
         # garbage collection just because a NitfSegment points back to it.
         if(nitf_file is not None):
@@ -57,6 +61,9 @@ class NitfSegment(object):
                                                             self.nitf_file, fh)
         print("Sub header:", file=fh)
         print(self.subheader, file=fh)
+        if(self.user_subheader):
+            print("User-Defined Subheader: ", file=fh)
+            print(self.user_subheader, file=fh)
         if(self.type_support_tre()):
             print("TREs:", file=fh)
             if(len(self.tre_list) == 0):
@@ -93,20 +100,35 @@ class NitfSegment(object):
         used in the NITF file.'''
         # By default, segment doesn't have any TREs
         pass
+
+    def read_user_subheader(self, fh):
+        # By default, segment doesn't have user subheaders
+        pass
+
+    def write_user_subheader(self, fh):
+        # By default, segment doesn't have user subheaders
+        pass
     
-    def read_from_file(self, fh, segindex=None):
+    def read_from_file(self, fh, seg_index=None):
         '''Read from a file. Note that we pass in the 0 based segment index 
         number. Most readers don't care at all about this, but it can be
         useful for implementing some external code readers (e.g., GDAL
         can read an image segment by the file name and index)'''
         self.subheader.read_from_file(fh)
+        if(self.nitf_file):
+            cls = fh.user_subheader_handle_set.user_subheader_cls(self)
+        else:
+            cls = None
+        if(cls):
+            self.user_subheader = cls()
+            self.user_subheader.read_from_subheader(self.subheader)
         self.data.read_from_file(fh)
 
-    def _update_file_header(self, fh, nitf_file, seg_index, sz_header, sz_data):
+    def _update_file_header(self, fh, seg_index, sz_header, sz_data):
         '''Update the NITF file header with the segment header and data size.'''
         pass
 
-    def write_to_file(self, fh, seg_index, nitf_file):
+    def write_to_file(self, fh, seg_index):
         '''Write to a file. We also update the file header information in 
         the nitf_file passed in with the header and data size for this segment.
         
@@ -115,6 +137,14 @@ class NitfSegment(object):
         tests (so testing a segment writing w/o needing a full NitfFile in the
         test).'''
         start_pos = fh.tell()
+        if(self.nitf_file):
+            cls = self.nitf_file.user_subheader_handle_set.user_subheader_cls(self)
+        else:
+            cls = None
+        if(cls):
+            if not isinstance(self.user_subheader, cls):
+                raise RuntimeError("Require user_subheader of type %s" % cls)
+            self.user_subheader.write_to_subheader(self.subheader)
         self.subheader.write_to_file(fh)
         sz_header = fh.tell() - start_pos
         start_pos = fh.tell()
@@ -122,8 +152,8 @@ class NitfSegment(object):
         sz_data = fh.tell() - start_pos
         # Normally nitf_file will be present, but for unit tests it
         # can be useful to skip this
-        if(nitf_file):
-            self._update_file_header(fh, nitf_file, seg_index, sz_header,
+        if(self.nitf_file):
+            self._update_file_header(fh, seg_index, sz_header,
                                     sz_data)
         # Return value not normally needed, but can be useful for unit
         # tests.
@@ -143,13 +173,13 @@ class NitfPlaceHolder(NitfSegment):
         print("%s segment, size %d" % (self.type_name, self.sz), file=fh)
         return fh.getvalue()
 
-    def read_from_file(self, fh, segindex=None):
+    def read_from_file(self, fh, seg_index=None):
         '''Read from a file'''
         # Just skip over the data
         self.seg_start = fh.tell()
         fh.seek(self.sz, 1)
 
-    def write_to_file(self, fh, seg_index, nitf_file):
+    def write_to_file(self, fh, seg_index):
         '''Write to a file. The returns (sz_header, sz_data), because this
         information is needed by NitfFile.'''
         raise NotImplementedError("write_to_file not implemented for %s" % self.type_name)
@@ -176,12 +206,12 @@ class NitfImageSegment(NitfSegment):
         if(security is not None):
             self.security = security
             
-    def read_from_file(self, fh, segindex=None):
+    def read_from_file(self, fh, seg_index=None):
         '''Read from a file'''
         self.subheader.read_from_file(fh)
         ihs = self.nitf_file.image_handle_set if self.nitf_file else NitfImageHandleSet.default_handle_set()
         self.data = ihs.handle(self.subheader, self.header_size,
-                               self.data_size, fh, segindex)
+                               self.data_size, fh, seg_index)
     def prepare_tre_write(self, seg_index, des_list):
         '''Process the TREs in a segment putting them in the various places
         in header and DES overflow before writing out the segment.
@@ -202,10 +232,10 @@ class NitfImageSegment(NitfSegment):
         NitfImageSegment, NitfTextSegment or NitfGraphicSegment.'''
         return True
 
-    def _update_file_header(self, fh, nitf_file, seg_index, sz_header, sz_data):
+    def _update_file_header(self, fh, seg_index, sz_header, sz_data):
         '''Update the NITF file header with the segment header and data size.'''
-        nitf_file.file_header.update_field(fh, "lish", sz_header, (seg_index,))
-        nitf_file.file_header.update_field(fh, "li", sz_data, (seg_index,))
+        self.nitf_file.file_header.update_field(fh, "lish", sz_header, (seg_index,))
+        self.nitf_file.file_header.update_field(fh, "li", sz_data, (seg_index,))
 
     # Few properties from image_subheader that we want at this level
     @property
@@ -243,10 +273,10 @@ class NitfGraphicSegment(NitfPlaceHolder):
         self.tre_list = read_tre(self.subheader,des_list,
                                  [["sxshdl", "sxsofl", "sxshd"]])
 
-    def _update_file_header(self, fh, nitf_file, seg_index, sz_header, sz_data):
+    def _update_file_header(self, fh, seg_index, sz_header, sz_data):
         '''Update the NITF file header with the segment header and data size.'''
-        nitf_file.file_header.update_field(fh, "lssh", sz_header, (seg_index,))
-        nitf_file.file_header.update_field(fh, "ls", sz_data, (seg_index,))
+        self.nitf_file.file_header.update_field(fh, "lssh", sz_header, (seg_index,))
+        self.nitf_file.file_header.update_field(fh, "ls", sz_data, (seg_index,))
 
     def type_support_tre(self):
         '''True if this is a type that supports TREs, i.e., it is a 
@@ -269,7 +299,7 @@ class NitfTextSegment(NitfSegment):
         self.tre_list = []
         self.security = security
         
-    def read_from_file(self, fh, segindex=None):
+    def read_from_file(self, fh, seg_index=None):
         '''Read from a file'''
         self.subheader.read_from_file(fh)
         self.data = fh.read(self.data_size)
@@ -301,7 +331,7 @@ class NitfTextSegment(NitfSegment):
             return self.data
         return self.data.decode('utf-8')
 
-    def write_to_file(self, fh, seg_index, nitf_file):
+    def write_to_file(self, fh, seg_index):
         '''Write to a file. The returns (sz_header, sz_data), because this
         information is needed by NitfFile.'''
         # TODO Can likely replace this with the NitfSegment version.
@@ -311,8 +341,8 @@ class NitfTextSegment(NitfSegment):
         start_pos = fh.tell()
         fh.write(self.data_as_bytes)
         sz_data = fh.tell() - start_pos
-        if(nitf_file):
-            self._update_file_header(fh, nitf_file, seg_index, sz_header,
+        if(self.nitf_file):
+            self._update_file_header(fh, seg_index, sz_header,
                                     sz_data)
         return (sz_header, sz_data)
 
@@ -321,10 +351,10 @@ class NitfTextSegment(NitfSegment):
         NitfImageSegment, NitfTextSegment or NitfGraphicSegment.'''
         return True
 
-    def _update_file_header(self, fh, nitf_file, seg_index, sz_header, sz_data):
+    def _update_file_header(self, fh, seg_index, sz_header, sz_data):
         '''Update the NITF file header with the segment header and data size.'''
-        nitf_file.file_header.update_field(fh, "ltsh", sz_header, (seg_index,))
-        nitf_file.file_header.update_field(fh, "lt", sz_data, (seg_index,))
+        self.nitf_file.file_header.update_field(fh, "ltsh", sz_header, (seg_index,))
+        self.nitf_file.file_header.update_field(fh, "lt", sz_data, (seg_index,))
 
     
 class NitfDesSegment(NitfSegment):
@@ -345,7 +375,7 @@ class NitfDesSegment(NitfSegment):
     def des(self):
         return self.data
 
-    def read_from_file(self, fh, segindex=None):
+    def read_from_file(self, fh, seg_index=None):
         '''Read from a file'''
         self.subheader.read_from_file(fh)
         dhs = self.nitf_file.des_handle_set if self.nitf_file else NitfDesHandleSet.default_handle_set()
@@ -361,7 +391,7 @@ class NitfDesSegment(NitfSegment):
             return ""
         return super().__str__()
 
-    def write_to_file(self, fh, seg_index, nitf_file):
+    def write_to_file(self, fh, seg_index):
         '''Write to a file. The returns (sz_header, sz_data), because this
         information is needed by NitfFile.'''
         # TODO Can likely replace this with the NitfSegment version.
@@ -372,15 +402,14 @@ class NitfDesSegment(NitfSegment):
         start_pos = fh.tell()
         self.des.write_to_file(fh)
         sz_data = fh.tell() - start_pos
-        if(nitf_file):
-            self._update_file_header(fh, nitf_file, seg_index, sz_header,
-                                    sz_data)
+        if(self.nitf_file):
+            self._update_file_header(fh, seg_index, sz_header, sz_data)
         return (sz_header, sz_data)
 
-    def _update_file_header(self, fh, nitf_file, seg_index, sz_header, sz_data):
+    def _update_file_header(self, fh, seg_index, sz_header, sz_data):
         '''Update the NITF file header with the segment header and data size.'''
-        nitf_file.file_header.update_field(fh, "ldsh", sz_header, (seg_index,))
-        nitf_file.file_header.update_field(fh, "ld", sz_data, (seg_index,))
+        self.nitf_file.file_header.update_field(fh, "ldsh", sz_header, (seg_index,))
+        self.nitf_file.file_header.update_field(fh, "ld", sz_data, (seg_index,))
     
 
 class NitfResSegment(NitfPlaceHolder):
@@ -391,10 +420,10 @@ class NitfResSegment(NitfPlaceHolder):
         NitfPlaceHolder.__init__(self, header_size, data_size, "RES",
                                  nitf_file=nitf_file)
         
-    def _update_file_header(self, fh, nitf_file, seg_index, sz_header, sz_data):
+    def _update_file_header(self, fh, seg_index, sz_header, sz_data):
         '''Update the NITF file header with the segment header and data size.'''
-        nitf_file.file_header.update_field(fh, "lresh", sz_header, (seg_index,))
-        nitf_file.file_header.update_field(fh, "lre", sz_data, (seg_index,))
+        self.nitf_file.file_header.update_field(fh, "lresh", sz_header, (seg_index,))
+        self.nitf_file.file_header.update_field(fh, "lre", sz_data, (seg_index,))
 
 
 # Add engrda to give hash access to ENGRDA TREs

@@ -1,6 +1,7 @@
 from .nitf_field import *
 from .nitf_des import *
-from .nitf_des_csattb import udsh, add_uuid_des_function
+from .nitf_des_associated_user_subheader import add_uuid_des_function
+from .nitf_des_csattb import udsh
 from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
 import io
 
