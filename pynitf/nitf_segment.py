@@ -128,6 +128,11 @@ class NitfSegment(object):
         '''Update the NITF file header with the segment header and data size.'''
         pass
 
+    def _write_user_subheader(self):
+        '''Write user subheader to the segment subheader'''
+        # By default, no user subheader
+        pass
+
     def write_to_file(self, fh, seg_index):
         '''Write to a file. We also update the file header information in 
         the nitf_file passed in with the header and data size for this segment.
@@ -139,12 +144,9 @@ class NitfSegment(object):
         start_pos = fh.tell()
         if(self.nitf_file):
             cls = self.nitf_file.user_subheader_handle_set.user_subheader_cls(self)
-        else:
-            cls = None
-        if(cls):
-            if not isinstance(self.user_subheader, cls):
+            if cls and not isinstance(self.user_subheader, cls):
                 raise RuntimeError("Require user_subheader of type %s" % cls)
-            self.user_subheader.write_to_subheader(self.subheader)
+        self._write_user_subheader()
         self.subheader.write_to_file(fh)
         sz_header = fh.tell() - start_pos
         start_pos = fh.tell()
@@ -391,12 +393,28 @@ class NitfDesSegment(NitfSegment):
             return ""
         return super().__str__()
 
+    def _write_user_subheader(self):
+        '''Write user subheader to the segment subheader'''
+        # By default, no user subheader
+        if(self.user_subheader):
+            fh = io.BytesIO()
+            self.user_subheader.write_to_file(fh)
+            self.subheader.desshf = fh.getvalue()
+        else:
+            self.subheader.desshf = ""
+
     def write_to_file(self, fh, seg_index):
         '''Write to a file. The returns (sz_header, sz_data), because this
         information is needed by NitfFile.'''
         # TODO Can likely replace this with the NitfSegment version.
         start_pos = fh.tell()
         self.des.write_user_subheader(self.subheader)
+        
+        #if(self.nitf_file):
+        #    cls = self.nitf_file.user_subheader_handle_set.user_subheader_cls(self)
+        #    if cls and not isinstance(self.user_subheader, cls):
+        #        raise RuntimeError("Require user_subheader of type %s" % cls)
+        #self._write_user_subheader()
         self.subheader.write_to_file(fh)
         sz_header = fh.tell() - start_pos
         start_pos = fh.tell()

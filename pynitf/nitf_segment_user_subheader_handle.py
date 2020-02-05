@@ -24,11 +24,11 @@ class NitfSegmentUserSubheaderHandleSet(object):
         return None
 
 class DesUserSubheaderHandleSet(PriorityHandleSet):
-    def handle_h(h, seg):
+    def handle_h(self, h, seg):
         return h.user_subheader_cls(seg)
 
 class ResUserSubheaderHandleSet(PriorityHandleSet):
-    def handle_h(h, *args, **keywords):
+    def handle_h(self, h, seg):
         return h.user_subheader_cls(seg)
 
 class DesUserSubheaderHandle(object, metaclass=abc.ABCMeta):
