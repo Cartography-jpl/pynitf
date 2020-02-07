@@ -200,7 +200,7 @@ def test_main(isolated_dir):
     #DES ------------------------------------------------------------------------------
 
     # -- CSATTB --
-    ds = DesCSATTB_UH()
+    ds = DesCSATTB.uh_class()
     ds.id = '4385ab47-f3ba-40b7-9520-13d6b7a7f311'
     ds.numais = '010'
     for i in range(int(ds.numais)):
@@ -228,7 +228,7 @@ def test_main(isolated_dir):
 
     # -- CSEPHB --
 
-    ds3 = DesCSEPHB_UH()
+    ds3 = DesCSEPHB.uh_class()
     ds3.id = '4385ab47-f3ba-40b7-9520-13d6b7a7f31b'
     ds3.numais = '011'
     for i in range(int(ds3.numais)):

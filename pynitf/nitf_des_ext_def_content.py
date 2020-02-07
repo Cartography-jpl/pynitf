@@ -1,5 +1,6 @@
 from .nitf_field import *
 from .nitf_des import *
+from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
 import io
 import os
 import datetime
@@ -26,6 +27,24 @@ desc =[['content_headers_len', 'Length in bytes of the CONTENT_HEADERS field', 4
 
 DesEXT_DEF_CONTENT_UH = create_nitf_field_structure("DesEXT_DEF_CONTENT_UH",
        desc, hlp = "This is the user defined subheader for DesEXT_DEF_CONTENT")
+
+class DesExtDefContentUserSubheaderDiff(FieldStructDiff):
+    '''Compare two user headers.'''
+    def configuration(self, nitf_diff):
+        return nitf_diff.config.get("DesExtDefContentUserSubheaderDiff", {})
+
+    def handle_diff(self, h1, h2, nitf_diff):
+        with nitf_diff.diff_context("DesEXT_DEF_CONTENT_UH"):
+            if(not isinstance(h1, DesEXT_DEF_CONTENT_UH) or
+               not isinstance(h2, DesEXT_DEF_CONTENT_UH)):
+                return (False, None)
+            return (True, self.compare_obj(h1, h2, nitf_diff))
+
+NitfDiffHandleSet.add_default_handle(DesExtDefContentUserSubheaderDiff())
+
+_default_config = {}
+ 
+NitfDiffHandleSet.default_config["DesExtDefContentUserSubheaderDiff"] = _default_config
 
 class DesEXTContentHeader(object):
     '''This handles the contents header portion of the DES. See Table 

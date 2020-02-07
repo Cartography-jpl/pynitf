@@ -1,8 +1,9 @@
 from .nitf_field import *
 from .nitf_des import *
-from .nitf_des_associated_user_subheader import add_uuid_des_function
-from .nitf_des_csattb import udsh
 from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
+from .nitf_des_associated_user_subheader import (add_uuid_des_function,
+                                                 DesAssociatedUserSubheader)
+from .nitf_segment_user_subheader_handle import desid_to_user_subheader_handle
 import io
 
 hlp = '''This is a NITF CSEPHB DES. The field names can be pretty
@@ -35,10 +36,11 @@ desc2 =["CSEPHB",
 
 #print (desc2)
 
-# udsh here is a from nitf_des_csattb, since the same user defined subheader
-# is used for both
-(DesCSEPHB, DesCSEPHB_UH) = create_nitf_des_structure("DesCSEPHB", desc2, udsh, hlp=hlp)
+(DesCSEPHB, _) = create_nitf_des_structure("DesCSEPHB", desc2, None, hlp=hlp)
 
+DesCSEPHB.uh_class = DesAssociatedUserSubheader
+desid_to_user_subheader_handle.add_des_user_subheader("CSEPHB",
+                      DesAssociatedUserSubheader)
 DesCSEPHB.desid = hardcoded_value("CSEPHB")
 DesCSEPHB.desver = hardcoded_value("01")
 
@@ -69,24 +71,4 @@ NitfDiffHandleSet.add_default_handle(CsephbDiff())
 _default_config = {}
 NitfDiffHandleSet.default_config["DesCSEPHB"] = _default_config
 
-class CsephbUserheaderDiff(FieldStructDiff):
-    '''Compare two user headers.'''
-    def configuration(self, nitf_diff):
-        return nitf_diff.config.get("DesCSEPHB_UH", {})
-
-    def handle_diff(self, h1, h2, nitf_diff):
-        with nitf_diff.diff_context("DesCSEPHB_UH"):
-            if(not isinstance(h1, DesCSEPHB_UH) or
-               not isinstance(h2, DesCSEPHB_UH)):
-                return (False, None)
-            return (True, self.compare_obj(h1, h2, nitf_diff))
-
-NitfDiffHandleSet.add_default_handle(CsephbUserheaderDiff())
-_default_config = {}
-# UUID change each time they are generated, so don't include in
-# check
-_default_config["exclude"] = ['id', 'assoc_elem_id']
- 
-NitfDiffHandleSet.default_config["DesCSEPHB_UH"] = _default_config
-
-__all__ = ["DesCSEPHB", "DesCSEPHB_UH"]
+__all__ = ["DesCSEPHB", ]

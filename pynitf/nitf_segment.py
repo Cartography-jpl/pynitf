@@ -101,10 +101,6 @@ class NitfSegment(object):
         # By default, segment doesn't have any TREs
         pass
 
-    def read_user_subheader(self, fh):
-        # By default, segment doesn't have user subheaders
-        pass
-
     def write_user_subheader(self, fh):
         # By default, segment doesn't have user subheaders
         pass
@@ -115,17 +111,16 @@ class NitfSegment(object):
         useful for implementing some external code readers (e.g., GDAL
         can read an image segment by the file name and index)'''
         self.subheader.read_from_file(fh)
-        if(self.nitf_file):
-            cls = fh.user_subheader_handle_set.user_subheader_cls(self)
-        else:
-            cls = None
-        if(cls):
-            self.user_subheader = cls()
-            self.user_subheader.read_from_subheader(self.subheader)
+        self._read_user_subheader()
         self.data.read_from_file(fh)
 
     def _update_file_header(self, fh, seg_index, sz_header, sz_data):
         '''Update the NITF file header with the segment header and data size.'''
+        pass
+
+    def _read_user_subheader(self):
+        '''Read user subheader to the segment subheader'''
+        # By default, no user subheader
         pass
 
     def _write_user_subheader(self):
@@ -208,6 +203,12 @@ class NitfImageSegment(NitfSegment):
         if(security is not None):
             self.security = security
             
+    @property
+    def image(self):
+        '''Synonym for data, just a more descriptive name of content for
+        a NitfImageSegment'''
+        return self.data
+
     def read_from_file(self, fh, seg_index=None):
         '''Read from a file'''
         self.subheader.read_from_file(fh)
@@ -291,15 +292,21 @@ class NitfTextSegment(NitfSegment):
     Note that txt can be either a str or bytes, whichever is most convenient
     for you. We encode/decode using utf-8 as needed. You can access the data
     as one or the other using data_as_bytes and data_as_str.'''
-    def __init__(self, txt='', header_size=None, data_size=None,
+    def __init__(self, text='', header_size=None, data_size=None,
                  nitf_file=None,
                  security=security_unclassified):
         h = NitfTextSubheader()
         self.header_size = header_size
         self.data_size = data_size
-        NitfSegment.__init__(self, h, copy.copy(txt), nitf_file = nitf_file)
+        NitfSegment.__init__(self, h, copy.copy(text), nitf_file = nitf_file)
         self.tre_list = []
         self.security = security
+
+    @property
+    def text(self):
+        '''Synonym for data, just a more descriptive name of content for
+        a NitfTextSegment'''
+        return self.data
         
     def read_from_file(self, fh, seg_index=None):
         '''Read from a file'''
@@ -371,18 +378,26 @@ class NitfDesSegment(NitfSegment):
         self.header_size = header_size
         self.data_size = data_size
         NitfSegment.__init__(self, h, des, nitf_file = nitf_file)
+        # TODO Perhaps have a cleaner way to go from DES to user subheader?
+        if(des and des.user_subheader):
+            self.user_subheader = des.user_subheader
 
-    # Alternative name for data, the des is stored in data attribute
     @property
     def des(self):
+        '''Synonym for data, just a more descriptive name of content for
+        a NitfDesSegment'''
         return self.data
 
     def read_from_file(self, fh, seg_index=None):
         '''Read from a file'''
         self.subheader.read_from_file(fh)
+        self._read_user_subheader()
         dhs = self.nitf_file.des_handle_set if self.nitf_file else NitfDesHandleSet.default_handle_set()
         self.data = dhs.handle(self.subheader, self.header_size,
                                self.data_size, fh)
+        # TODO: Determine if we actually want this copied. Perhaps user
+        # subheader can go through the handle
+        self.data.user_subheader = self.user_subheader
         
     def __str__(self):
         '''Text description of structure, e.g., something you can print out'''
@@ -393,9 +408,19 @@ class NitfDesSegment(NitfSegment):
             return ""
         return super().__str__()
 
+    def _read_user_subheader(self):
+        if(self.nitf_file):
+            cls = self.nitf_file.user_subheader_handle_set.user_subheader_cls(self)
+        else:
+            cls = None
+        if not cls:
+            return
+        self.user_subheader = cls()
+        fh = io.BytesIO(self.subheader.desshf)
+        self.user_subheader.read_from_file(fh)
+            
     def _write_user_subheader(self):
         '''Write user subheader to the segment subheader'''
-        # By default, no user subheader
         if(self.user_subheader):
             fh = io.BytesIO()
             self.user_subheader.write_to_file(fh)
@@ -408,13 +433,12 @@ class NitfDesSegment(NitfSegment):
         information is needed by NitfFile.'''
         # TODO Can likely replace this with the NitfSegment version.
         start_pos = fh.tell()
-        self.des.write_user_subheader(self.subheader)
         
-        #if(self.nitf_file):
-        #    cls = self.nitf_file.user_subheader_handle_set.user_subheader_cls(self)
-        #    if cls and not isinstance(self.user_subheader, cls):
-        #        raise RuntimeError("Require user_subheader of type %s" % cls)
-        #self._write_user_subheader()
+        if(self.nitf_file):
+            cls = self.nitf_file.user_subheader_handle_set.user_subheader_cls(self)
+            if cls and not isinstance(self.user_subheader, cls):
+                raise RuntimeError("Require user_subheader of type %s" % cls)
+        self._write_user_subheader()
         self.subheader.write_to_file(fh)
         sz_header = fh.tell() - start_pos
         start_pos = fh.tell()

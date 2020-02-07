@@ -96,17 +96,6 @@ class NitfDes(object, metaclass=abc.ABCMeta):
             print(self.user_subheader, file=fh)
         return fh.getvalue()
 
-    def read_user_subheader(self):
-        '''Helper function to read the user subheader. For use in derived
-        class read_from_file function. This should be called after the 
-        subheader has already been filled in.'''
-        if(self.des_subheader.desshl == 0 and
-           self.user_subheader_class is not None):
-            raise RuntimeError("The expected user defined subheader was not found")
-        if(self.des_subheader.desshl > 0):
-            fh = io.BytesIO(self.des_subheader.desshf)
-            self.user_subheader.read_from_file(fh)
-
     @property
     def user_subheader_size(self):
         '''Return the size of the user subheader. This can be used to
@@ -118,19 +107,6 @@ class NitfDes(object, metaclass=abc.ABCMeta):
         else:
             return 0
 
-    def write_user_subheader(self, sh):
-        '''This writes the user subheader section of the des subheader. Note
-        that derived classes do not normally call this function. Because the
-        subheader is written before write_to_file is called, we can't call this
-        in that function (unlike read_from_file). Instead, the NitfDesSegment
-        class calls this function.'''
-        if(self.user_subheader_class):
-            fh = io.BytesIO()
-            self.user_subheader.write_to_file(fh)
-            sh.desshf = fh.getvalue()
-        else:
-            sh.desshf = ""
-            
     @abc.abstractmethod
     def read_from_file(self, fh):
         '''Read an DES from a file. For larger DES a derived class might
@@ -142,7 +118,6 @@ class NitfDes(object, metaclass=abc.ABCMeta):
 
         This should also handle the reading of the user defined subheader.
         '''
-        self.read_user_subheader()
         raise NotImplementedError()
 
     @abc.abstractmethod
@@ -193,7 +168,6 @@ class NitfDesFieldStruct(NitfDes, _FieldStruct):
         self.data_to_copy = None
         
     def read_from_file(self, fh, nitf_literal = False):
-        self.read_user_subheader()
         t = fh.tell()
         _FieldStruct.read_from_file(self,fh, nitf_literal)
         self.data_start = fh.tell()
@@ -277,7 +251,6 @@ class NitfDesObjectHandle(NitfDes):
             print("Match succeeded in constructor")
         
     def read_from_file(self, fh):
-        self.read_user_subheader()
         setattr(self, self.des_implementation_field,
                 self.des_implementation_class.des_read(fh))
     def write_to_file(self, fh):
@@ -355,20 +328,13 @@ class NitfDesCopy(NitfDes):
     def __init__(self, des_subheader=None, header_size=None, data_size=None):
         NitfDes.__init__(self,"",des_subheader, header_size, data_size)
         self.data = None
-        self.data_uh = None
 
     def __str__(self):
         return "NitfDesCopy %d bytes of data" % (len(self.data))
         
     def read_from_file(self, fh, nitf_literal = False):
-        if(self.des_subheader.desshl > 0):
-            self.data_uh = self.des_subheader.desshf
         self.data = fh.read(self.data_size)
 
-    def write_user_subheader(self, sh):
-        if(self.data_uh):
-            sh.desshf = self.data_uh
-            
     def write_to_file(self, fh):
         '''Write an DES to a file.'''
         if(self.data is None): 

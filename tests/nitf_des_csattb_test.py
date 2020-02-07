@@ -6,7 +6,7 @@ import io
 
 def test_des_snip_user_header():
 
-    ds = DesCSATTB_UH()
+    ds = DesCSATTB.uh_class()
     ds.id = '4385ab47-f3ba-40b7-9520-13d6b7a7f311'
     ds.numais = '010'
     for i in range(int(ds.numais)):
@@ -19,7 +19,7 @@ def test_des_snip_user_header():
     assert fh_ds.getvalue() == b'4385ab47-f3ba-40b7-9520-13d6b7a7f3110100050060070080090100110120130140000000'
 
     fh2_ds = io.BytesIO(fh_ds.getvalue())
-    d2_ds = DesCSATTB_UH()
+    d2_ds = DesCSATTB.uh_class()
     d2_ds.read_from_file(fh2_ds)
 
     assert d2_ds.id == '4385ab47-f3ba-40b7-9520-13d6b7a7f311'

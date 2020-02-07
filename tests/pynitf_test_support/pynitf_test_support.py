@@ -5,7 +5,7 @@ from pynitf.nitf_security import NitfSecurity
 from pynitf.nitf_image import NitfImageWriteNumpy
 from pynitf.nitf_file import (NitfImageSegment, NitfTextSegment,
                               NitfDesSegment)
-from pynitf.nitf_des_csattb import (DesCSATTB_UH, DesCSATTB)
+from pynitf.nitf_des_csattb import DesCSATTB
 from pynitf.nitf_tre_csde import TreUSE00A
 from pynitf.nitf_diff_handle import DifferenceFormatter
 from unittest import SkipTest
@@ -123,7 +123,7 @@ def create_text_segment(f, first_name = 'Guido', textid = 'ID12345'):
 
 def create_des(f, date_att = 20170501, q = 0.1):
     '''Create a DES segment'''
-    ds = DesCSATTB_UH()
+    ds = DesCSATTB.uh_class()
     ds.id = '4385ab47-f3ba-40b7-9520-13d6b7a7f311'
     ds.numais = '010'
     for i in range(int(ds.numais)):
