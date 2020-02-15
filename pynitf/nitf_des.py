@@ -30,7 +30,7 @@ class NitfDesCannotHandle(RuntimeError):
     this does *not* mean an error occured - e.g., a corrupt Des. Rather this
     means that the Des is a type we don't handle'''
     def __init__(self, msg = "Can't handle this type of des"):
-        RuntimeError.__init__(self, msg)
+        super().__init__(msg)
 
 class NitfDes(object, metaclass=abc.ABCMeta):
     '''This contains a DES that we want to read or write from NITF.
@@ -55,10 +55,13 @@ class NitfDes(object, metaclass=abc.ABCMeta):
     NitfDesCannotHandle exception. The NitfDesSegment class will then just 
     move on to next possible handler class.
     '''
+
+    # Derived classes that override this with whatever their user subheader
+    # class is
+    uh_class = None
     def __init__(self, des_id=None,
                  des_subheader=None, header_size=None, data_size=None,
                  user_subheader=None,
-                 user_subheader_class=None,
                  security = security_unclassified):
         if(des_subheader is not None):
             self.des_subheader = des_subheader
@@ -71,11 +74,10 @@ class NitfDes(object, metaclass=abc.ABCMeta):
             self.des_subheader = h
         self.header_size = header_size
         self.data_size = data_size
-        self.user_subheader_class = user_subheader_class
         self.user_subheader = user_subheader
         if(self.user_subheader is None and
-           self.user_subheader_class is not None):
-            self.user_subheader = self.user_subheader_class()
+           self.uh_class is not None):
+            self.user_subheader = self.uh_class()
         
         # Derived classes should fill in information.
 
@@ -87,7 +89,7 @@ class NitfDes(object, metaclass=abc.ABCMeta):
         print('NitfDes', file=fh)
 
     # Derived classes may want to override this to give a more detailed
-    # description of what kind of image this is.
+    # description of what kind of DES data this is.
     def __str__(self):
         fh = io.StringIO()
         self.str_hook(fh)
@@ -100,7 +102,7 @@ class NitfDes(object, metaclass=abc.ABCMeta):
     def user_subheader_size(self):
         '''Return the size of the user subheader. This can be used to
         make sure we aren't exceeding the size supported by desshl'''
-        if(self.user_subheader_class):
+        if(self.uh_class):
             fh = io.BytesIO()
             self.user_subheader.write_to_file(fh)
             return len(fh.getvalue())
@@ -156,12 +158,11 @@ class NitfDesFieldStruct(NitfDes, _FieldStruct):
     data_copy = None
     def __init__(self, des_subheader=None, header_size=None,
                  user_subheader=None, data_size=None):
-        NitfDes.__init__(self, self.__class__.des_tag,
+        NitfDes.__init__(self, self.des_tag,
                          des_subheader, header_size, data_size,
-                         user_subheader = user_subheader,
-                         user_subheader_class = self.__class__.uh_class)
+                         user_subheader = user_subheader)
         _FieldStruct.__init__(self)
-        if(self.des_subheader.desid != self.__class__.des_tag):
+        if(self.des_subheader.desid != self.des_tag):
             raise NitfDesCannotHandle()
         self.data_start = None
         self.data_after_tre_size = None
@@ -236,14 +237,13 @@ class NitfDesObjectHandle(NitfDes):
     def __init__(self, des_subheader=None, header_size=None,
                  user_subheader=None, data_size=None):
         if(DEBUG):
-            print("In constructor for %s" % self.__class__.des_tag)
-        NitfDes.__init__(self, self.__class__.des_tag,
+            print("In constructor for %s" % self.des_tag)
+        super().__init__(self.des_tag,
                          des_subheader, header_size, data_size,
-                         user_subheader = user_subheader,
-                         user_subheader_class = self.__class__.uh_class)
+                         user_subheader = user_subheader)
         if(DEBUG):
             print("Trying to match %s" % self.des_subheader.desid)
-        if(self.des_subheader.desid != self.__class__.des_tag):
+        if(self.des_subheader.desid != self.des_tag):
             if(DEBUG):
                 print("Match failed")
             raise NitfDesCannotHandle()
@@ -295,7 +295,7 @@ class NitfDesPlaceHolder(NitfDes):
     final place holder if none of our other NitfDes classes can handle
     a particular DES. We just skip over the data when reading.'''
     def __init__(self, des_subheader=None, header_size=None, data_size=None):
-        NitfDes.__init__(self,"",des_subheader, header_size, data_size)
+        super().__init__("",des_subheader, header_size, data_size)
         self.data_start = None
 
     def __str__(self):
@@ -326,7 +326,7 @@ class NitfDesCopy(NitfDes):
     Not normally registered, but can be useful to use for some test cases (e.g.
     want to copy over an unimplemented DES'''
     def __init__(self, des_subheader=None, header_size=None, data_size=None):
-        NitfDes.__init__(self,"",des_subheader, header_size, data_size)
+        super().__init__("",des_subheader, header_size, data_size)
         self.data = None
 
     def __str__(self):
@@ -348,7 +348,7 @@ class TreOverflow(NitfDes):
         '''Note that seg_index should be the normal 0 based index python
         uses elsewhere. Internal to the DES we translate this to the 1 based
         index that NITF uses.'''
-        NitfDes.__init__(self, "TRE_OVERFLOW", des_subheader,
+        super().__init__("TRE_OVERFLOW", des_subheader,
                          header_size, data_size)
         if(self.des_subheader.desid.encode("utf-8") != b'TRE_OVERFLOW'):
             raise NitfDesCannotHandle()

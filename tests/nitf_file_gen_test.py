@@ -189,7 +189,7 @@ def test_main(isolated_dir):
         'titles': ['BDFL', 'Developer'],
     }
 
-    ts = NitfTextSegment(txt = (json.dumps(d)))
+    ts = NitfTextSegment(text = (json.dumps(d)))
 
     ts.subheader.textid = 'ID12345'
     ts.subheader.txtalvl = 0

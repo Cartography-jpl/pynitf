@@ -115,7 +115,7 @@ def create_text_segment(f, first_name = 'Guido', textid = 'ID12345'):
         'second_name': 'Rossum',
         'titles': ['BDFL', 'Developer'],
     }
-    ts = NitfTextSegment(txt = json.dumps(d))
+    ts = NitfTextSegment(text = json.dumps(d))
     ts.subheader.textid = textid
     ts.subheader.txtalvl = 0
     ts.subheader.txtitl = 'sample title'
@@ -248,8 +248,8 @@ def isolated_dir(tmpdir):
 
 @pytest.yield_fixture(scope="function")
 def nitf_sample_files(isolated_dir):
-    if(os.path.exists("/raid1/smyth/NitfSamples/")):
-        return "/raid1/smyth/NitfSamples/"
+    if(os.path.exists("/bigdata/smyth/NitfSamples/")):
+        return "/bigdata/smyth/NitfSamples/"
     elif(os.path.exists("/opt/nitf_files/NitfSamples/")):
         return "/opt/nitf_files/NitfSamples/"
     elif(os.path.exists("/data2/smythdata/NitfSamples/")):

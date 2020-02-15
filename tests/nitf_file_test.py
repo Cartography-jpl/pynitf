@@ -87,7 +87,7 @@ def create_text_segment(f, security = None):
         'second_name': 'Rossum',
         'titles': ['BDFL', 'Developer'],
     }
-    ts = NitfTextSegment(txt = json.dumps(d))
+    ts = NitfTextSegment(text = json.dumps(d))
     ts.subheader.textid = 'ID12345'
     ts.subheader.txtalvl = 0
     ts.subheader.txtitl = 'sample title'
