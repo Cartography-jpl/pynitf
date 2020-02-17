@@ -15,18 +15,18 @@ The NitfFile class structure is shown in :numref:`nitf_file`.
    :caption: NitfFile class structure
 
    class NitfFile {
-      NitfFile(file_name=None,\n         security = security_unclassified)
-      read(file_name)
-      write(file_name)
-      NitfFileHeader file_header
-      file_name
-      NitfImageSegment image_segment[]
-      NitfGraphicSegment graphic_segment[]
-      NitfTextSegment text_segment[]
-      NitfDesSegment des_segment[]
-      NitfResSegment res_segment[]
-      Tre tre_list[]
-      security
+      +NitfFile(file_name=None,\n         security = security_unclassified)
+      +read(file_name)
+      +write(file_name)
+      +NitfFileHeader file_header
+      +file_name
+      +NitfImageSegment image_segment[]
+      +NitfGraphicSegment graphic_segment[]
+      +NitfTextSegment text_segment[]
+      +NitfDesSegment des_segment[]
+      +NitfResSegment res_segment[]
+      +Tre tre_list[]
+      +security
    }
    note top
       The NITF file class, used for reading
@@ -106,9 +106,9 @@ shown in :numref:`nitf_file_hook`.
    :caption: NitfFile class Handles and Hooks
 
    class NitfFile {
-      NitfSegmentHookSet segment_hook_set
-      NitfSegmentUserSubheaderHandleSet user_subheader_handle_set
-      NitfSegmentDataHandleSet data_handle_set
+      +NitfSegmentHookSet segment_hook_set
+      +NitfSegmentUserSubheaderHandleSet user_subheader_handle_set
+      +NitfSegmentDataHandleSet data_handle_set
    }
 
    class NitfSegmentHookSet {
@@ -188,7 +188,7 @@ See :numref:`nitf_segment_hook`.
    :caption: NitfSegmentHookSet
 
    class NitfFile {
-      NitfSegmentHookSet segment_hook_set
+      +NitfSegmentHookSet segment_hook_set
    }
 
    class NitfSegmentHookSet {
@@ -255,92 +255,74 @@ NitfSegmentUserSubheaderHandleSet
 The NitfSegmentUserSubheaderHandleSet is used to handle reading and writing
 the user subheaders found in the NitfDesSegment and NitfResSegment. This
 contains a PriorityHandleSet (see :ref:`priority-handle-set-section`) for
-handling each of these segment types. See :numref:`nitf_user_subheader_handle`.
+handling each of these segment types. The handle returns the user subheader
+class type, which is then used by NitfSegment for reading and writing the
+user subheader. See :numref:`nitf_user_subheader_handle`.
 
 .. _nitf_user_subheader_handle:
 .. uml::
    :caption: NitfSegmentUserSubheaderHandleSet
 
    class NitfFile {
-      NitfSegmentHookSet segment_hook_set
-      NitfSegmentUserSubheaderHandleSet user_subheader_handle_set
-      NitfSegmentDataHandleSet data_handle_set
+      +NitfSegmentUserSubheaderHandleSet user_subheader_handle_set
    }
 
-   class NitfSegmentHookSet {
-      +add_hook(h)
-      +discard_hook(h)
-      {static} add_default_hook(cls, h)
-      {static} discard_default_hook(cls, h)
-      {static} default_hook_set()
-      }
-   note top
-     Hook objects to extend the handling
-     of various attributes of a segments
-     (e.g., add higher level classes Rpc
-     or RSM).
-   end note
-
-   class NitfSegmentHook
-   
    class NitfSegmentUserSubheaderHandleSet {
-      +DesUserSubheaderHandleSet des_set
-      +ResUserSubheaderHandleSet res_set
+      +DesSubheaderHandleSet des_set
+      +ResSubheaderHandleSet res_set
+      +user_subheader_cls(seg)
    }
    note bottom
-      Handle reading and writing User 
-      Subheaders for various segments.
+     Return the Class to use for
+     the user subheader for the 
+     given segment (or None for 
+     no user subheader)
    end note
 
-   class PriorityHandleSet
-
-   class DesUserSubheaderHandleSet
-   
-   class ResUserSubheaderHandleSet
-   
-   class NitfSegmentDataHandleSet {
-     +NitfImageHandleSet image_handle_set
-     +NitfDesHandleSet des_handle_set
-     +NitfTextHandleSet text_handle_set
-     +NitfGraphicHandleSet graphic_handle_set
-     +NitfResHandleSet res_handle_set
+   abstract class PriorityHandleSet {
+      +add_handle(h, priority_order=0)
+      +discard_handle(h)
+      {static} add_default_handle(cls, h, priority_order=0)
+      {static} discard_default_handle(cls, h, priority_order=0)
+      {static} default_handle_set()
+      +handle(*args, **keywords)
    }
-   note top
-      Handle reading and writing the
-      data in a segment (e.g, a image)
-   end note
-
-   class NitfImageHandleSet
-   class NitfDesHandleSet
-   class NitfTextHandleSet
-   class NitfGraphicHandleSet
-   class NitfResHandleSet 
    
-   NitfFile o--  NitfSegmentHookSet
+   class DesUserSubheaderHandleSet {
+      +handle_h(h, seg)
+   }
+
+   class ResUserSubheaderHandleSet {
+      +handle_h(h, seg)
+   }
+   
+   abstract class DesUserSubheaderHandle {
+      +user_subheader_cls(seg)
+   }
+
+   abstract class ResUserSubheaderHandle {
+      +user_subheader_cls(seg)
+   }
+
+   class DesIdToUSHHandle {
+      +add_des_user_subheader(desid, des_user_subheader_cls)
+   }
+   note bottom
+      Often we just need the DES ID to
+      map to the class for the DES User Subheader.
+      This class is a simple dict going from
+      the id to the class that handles the
+      user subheader.
+   end note
+   
    NitfFile o--  NitfSegmentUserSubheaderHandleSet
-   NitfFile o--  NitfSegmentDataHandleSet
-   NitfSegmentHookSet o-- "many" NitfSegmentHook
-   NitfSegmentUserSubheaderHandleSet o-- "many" DesUserSubheaderHandleSet
-   NitfSegmentUserSubheaderHandleSet o-- "many" ResUserSubheaderHandleSet
-   NitfSegmentDataHandleSet o-- "many" NitfImageHandleSet
-   NitfSegmentDataHandleSet o-- "many" NitfDesHandleSet
-   NitfSegmentDataHandleSet o-- "many" NitfTextHandleSet
-   NitfSegmentDataHandleSet o-- "many" NitfGraphicHandleSet
-   NitfSegmentDataHandleSet o-- "many" NitfResHandleSet
-   NitfSegmentUserSubheaderHandleSet -[hidden]- PriorityHandleSet
-   NitfSegmentDataHandleSet -[hidden]- PriorityHandleSet
-   DesUserSubheaderHandleSet -[hidden]- NitfImageHandleSet
-   DesUserSubheaderHandleSet -[hidden]- NitfDesHandleSet
-   DesUserSubheaderHandleSet -[hidden]- NitfTextHandleSet
-   DesUserSubheaderHandleSet -[hidden]- NitfGraphicHandleSet
-   DesUserSubheaderHandleSet -[hidden]- NitfResHandleSet
+   NitfSegmentUserSubheaderHandleSet o-- DesUserSubheaderHandleSet
+   NitfSegmentUserSubheaderHandleSet o-- ResUserSubheaderHandleSet
+   DesUserSubheaderHandleSet o-- "many" DesUserSubheaderHandle
+   ResUserSubheaderHandleSet o-- "many" ResUserSubheaderHandle
+   DesUserSubheaderHandle <|-- DesIdToUSHHandle
    PriorityHandleSet <|-- DesUserSubheaderHandleSet
    PriorityHandleSet <|-- ResUserSubheaderHandleSet
-   PriorityHandleSet <|-- NitfImageHandleSet
-   PriorityHandleSet <|-- NitfDesHandleSet
-   PriorityHandleSet <|-- NitfTextHandleSet
-   PriorityHandleSet <|-- NitfGraphicHandleSet
-   PriorityHandleSet <|-- NitfResHandleSet
 
 NitfSegmentDataHandleSet
 ---------------------------------
