@@ -1,5 +1,7 @@
 from .nitf_field import *
 from .nitf_des import *
+from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
+from .nitf_segment_user_subheader_handle import desid_to_user_subheader_handle
 import io
 import os
 import datetime
@@ -27,7 +29,7 @@ desc =[['content_headers_len', 'Length in bytes of the CONTENT_HEADERS field', 4
 DesEXT_DEF_CONTENT_UH = create_nitf_field_structure("DesEXT_DEF_CONTENT_UH",
        desc, hlp = "This is the user defined subheader for DesEXT_DEF_CONTENT")
 
-class DesEXTContentHeader(object):
+class DesExtContentHeader(DesEXT_DEF_CONTENT_UH):
     '''This handles the contents header portion of the DES. See Table 
     7.4.7.10.1-1 in NSGPDD-A Base U'''
     hlist = [[b"Content-Type", "content_type"],
@@ -43,6 +45,7 @@ class DesEXTContentHeader(object):
              ]
              
     def __init__(self):
+        super().__init__()
         self.content_type = b""
         self.content_use = b""
         self.content_encoding = None
@@ -53,6 +56,7 @@ class DesEXTContentHeader(object):
         self.canonical_id = b""
         self.des_id1 = b""
         self.des_id2 = b""
+        self._des = None
         # For now, skip the optional things found in the table.
 
     def _snippet(self, name, var):
@@ -62,58 +66,75 @@ class DesEXTContentHeader(object):
         return name + b": " + v
 
     def _set_snippet(self, k, v):
-        for name, var in DesEXTContentHeader.hlist:
+        for name, var in DesExtContentHeader.hlist:
             if(k == name):
                 setattr(self, var, v)
 
     def bytes(self):
-        t = [ self._snippet(nm, var) for (nm, var) in DesEXTContentHeader.hlist ]
+        t = [ self._snippet(nm, var) for (nm, var) in DesExtContentHeader.hlist ]
         return b'\r\n'.join([tv for tv in t if(tv is not None)]) + b'\r\n'
 
-    def parse(self, s):
-        for ln in s.rstrip(b'\r\n').split(b'\r\n'):
+    def parse(self):
+        for ln in self.content_headers.rstrip(b'\r\n').split(b'\r\n'):
             k, v = ln.split(b': ')
             self._set_snippet(k, v)
+            
+    def read_from_file(self, fh, nitf_literal=False):
+        super().read_from_file(fh, nitf_literal)
+        self.parse()
 
+    def write_to_file(self, fh):
+        if(self._des):
+            self.content_length = str(self._des.data_size).encode('utf-8')
+        self.content_headers = self.bytes()
+        super().write_to_file(fh)
+        
     def __str__(self):
         fh = io.StringIO()
         print("Content Header:", file=fh)
-        for (nm, var) in DesEXTContentHeader.hlist:
+        for (nm, var) in DesExtContentHeader.hlist:
             t = self._snippet(nm, var)
             if(t):
                 print("  " + t.decode('utf-8'), file=fh)
         return fh.getvalue()
-            
+    
+
+class DesExtContentHeaderDiff(FieldStructDiff):
+    '''Compare two user headers.'''
+    def configuration(self, nitf_diff):
+        return nitf_diff.config.get("DesExtContentHeader", {})
+
+    def handle_diff(self, h1, h2, nitf_diff):
+        with nitf_diff.diff_context("DesExtContentHeader"):
+            if(not isinstance(h1, DesExtContentHeader) or
+               not isinstance(h2, DesExtContentHeader)):
+                return (False, None)
+            return (True, self.compare_obj(h1, h2, nitf_diff))
+
+NitfDiffHandleSet.add_default_handle(DesExtContentHeaderDiff())
+
+_default_config = {}
+ 
+NitfDiffHandleSet.default_config["DesExtContentHeader"] = _default_config
 
 class DesEXT_DEF_CONTENT(NitfDes):
     '''This is the NITF EXT_DEF_CONTENT DES. This is a new DES defined in
     NSGPDD-A).'''
+    uh_class = DesExtContentHeader
+    
     def __init__(self, des_subheader = None, header_size=None,
                  data_size=None, user_subheader=None):
         super().__init__(des_id="EXT_DEF_CONTENT",
                          des_subheader=des_subheader,
                          header_size=header_size, data_size=data_size,
-                         user_subheader=user_subheader,
-                         user_subheader_class=DesEXT_DEF_CONTENT_UH)
+                         user_subheader=user_subheader)
         if(self.des_subheader.desid != "EXT_DEF_CONTENT"):
             raise NitfDesCannotHandle()
-        self.content_header = DesEXTContentHeader()
-        if(user_subheader):
-            self.content_header.parse(user_subheader.content_headers)
+        self.user_subheader._des = self
         self.data = None
 
     def str_hook(self, file):
         print("DesEXT_DEF_CONTENT", file=file)
-
-    def __str__(self):
-        fh = io.StringIO()
-        self.str_hook(fh)
-        print(self.content_header, file=fh)
-        return fh.getvalue()
-
-    def read_user_subheader(self):
-        super().read_user_subheader()
-        self.content_header.parse(self.user_subheader.content_headers)
 
     def read_from_file(self, fh):
         '''Read DES from file.
@@ -121,7 +142,6 @@ class DesEXT_DEF_CONTENT(NitfDes):
         This version doesn't actually read in the data (which might be
         large). Instead, it memory maps a numpy array to the data.
         '''
-        self.read_user_subheader()
         foff = fh.tell()
         self.data = np.memmap(fh, mode="r", dtype=np.int8,
                               shape=(self.data_size,), offset=foff)
@@ -133,16 +153,13 @@ class DesEXT_DEF_CONTENT(NitfDes):
         if(self.data_size):
             fh.write(b'\0' * self.data_size)
 
-    def write_user_subheader(self, sh):
-        self.content_header.content_length = str(self.data_size).encode('utf-8')
-        self.user_subheader.content_headers = self.content_header.bytes()
-        super().write_user_subheader(sh)
-        
     def summary(self):
         res = io.StringIO()
         print("DesEXT_DEF_CONTENT", file=res)
         return res.getvalue()
-        
+
+desid_to_user_subheader_handle.add_des_user_subheader("EXT_DEF_CONTENT",
+                                                      DesExtContentHeader)
 
 class DesEXT_h5(DesEXT_DEF_CONTENT):
     def __init__(self, file = None, des_subheader = None, header_size=None,
@@ -151,11 +168,10 @@ class DesEXT_h5(DesEXT_DEF_CONTENT):
                  temp_dir=None):
         super().__init__(des_subheader = des_subheader, header_size=header_size,
                          data_size=data_size, user_subheader=user_subheader)
-        self.content_header.content_type = b"application/x-hdf5"
-        
+        self.user_subheader.content_type = b"application/x-hdf5"
         if(not user_subheader):
-            self.content_header.des_id1 = des_id1
-            self.content_header.des_id2 = des_id2
+            self.user_subheader.des_id1 = des_id1
+            self.user_subheader.des_id2 = des_id2
         self.file = None
         if(file):
             self.attach_file(file)
@@ -166,7 +182,7 @@ class DesEXT_h5(DesEXT_DEF_CONTENT):
         '''Attach a HDF 5 file to write out.'''
         self.file = file
         t = "attachment; filename=\"%s\"; creation-date=\"%s\"" % (os.path.basename(file), datetime.datetime.fromtimestamp(os.stat(file).st_ctime))
-        self.content_header.content_disposition = t.encode("utf-8")
+        self.user_subheader.content_disposition = t.encode("utf-8")
         self.data_size = os.path.getsize(file)
 
     @property
@@ -186,10 +202,10 @@ class DesEXT_h5(DesEXT_DEF_CONTENT):
         self.tfh.flush()
         self._h5py_fh = h5py.File(self.tfh.name, "r")
         return self._h5py_fh
-        
-    def read_user_subheader(self):
-        super().read_user_subheader()
-        if(self.content_header.content_type != b"application/x-hdf5"):
+
+    def read_from_file(self, fh):
+        super().read_from_file(fh)
+        if(self.user_subheader.content_type != b"application/x-hdf5"):
             raise NitfDesCannotHandle()
         
     def str_hook(self, file):
@@ -214,4 +230,4 @@ register_des_class(DesEXT_DEF_CONTENT, priority_order=-1)
 register_des_class(DesEXT_h5)
 
 __all__ = ["DesEXT_DEF_CONTENT", "DesEXT_DEF_CONTENT_UH",
-           "DesEXT_h5", "DesEXTContentHeader"]
+           "DesEXT_h5", "DesExtContentHeader"]

@@ -1,7 +1,9 @@
 from .nitf_field import *
 from .nitf_des import *
-from .nitf_des_csattb import udsh, add_uuid_des_function
 from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
+from .nitf_des_associated_user_subheader import (add_uuid_des_function,
+                                                 DesAssociatedUserSubheader)
+from .nitf_segment_user_subheader_handle import desid_to_user_subheader_handle
 import io
 
 hlp = '''This is a NITF CSSFAB DES. The field names can be pretty
@@ -145,10 +147,11 @@ desc2 =["CSSFAB",
 
 #print (desc2)
 
-# udsh here is a from nitf_des_csattb, since the same user defined subheader
-# is used for both
-(DesCSSFAB, DesCSSFAB_UH) = create_nitf_des_structure("DesCSSFAB", desc2, udsh, hlp=hlp)
+(DesCSSFAB, _) = create_nitf_des_structure("DesCSSFAB", desc2, None, hlp=hlp)
 
+DesCSSFAB.uh_class = DesAssociatedUserSubheader
+desid_to_user_subheader_handle.add_des_user_subheader("CSSFAB",
+                      DesAssociatedUserSubheader)
 DesCSSFAB.desid = hardcoded_value("CSSFAB")
 DesCSSFAB.desver = hardcoded_value("01")
 
@@ -179,24 +182,4 @@ NitfDiffHandleSet.add_default_handle(CssfabDiff())
 _default_config = {}
 NitfDiffHandleSet.default_config["DesCSSFAB"] = _default_config
 
-class CssfabUserheaderDiff(FieldStructDiff):
-    '''Compare two user headers.'''
-    def configuration(self, nitf_diff):
-        return nitf_diff.config.get("DesCSSFAB_UH", {})
-
-    def handle_diff(self, h1, h2, nitf_diff):
-        with nitf_diff.diff_context("DesCSSFAB_UH"):
-            if(not isinstance(h1, DesCSSFAB_UH) or
-               not isinstance(h2, DesCSSFAB_UH)):
-                return (False, None)
-            return (True, self.compare_obj(h1, h2, nitf_diff))
-
-NitfDiffHandleSet.add_default_handle(CssfabUserheaderDiff())
-_default_config = {}
-# UUID change each time they are generated, so don't include in
-# check
-_default_config["exclude"] = ['id', 'assoc_elem_id']
- 
-NitfDiffHandleSet.default_config["DesCSSFAB_UH"] = _default_config
-
-__all__ = ["DesCSSFAB", "DesCSSFAB_UH"]
+__all__ = ["DesCSSFAB", ]

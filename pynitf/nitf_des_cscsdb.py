@@ -1,7 +1,9 @@
 from .nitf_field import *
 from .nitf_des import *
-from .nitf_des_csattb import udsh, add_uuid_des_function
 from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
+from .nitf_des_associated_user_subheader import (add_uuid_des_function,
+                                                 DesAssociatedUserSubheader)
+from .nitf_segment_user_subheader_handle import desid_to_user_subheader_handle
 import io
 
 hlp = '''This is a NITF CSCSDB DES. The field names can be pretty
@@ -195,10 +197,11 @@ desc2 =["CSCSDB",
 
 #print (desc2)
 
-# udsh here is a from nitf_des_csattb, since the same user defined subheader
-# is used for both
-(DesCSCSDB, DesCSCSDB_UH) = create_nitf_des_structure("DesCSCSDB", desc2, udsh, hlp=hlp)
+(DesCSCSDB, _) = create_nitf_des_structure("DesCSCSDB", desc2, None, hlp=hlp)
 
+DesCSCSDB.uh_class = DesAssociatedUserSubheader
+desid_to_user_subheader_handle.add_des_user_subheader("CSCSDB",
+                      DesAssociatedUserSubheader)
 DesCSCSDB.desid = hardcoded_value("CSCSDB")
 DesCSCSDB.desver = hardcoded_value("01")
 
@@ -230,24 +233,4 @@ NitfDiffHandleSet.add_default_handle(CsscdbDiff())
 _default_config = {}
 NitfDiffHandleSet.default_config["DesCSCSDB"] = _default_config
 
-class CsscdbUserheaderDiff(FieldStructDiff):
-    '''Compare two user headers.'''
-    def configuration(self, nitf_diff):
-        return nitf_diff.config.get("DesCSCSDB_UH", {})
-
-    def handle_diff(self, h1, h2, nitf_diff):
-        with nitf_diff.diff_context("DesCSCSDB_UH"):
-            if(not isinstance(h1, DesCSCSDB_UH) or
-               not isinstance(h2, DesCSCSDB_UH)):
-                return (False, None)
-            return (True, self.compare_obj(h1, h2, nitf_diff))
-
-NitfDiffHandleSet.add_default_handle(CsscdbUserheaderDiff())
-_default_config = {}
-# UUID change each time they are generated, so don't include in
-# check
-_default_config["exclude"] = ['id', 'assoc_elem_id']
- 
-NitfDiffHandleSet.default_config["DesCSCSDB_UH"] = _default_config
-
-__all__ = ["DesCSCSDB", "DesCSCSDB_UH"]
+__all__ = ["DesCSCSDB", ]

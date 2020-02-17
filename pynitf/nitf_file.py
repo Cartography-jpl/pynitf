@@ -13,6 +13,7 @@ from .nitf_segment import (NitfImageSegment, NitfGraphicSegment,
                            NitfTextSegment, NitfDesSegment,
                            NitfResSegment)
 from .nitf_segment_hook import NitfSegmentHookSet
+from .nitf_segment_user_subheader_handle import NitfSegmentUserSubheaderHandleSet
 import io,copy,weakref
 import copy
 import collections
@@ -20,8 +21,8 @@ import collections
 class ListNitfFileReference(collections.UserList):
     '''Useful to add nitf_file to various NitfSegment as they get added
     to a NitfFile, so we override append'''
-    def __init__(self, f):
-        super().__init__()
+    def __init__(self, f, initlist = None):
+        super().__init__(initlist)
         self.nitf_file = weakref.ref(f)
     def append(self, v):
         super().append(v)
@@ -35,6 +36,8 @@ class NitfFile(object):
        :ivar file_header:      The NitfFileHeader for the file
        :ivar file_name:        The NITF file name
        :ivar segment_hook_set: The NitfSegmentHookSet to use for the file.
+       :ivar user_subheader_handle_set: The NitfSegmentUserSubheaderHandleSet
+                               to use for this file
        :ivar report_raw:       If True, suppress NitfSegmentHook when printing
        :ivar image_segment:    List of NitfImageSegment objects for the file.
        :ivar graphic_segment:  List of NitfGraphicSegment objects for the file.
@@ -53,6 +56,7 @@ class NitfFile(object):
         self.file_name = file_name
         self.report_raw = False
         self.segment_hook_set = copy.copy(NitfSegmentHookSet.default_hook_set())
+        self.user_subheader_handle_set = copy.copy(NitfSegmentUserSubheaderHandleSet.default_handle_set())
         self.image_handle_set = copy.copy(NitfImageHandleSet.default_handle_set())
         self.des_handle_set = copy.copy(NitfDesHandleSet.default_handle_set())
         # This is the order things appear in the file
@@ -181,9 +185,10 @@ class NitfFile(object):
         '''Write to the given file'''
         for seg in self.segments():
             self.segment_hook_set.before_write_hook(seg, self)
-        self.des_segment = [dseg for dseg in self.des_segment
-                            if(dseg.subheader.desid.encode("utf-8") !=
-                               b'TRE_OVERFLOW')]
+        self.des_segment = \
+            ListNitfFileReference(self, [dseg for dseg in self.des_segment
+                                   if(dseg.subheader.desid.encode("utf-8") !=
+                                      b'TRE_OVERFLOW')])
         with open(file_name, 'wb') as fh:
             h = self.file_header
             prepare_tre_write(self.tre_list, h, self.des_segment,
@@ -202,15 +207,16 @@ class NitfFile(object):
             h.update_field(fh, "hl", fh.tell())
             # Write out each segment, updating the subheader and data sizes
             for i, seg in self.segments(include_seg_index=True):
-                seg.write_to_file(fh, i, self)
+                seg.write_to_file(fh, i)
             # Now we have to update the file length
             h.update_field(fh, "fl", fh.tell())
         # Special handling for the TRE overflow DES. We create these as
         # needed for the TREs that we already have stored various places.
         # Clear out any that generated during our write
-        self.des_segment = [dseg for dseg in self.des_segment
-                            if(dseg.subheader.desid.encode("utf-8") !=
-                               b'TRE_OVERFLOW')]
+        self.des_segment = \
+            ListNitfFileReference(self, [dseg for dseg in self.des_segment
+                                   if(dseg.subheader.desid.encode("utf-8") !=
+                                      b'TRE_OVERFLOW')])
 
     def segments(self, include_seg_index=False):
         '''Iterator to go through all the segments in a file. We often also

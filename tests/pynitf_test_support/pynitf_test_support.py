@@ -5,7 +5,7 @@ from pynitf.nitf_security import NitfSecurity
 from pynitf.nitf_image import NitfImageWriteNumpy
 from pynitf.nitf_file import (NitfImageSegment, NitfTextSegment,
                               NitfDesSegment)
-from pynitf.nitf_des_csattb import (DesCSATTB_UH, DesCSATTB)
+from pynitf.nitf_des_csattb import DesCSATTB
 from pynitf.nitf_tre_csde import TreUSE00A
 from pynitf.nitf_diff_handle import DifferenceFormatter
 from unittest import SkipTest
@@ -115,7 +115,7 @@ def create_text_segment(f, first_name = 'Guido', textid = 'ID12345'):
         'second_name': 'Rossum',
         'titles': ['BDFL', 'Developer'],
     }
-    ts = NitfTextSegment(txt = json.dumps(d))
+    ts = NitfTextSegment(text = json.dumps(d))
     ts.subheader.textid = textid
     ts.subheader.txtalvl = 0
     ts.subheader.txtitl = 'sample title'
@@ -123,7 +123,7 @@ def create_text_segment(f, first_name = 'Guido', textid = 'ID12345'):
 
 def create_des(f, date_att = 20170501, q = 0.1):
     '''Create a DES segment'''
-    ds = DesCSATTB_UH()
+    ds = DesCSATTB.uh_class()
     ds.id = '4385ab47-f3ba-40b7-9520-13d6b7a7f311'
     ds.numais = '010'
     for i in range(int(ds.numais)):
@@ -248,8 +248,8 @@ def isolated_dir(tmpdir):
 
 @pytest.yield_fixture(scope="function")
 def nitf_sample_files(isolated_dir):
-    if(os.path.exists("/raid1/smyth/NitfSamples/")):
-        return "/raid1/smyth/NitfSamples/"
+    if(os.path.exists("/bigdata/smyth/NitfSamples/")):
+        return "/bigdata/smyth/NitfSamples/"
     elif(os.path.exists("/opt/nitf_files/NitfSamples/")):
         return "/opt/nitf_files/NitfSamples/"
     elif(os.path.exists("/data2/smythdata/NitfSamples/")):
