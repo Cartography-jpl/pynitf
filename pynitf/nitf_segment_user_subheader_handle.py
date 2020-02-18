@@ -11,6 +11,7 @@ class NitfSegmentUserSubheaderHandleSet(object):
         self.res_set = None
     @classmethod
     def default_handle_set(cls):
+        '''Return the default handle set to use.'''
         res = cls()
         res.des_set = copy.copy(DesUserSubheaderHandleSet.default_handle_set())
         res.res_set = copy.copy(ResUserSubheaderHandleSet.default_handle_set())
