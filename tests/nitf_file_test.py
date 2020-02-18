@@ -445,6 +445,3 @@ def test_too_many_file(isolated_dir):
     f.write("large_nitf.ntf")
     f1 = NitfFile("large_nitf.ntf")
     f2 = NitfFile("large_nitf.ntf")
-    
-    
-    
