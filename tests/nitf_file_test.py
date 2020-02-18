@@ -433,3 +433,16 @@ def test_profile(isolated_dir):
     f.write("basic_nitf.ntf")
     cProfile.run('import pynitf; pynitf.NitfFile("basic_nitf.ntf")')
     
+@skip
+def test_too_many_file(isolated_dir):
+    '''Because of how we currently use np.memmap for images, we can
+    run into "too many files" error if we have a couple of files open
+    using large number of images (so more than 1024 images across a 
+    few files). This unit test triggers this error, so we can eventually
+    fix this.'''
+    f = NitfFile()
+    for i in range(600):
+        create_image_seg(f)
+    f.write("large_nitf.ntf")
+    f1 = NitfFile("large_nitf.ntf")
+    f2 = NitfFile("large_nitf.ntf")
