@@ -408,10 +408,10 @@ def set_default_image_subheader(ih, nrow, ncol, data_type, numbands=1,
     ih.irepband[0] = "R"
 
 def _get_security(self):
-    return NitfSecurity.get_security(self, "i")
+    return NitfSecurity.get_security(self, "is")
 
 def _set_security(self, s):
-    s.set_security(self, "i")
+    s.set_security(self, "is")
 
 NitfImageSubheader.security = property(_get_security, _set_security)
 

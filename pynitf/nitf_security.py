@@ -35,24 +35,24 @@ class NitfSecurity(object):
         NITF element fields (e.g., "f" for NitfFileHeader).'''
         res = NitfSecurity()
         for field_name, attribute_name in [
-                  ['sclas', 'classification'],
-                  ['sclsy', 'classification_system'],
-                  ['scode', 'codewords'],
-                  ['sctlh', 'control_and_handling'],
-                  ['srel', 'release_instructions'],
-                  ['sdctp', 'declassification_type'],
-                  ['sdcdt', 'declassification_date'],
-                  ['sdcxm', 'declassification_exemption'],
-                  ['sdg', 'downgrade'],
-                  ['sdgdt', 'downgrade_date'],
-                  ['scltx', 'classification_text'],
-                  ['scatp', 'classification_authority_type'],
-                  ['scaut', 'classification_authority'],
-                  ['scrsn', 'classification_reason'],
-                  ['ssrdt', 'security_source_date'],
-                  ['sctln', 'security_control_number'],
-                  ['scop', 'copy_number'],
-                  ['scpys', 'number_of_copies']]:
+                  ['clas', 'classification'],
+                  ['clsy', 'classification_system'],
+                  ['code', 'codewords'],
+                  ['ctlh', 'control_and_handling'],
+                  ['rel', 'release_instructions'],
+                  ['dctp', 'declassification_type'],
+                  ['dcdt', 'declassification_date'],
+                  ['dcxm', 'declassification_exemption'],
+                  ['dg', 'downgrade'],
+                  ['dgdt', 'downgrade_date'],
+                  ['cltx', 'classification_text'],
+                  ['catp', 'classification_authority_type'],
+                  ['caut', 'classification_authority'],
+                  ['crsn', 'classification_reason'],
+                  ['srdt', 'security_source_date'],
+                  ['ctln', 'security_control_number'],
+                  ['cop', 'copy_number'],
+                  ['cpys', 'number_of_copies']]:
             if(hasattr(elem, prefix + field_name)):
                 setattr(res, attribute_name, getattr(elem, prefix + field_name))
         if(hasattr(elem, 'encryp')):
@@ -65,24 +65,24 @@ class NitfSecurity(object):
         "f" for NitfFileHeader).
         '''
         for field_name, attribute_name in [
-                  ['sclas', 'classification'],
-                  ['sclsy', 'classification_system'],
-                  ['scode', 'codewords'],
-                  ['sctlh', 'control_and_handling'],
-                  ['srel', 'release_instructions'],
-                  ['sdctp', 'declassification_type'],
-                  ['sdcdt', 'declassification_date'],
-                  ['sdcxm', 'declassification_exemption'],
-                  ['sdg', 'downgrade'],
-                  ['sdgdt', 'downgrade_date'],
-                  ['scltx', 'classification_text'],
-                  ['scatp', 'classification_authority_type'],
-                  ['scaut', 'classification_authority'],
-                  ['scrsn', 'classification_reason'],
-                  ['ssrdt', 'security_source_date'],
-                  ['sctln', 'security_control_number'],
-                  ['scop', 'copy_number'],
-                  ['scpys', 'number_of_copies']]:
+                  ['clas', 'classification'],
+                  ['clsy', 'classification_system'],
+                  ['code', 'codewords'],
+                  ['ctlh', 'control_and_handling'],
+                  ['rel', 'release_instructions'],
+                  ['dctp', 'declassification_type'],
+                  ['dcdt', 'declassification_date'],
+                  ['dcxm', 'declassification_exemption'],
+                  ['dg', 'downgrade'],
+                  ['dgdt', 'downgrade_date'],
+                  ['cltx', 'classification_text'],
+                  ['catp', 'classification_authority_type'],
+                  ['caut', 'classification_authority'],
+                  ['crsn', 'classification_reason'],
+                  ['srdt', 'security_source_date'],
+                  ['ctln', 'security_control_number'],
+                  ['cop', 'copy_number'],
+                  ['cpys', 'number_of_copies']]:
             if(hasattr(elem, prefix + field_name)):
                 setattr(elem, prefix + field_name,
                         getattr(self, attribute_name))

@@ -56,10 +56,10 @@ def _summary(self):
 NitfTextSubheader.summary = _summary
 
 def _get_security(self):
-    return NitfSecurity.get_security(self, "t")
+    return NitfSecurity.get_security(self, "ts")
 
 def _set_security(self, s):
-    s.set_security(self, "t")
+    s.set_security(self, "ts")
 
 NitfTextSubheader.security = property(_get_security, _set_security)
 

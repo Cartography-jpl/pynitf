@@ -41,7 +41,7 @@ class ResUserSubheaderHandle(object, metaclass=abc.ABCMeta):
     def user_subheader_cls(self, seg):
         pass
 
-class DesidToUSHHandle(DesUserSubheaderHandle):
+class DesIdToUSHHandle(DesUserSubheaderHandle):
     def __init__(self):
         self.des_id_to_cls = {}
         
@@ -51,7 +51,7 @@ class DesidToUSHHandle(DesUserSubheaderHandle):
     def add_des_user_subheader(self, desid, cls):
         self.des_id_to_cls[desid] = cls
 
-desid_to_user_subheader_handle = DesidToUSHHandle()
+desid_to_user_subheader_handle = DesIdToUSHHandle()
 
 DesUserSubheaderHandleSet.add_default_handle(desid_to_user_subheader_handle)
 
@@ -61,4 +61,4 @@ __all__ = ["desid_to_user_subheader_handle",
            "ResUserSubheaderHandleSet",
            "DesUserSubheaderHandle",
            "ResUserSubheaderHandle",
-           "DesidToUSHHandle"]
+           "DesIdToUSHHandle"]

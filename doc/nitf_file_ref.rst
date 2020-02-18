@@ -29,3 +29,40 @@ PriorityHandleSet
 
 .. autoclass:: PriorityHandleSet
    :members:	       
+
+NitfSegmentUserSubheaderHandleSet
+---------------------------------
+
+.. autoclass:: NitfSegmentUserSubheaderHandleSet
+   :members:	       
+
+ResUserSubheaderHandleSet
+---------------------------------
+
+.. autoclass:: ResUserSubheaderHandleSet
+   :members:	       
+
+ResUserSubheaderHandle
+---------------------------------
+
+.. autoclass:: ResUserSubheaderHandle
+   :members:	       
+
+DesUserSubheaderHandleSet
+---------------------------------
+
+.. autoclass:: DesUserSubheaderHandleSet
+   :members:	       
+
+DesUserSubheaderHandle
+---------------------------------
+
+.. autoclass:: DesUserSubheaderHandle
+   :members:	       
+
+DesIdToUSHHandle
+----------------
+
+.. autoclass:: DesIdToUSHHandle
+   :members:	       
+

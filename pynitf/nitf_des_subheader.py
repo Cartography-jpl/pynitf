@@ -12,22 +12,22 @@ The NITF DES subheader is described in Table A-8, starting page 112.
 des_desc = [['de', "Data Extension Subheader Identifier", 2, str],
         ['desid', "Unique Data Extension Segment Type Identifier", 25, str],
         ['dsver', "Version of the Data Definition", 2, int],
-        ['dsclas', "Data Extension Segment Security Classification", 1, str],
-        ['dsclsy', "Data Extension Segment Security Classification System", 2, str],
-        ['dscode', "DES Codewords", 11, str],
-        ['dsctlh', "DES Control and Handling", 2, str],
-        ['dsrel', "DES Release Instructions", 20, str],
-        ['dsdctp', "DES Declassification Type", 2, str],
-        ['dsdcdt', "DES Declassification Date", 8, str],
-        ['dsdcxm', "DES Declassification Exemption", 4, str],
-        ['dsdg', "DES Downgrade", 1, str],
-        ['dsdgdt', "DES Downgrade Date", 8, str],
-        ['dscltx', "DES Classification Text", 43, str],
-        ['dscatp', "DES Classification Authority Type", 1, str],
-        ['dscaut', "DES Classification Authority", 40, str],
-        ['dscrsn', "DES Classification Reason", 1, str],
-        ['dssrdt', "DES Security Source Date", 8, str],
-        ['dsctln', "DES Security Control Number", 15, str],
+        ['desclas', "Data Extension Segment Security Classification", 1, str],
+        ['desclsy', "Data Extension Segment Security Classification System", 2, str],
+        ['descode', "DES Codewords", 11, str],
+        ['desctlh', "DES Control and Handling", 2, str],
+        ['desrel', "DES Release Instructions", 20, str],
+        ['desdctp', "DES Declassification Type", 2, str],
+        ['desdcdt', "DES Declassification Date", 8, str],
+        ['desdcxm', "DES Declassification Exemption", 4, str],
+        ['desdg', "DES Downgrade", 1, str],
+        ['desdgdt', "DES Downgrade Date", 8, str],
+        ['descltx', "DES Classification Text", 43, str],
+        ['descatp', "DES Classification Authority Type", 1, str],
+        ['descaut', "DES Classification Authority", 40, str],
+        ['descrsn', "DES Classification Reason", 1, str],
+        ['dessrdt', "DES Security Source Date", 8, str],
+        ['desctln', "DES Security Control Number", 15, str],
         ['desoflw', "", 6, str, {"condition" : "f.desid == 'TRE_OVERFLOW'"}],
         ['desitem', "", 3, int, {"condition" : "f.desid == 'TRE_OVERFLOW'"}],
         ['desshl', "DES User-Defined Subheader Length", 4, int],
@@ -45,10 +45,10 @@ def summary(self):
 NitfDesSubheader.summary = summary
 
 def _get_security(self):
-    return NitfSecurity.get_security(self, "d")
+    return NitfSecurity.get_security(self, "des")
 
 def _set_security(self, s):
-    s.set_security(self, "d")
+    s.set_security(self, "des")
 
 NitfDesSubheader.security = property(_get_security, _set_security)
 
