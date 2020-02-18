@@ -226,7 +226,7 @@ class CsscdbDiff(FieldStructDiff):
                 return (False, None)
             return (True, self.compare_obj(h1, h2, nitf_diff))
 
-NitfDiffHandleSet.add_default_handle(CsscdbDiff)
+NitfDiffHandleSet.add_default_handle(CsscdbDiff())
 # No default configuration
 _default_config = {}
 NitfDiffHandleSet.default_config["DesCSCSDB"] = _default_config

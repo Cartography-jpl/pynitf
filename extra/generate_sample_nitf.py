@@ -120,16 +120,7 @@ def write_by_row_p(d, bstart, lstart, sstart):
             #print(a*20+b*30)
             d[a, b] = a*20+b*30
 
-if __name__ ==  "__main__":
-    # Create the file. We don't supply a name yet, that comes when we actually
-    # write
-
-    nitf_1 = 'sample_nitf.ntf'
-
-    f = NitfFile()
-
-    #Let's generate 50 images
-
+def create_50_images(f):
     for t in range(50):
         # Create a NitfImage source. The particular one we have here just puts all
         # the data into a numpy array, which is nice for testing. We'll probably
@@ -144,17 +135,75 @@ if __name__ ==  "__main__":
         # NitfImageSegment (which adds the subheader). f.image_segment here is
         # just a normal python array.
         seg = NitfImageSegment(img)
+        seg.subheader.iid1 = 'IMG_'+str(t+1)
         seg.tre_list.append(createILLUMB())
         f.image_segment.append(seg)
 
+def create_16bit_image():
     # Create a larger img segment
     img2 = NitfImageWriteDataOnDemand(nrow=30, ncol=30, data_type=np.uint8,
                                       numbands=50, data_callback=write_zero,
                                       image_gen_mode=NitfImageWriteDataOnDemand.IMAGE_GEN_MODE_BAND)
     segment2 = NitfImageSegment(img2)
+    segment2.subheader.iid1 = '16bit'
     segment2.tre_list.append(createHISTOA())
     segment2.tre_list.append(createENGRDA())
-    f.image_segment.append(segment2)
+
+    return segment2
+
+def create_float_image_1():
+    # 32bit float image w large pixel values
+    img = NitfImageWriteNumpy(1000, 1000, np.float32)
+    for i in range(1000):
+        for j in range(1000):
+            img[0, i, j] = i + j
+
+    segment = NitfImageSegment(img)
+    segment.subheader.iid1 = 'float1'
+
+    return segment
+
+def create_float_image_2():
+    # 32bit float image w small pixel values
+    img = NitfImageWriteNumpy(1000, 1000, np.float32)
+    for i in range(1000):
+        for j in range(1000):
+            img[0, i, j] = i/2000 + j/2000
+
+    segment = NitfImageSegment(img)
+    segment.subheader.iid1 = 'float2'
+
+    return segment
+
+
+def create_float_image_3():
+    # 32bit float image w small pixel values and a couple extreme values
+    img = NitfImageWriteNumpy(1000, 1000, np.float32)
+    for i in range(1000):
+        for j in range(1000):
+            img[0, i, j] = i/2000 + j/2000
+
+    img[0,7,7] = -120
+    img[0,100,100] = 250
+
+    segment = NitfImageSegment(img)
+    segment.subheader.iid1 = 'float3'
+
+    return segment
+
+if __name__ ==  "__main__":
+    # Create the file. We don't supply a name yet, that comes when we actually
+    # write
+
+    nitf_1 = 'sample_nitf.ntf'
+
+    f = NitfFile()
+
+    create_50_images(f)
+    f.image_segment.append(create_16bit_image())
+    f.image_segment.append(create_float_image_1())
+    f.image_segment.append(create_float_image_2())
+    f.image_segment.append(create_float_image_3())
 
     # Write by column
     img3 = NitfImageWriteDataOnDemand(nrow=400, ncol=300, data_type=np.dtype('>i2'),
