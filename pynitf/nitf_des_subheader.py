@@ -52,6 +52,16 @@ def _set_security(self, s):
 
 NitfDesSubheader.security = property(_get_security, _set_security)
 
+# Synonym for desshf so we can have generic handling for user subheader
+def _get_user_subheader_data(self):
+    return self.desshf
+
+def _set_user_subheader_data(self, v):
+    self.desshf = v
+
+NitfDesSubheader.user_subheader_data = property(_get_user_subheader_data,
+                                                _set_user_subheader_data)    
+
 class DesSubheaderDiff(FieldStructDiff):
     '''Compare two des subheaders.'''
     def configuration(self, nitf_diff):

@@ -48,7 +48,7 @@ def test_des_csattb_basic():
     assert d.user_subheader_size == 46 
 
     fh = io.BytesIO()
-    dseg = NitfDesSegment(des=d);
+    dseg = NitfDesSegment(d);
     hs, ds = dseg.write_to_file(fh, 0)
     print(fh.getvalue())
     assert fh.getvalue() == b'DECSATTB                   01U                                                                                                                                                                      0046                                    0  00000001110900.50000000020170501235959.10000100000005-0.111110000000000-0.111110000000000+0.111110000000000+0.111110000000000-0.111110000000000-0.111110000000000+0.111110000000000+0.111110000000000-0.111110000000000-0.111110000000000+0.111110000000000+0.111110000000000-0.111110000000000-0.111110000000000+0.111110000000000+0.111110000000000-0.111110000000000-0.111110000000000+0.111110000000000+0.111110000000000000000000'
@@ -76,11 +76,11 @@ def test_des_csattb_basic():
 
 def test_des_csattb_uuid_func(isolated_dir):
     d1 = DesCSATTB()
-    dseg1 = NitfDesSegment(des=d1);
+    dseg1 = NitfDesSegment(d1);
     d2 = DesCSATTB()
-    dseg2 = NitfDesSegment(des=d2);
+    dseg2 = NitfDesSegment(d2);
     d3 = DesCSATTB()
-    dseg3 = NitfDesSegment(des=d3);
+    dseg3 = NitfDesSegment(d3);
     dseg1.des.generate_uuid_if_needed()
     dseg2.des.generate_uuid_if_needed()
     dseg3.des.generate_uuid_if_needed()

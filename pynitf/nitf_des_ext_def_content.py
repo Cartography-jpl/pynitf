@@ -122,13 +122,13 @@ class DesEXT_DEF_CONTENT(NitfDes):
     NSGPDD-A).'''
     uh_class = DesExtContentHeader
     
-    def __init__(self, des_subheader = None, header_size=None,
+    def __init__(self, subheader = None, header_size=None,
                  data_size=None, user_subheader=None):
         super().__init__(des_id="EXT_DEF_CONTENT",
-                         des_subheader=des_subheader,
+                         subheader=subheader,
                          header_size=header_size, data_size=data_size,
                          user_subheader=user_subheader)
-        if(self.des_subheader.desid != "EXT_DEF_CONTENT"):
+        if(self.subheader.desid != "EXT_DEF_CONTENT"):
             raise NitfDesCannotHandle()
         self.user_subheader._des = self
         self.data = None
@@ -162,11 +162,11 @@ desid_to_user_subheader_handle.add_des_user_subheader("EXT_DEF_CONTENT",
                                                       DesExtContentHeader)
 
 class DesEXT_h5(DesEXT_DEF_CONTENT):
-    def __init__(self, file = None, des_subheader = None, header_size=None,
+    def __init__(self, file = None, subheader = None, header_size=None,
                  data_size=None, user_subheader=None,
                  des_id1= b"h5file", des_id2= b"This is a h5 file",
                  temp_dir=None):
-        super().__init__(des_subheader = des_subheader, header_size=header_size,
+        super().__init__(subheader = subheader, header_size=header_size,
                          data_size=data_size, user_subheader=user_subheader)
         self.user_subheader.content_type = b"application/x-hdf5"
         if(not user_subheader):

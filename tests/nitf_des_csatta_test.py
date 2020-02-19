@@ -19,7 +19,7 @@ def test_des_csatta_basic():
         d.att_q4[n] = 0.11111
 
     fh = io.BytesIO()
-    dseg = NitfDesSegment(des=d);
+    dseg = NitfDesSegment(d);
     hs, ds = dseg.write_to_file(fh, 0)
     print(fh.getvalue())
     assert fh.getvalue() == b'DECSATTA                   01U                                                                                                                                                                      0000ORIGINAL    900.500000000020170501235959.10000100005-0.11111-0.1111100.1111100.11111-0.11111-0.1111100.1111100.11111-0.11111-0.1111100.1111100.11111-0.11111-0.1111100.1111100.11111-0.11111-0.1111100.1111100.11111'

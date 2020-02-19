@@ -253,7 +253,7 @@ def test_EXT_DEF_CONTENT_eq(isolated_dir):
     h_f['abc']=456
     h_f.close()
     d.attach_file("mytestfile.hdf5")
-    de3 = NitfDesSegment(des=d)
+    de3 = NitfDesSegment(d)
     f.des_segment.append(de3)
     f.write("basic_nitf.ntf")
 
@@ -261,7 +261,7 @@ def test_EXT_DEF_CONTENT_eq(isolated_dir):
     f2 = create_basic_nitf()
     d = DesEXT_h5()
     d.attach_file("mytestfile.hdf5")
-    de3 = NitfDesSegment(des=d)
+    de3 = NitfDesSegment(d)
     f2.des_segment.append(de3)
     f2.write("basic2_nitf.ntf")
 
@@ -282,7 +282,7 @@ def test_EXT_DEF_CONTENT_ne(isolated_dir):
     h_f['abc']=456
     h_f.close()
     d.attach_file("mytestfile.hdf5")
-    de3 = NitfDesSegment(des=d)
+    de3 = NitfDesSegment(d)
     f.des_segment.append(de3)
     f.write("basic_nitf.ntf")
 
@@ -293,7 +293,7 @@ def test_EXT_DEF_CONTENT_ne(isolated_dir):
     h_f['abc'] = 457
     h_f.close()
     d.attach_file("mytestfile.hdf5")
-    de3 = NitfDesSegment(des=d)
+    de3 = NitfDesSegment(d)
     f2.des_segment.append(de3)
     f2.write("basic2_nitf.ntf")
 

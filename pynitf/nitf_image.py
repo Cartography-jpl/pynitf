@@ -1,107 +1,10 @@
 from .nitf_image_subheader import (NitfImageSubheader,
                                    set_default_image_subheader)
-from .priority_handle_set import PriorityHandleSet
+from .nitf_segment_data_handle import (NitfImage, NitfSegmentDataHandleSet)
 from .nitf_security import security_unclassified
 from .nitf_diff_handle import (NitfDiffHandle, NitfDiffHandleSet)
-import abc
 import numpy as np
-import collections
 import logging
-
-class NitfImageCannotHandle(RuntimeError):
-    '''Exception that indicates we can't read a particular image. Note that
-    this does *not* mean an error occured - e.g., a corrupt image. Rather this
-    means that the image is a type we don't handle, e.g., JPEG-2000.'''
-    def __init__(self, msg = "Can't handle this type of image"):
-        RuntimeError.__init__(self, msg)
-        
-class NitfImage(object, metaclass=abc.ABCMeta):
-    '''This contains a image that we want to read or write from NITF.
-
-    This class supplies a basic interface, a specific type of image can
-    derive from this class and supply some of the missing functionality.
-
-    We take in the image subheader (a NitfImageSubheader object), derived
-    classes should fill in details of the subheader.
-
-    A image doesn't actually have to derive from NitfImage if for some
-    reason that is inconvenient, we use the standard duck typing and
-    any class that supplies the right functions can be used. But this
-    base class supplies what the interface should be.
-
-    Note that a NitfImage class doesn't need to handle all types of images
-    (e.g., supporting reading JPEG-2000). If it can't handle reading 
-    a particular image, it should throw a NitfImageCannotHandle exception. 
-    The NitfImageSegment class will then just move on to next possible
-    handler class.
-
-    Also, many of the derived classes will support either reading or writing,
-    but not both. 
-    '''
-    def __init__(self, image_subheader=None, header_size=None, data_size=None):
-        self.image_subheader = image_subheader
-        self.header_size = header_size
-        self.data_size = data_size
-        self.data_start = None
-        # Derived classes should fill in information
-
-    # Derived classes may want to override this to give a more detailed
-    # description of what kind of image this is.
-    def __str__(self):
-        return 'NitfImage'
-
-    # Declare a few types that we would expect from a numpy array, since
-    # we often want to treat a NitfImage as something close to a numpy array.
-    @property
-    def shape(self):
-        return self.image_subheader.shape
-
-    @property
-    def dtype(self):
-        return self.image_subheader.dtype
-
-    # Few properties from image_subheader that we want at this level
-    @property
-    def idlvl(self):
-        return self.image_subheader.idlvl
-
-    @idlvl.setter
-    def idlvl(self, lvl):
-        self.image_subheader.idlvl = lvl
-    
-    @property
-    def iid1(self):
-        return self.image_subheader.iid1
-    
-    @abc.abstractmethod
-    def read_from_file(self, fh, segindex=None):
-        '''Read an image from a file. For larger images a derived class might
-        want to not actually read in the data (e.g., you might memory
-        map the data or otherwise generate a 'read on demand'), but at
-        the end of the read fh should point past the end of the image data
-        (e.g., do a fh.seek(start_pos + size of image) or something like 
-        that)
-        We pass in the 0 based image segment index in the file. Most classes
-        don't care about this, but classes that use external readers (e.g.,
-        GdalMultiBand in GeoCal) can make use of this information.
-        '''
-        raise NotImplementedError()
-
-    @abc.abstractmethod
-    def write_to_file(self, fh):
-        '''Write an image to a file.'''
-        raise NotImplementedError()
-
-    @property
-    def security(self):
-        '''NitfSecurity for Image.'''
-        return self.image_subheader.security
-
-    @security.setter
-    def security(self, v):
-        '''Set NitfSecurity for Image.'''
-        self.image_subheader.security = v
-
 
 class NitfImageWithSubset(NitfImage):
     '''It is common for a NitfImage to allow reading a subset of the data. 
@@ -138,20 +41,16 @@ class NitfImagePlaceHolder(NitfImage):
     '''Implementation that doesn't actually read any data, useful as a
     final place holder if none of our other NitfImage classes can handle
     a particular image. We just skip over the data when reading.'''
-    def __init__(self, image_subheader = None, header_size = None,
-                 data_size = None):
-        NitfImage.__init__(self,image_subheader, header_size, data_size)
-        
+    
     def __str__(self):
-        return "NitfImagePlaceHolder %d bytes of data" % (self.data_size)
+        return "NitfImagePlaceHolder %d bytes of data" % (self.seg.data_size)
 
     def __eq__(self, other):
         if not isinstance(other, NitfImagePlaceHolder):
             # don't attempt to compare against unrelated types
             return NotImplemented
 
-        return self.image_subheader == other.image_subheader and self.header_size == other.header_size and\
-               self.data_size == other.data_size
+        return self.subheader == other.subheader
 
     def read_from_file(self, fh, segindex=None):
         '''Read an image from a file. For larger images a derived class might
@@ -162,11 +61,14 @@ class NitfImagePlaceHolder(NitfImage):
         that)'''
         self.data_start = fh.tell()
         self.fh_in_name = fh.name
-        fh.seek(self.data_size, 1)
+        fh.seek(self.seg.data_size, 1)
+        # Save, in case we are copying
+        self._data_size = self.seg.data_size
+        return True
 
     def write_to_file(self, fh):
         '''Write an image to a file.'''
-        bytes_left = self.data_size
+        bytes_left = self._data_size
         buffer_size = 1024*1024
         with open(self.fh_in_name, 'rb') as fh_in:
             fh_in.seek(self.data_start)
@@ -187,7 +89,7 @@ class ImagePlaceHolderDiff(NitfDiffHandle):
            not isinstance(d2, NitfImagePlaceHolder)):
             return (False, None)
         logger.warn("Skipping image '%s', don't know how to read it.",
-                    d1.image_subheader.iid1)
+                    d1.subheader.iid1)
         return (True, True)
 
 NitfDiffHandleSet.add_default_handle(ImagePlaceHolderDiff())
@@ -204,10 +106,8 @@ class NitfImageReadNumpy(NitfImageWithSubset):
         than reading it into memory (useful for larger files). Otherwise, we
         read directly into memory'''
         self.do_mmap = kwargs.pop('mmap', True)
-        super(NitfImageReadNumpy, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.data = None
-        if self.image_subheader is None:
-            self.image_subheader = NitfImageSubheader()
 
     def __getitem__(self, ind):
         return self.data[ind]
@@ -220,20 +120,21 @@ class NitfImageReadNumpy(NitfImageWithSubset):
     def read_from_file(self, fh, segindex=None):
         '''Read from a file'''
 
-        # Save the file handle and data start location in the file because it will come in handy later
+        # Save the file handle and data start location in the file because
+        # it will come in handy later
         self.data_start = fh.tell()
         self.fh_in_name = fh.name
 
         # Check if we can read the data.
-        ih = self.image_subheader
+        ih = self.subheader
         if(ih.ic != "NC"):
-            raise NitfImageCannotHandle("Can only handle uncompressed images")
+            return False
         if(ih.nbpr != 1 or ih.nbpc != 1):
-            raise NitfImageCannotHandle("Cannot handle blocked data")
+            return False
         # We could add support here for pixel or row interleave here if
         # needed, just need to work though juggling the data here.
         if(ih.imode != "B" and ih.imode != "P"):
-            raise NitfImageCannotHandle("Currently only support Image Modes B and P")
+            return False
         if(self.do_mmap):
             foff = fh.tell()
             self.data = np.memmap(fh, mode="r", dtype = ih.dtype,
@@ -245,6 +146,7 @@ class NitfImageReadNumpy(NitfImageWithSubset):
                                     count=ih.nrows*ih.ncols*ih.number_band)
             self.data = np.reshape(self.data, self.shape)
         self.data_size = self.data.size * self.data.itemsize
+        return True
 
     def write_to_file(self, fh):
         '''Write an image to a file.'''
@@ -273,11 +175,11 @@ class ImageReadNumpyDiff(NitfDiffHandle):
         # TODO Expose tolerance as configuration parameters
         if(t1.shape != t2.shape):
             logger.difference("Image '%s' shape different: %s != %s",
-                              d1.image_subheader.iid1, t1.shape, t2.shape)
+                              d1.subheader.iid1, t1.shape, t2.shape)
             is_same = False
         elif(not np.allclose(t1, t2)):
             logger.difference("Image '%s' is different",
-                              d1.image_subheader.iid1)
+                              d1.subheader.iid1)
             is_same = False
         # TODO Copy over other work by Derek, currently in
         # nitf_diff_support
@@ -327,8 +229,8 @@ class NitfImageWriteDataOnDemand(NitfImageWithSubset):
         together by giving them the same iid1 (e.g., have a number of 
         "Radiance" image segments for multiple view from AirMSPI or something
         like that).'''
-        super(NitfImageWriteDataOnDemand, self).__init__(NitfImageSubheader())
-        set_default_image_subheader(self.image_subheader, nrow, ncol, data_type,
+        super().__init__()
+        set_default_image_subheader(self.subheader, nrow, ncol, data_type,
                                     numbands=numbands, iid1=iid1, iid2=iid2,
                                     idatim=idatim, irep=irep, icat=icat,
                                     idlvl=idlvl)
@@ -346,7 +248,7 @@ class NitfImageWriteDataOnDemand(NitfImageWithSubset):
         self.data_callback(d, bstart, lstart, sstart)
         
     def write_to_file(self, fh):
-        ih = self.image_subheader
+        ih = self.subheader
 
         if (self.image_gen_mode == NitfImageWriteDataOnDemand.IMAGE_GEN_MODE_ALL):
             d = np.zeros((ih.number_band,ih.nrows, ih.ncols), dtype = ih.dtype)
@@ -425,33 +327,11 @@ class NitfRadCalc(object):
         ss = slice(sstart, sstart + d.shape[2])
         d[:,:,:] = self.dn[bs,ls,ss] * self.gain[bs,ls,ss] + self.offset[bs,ls,ss]
 
-class NitfImageHandleSet(PriorityHandleSet):
-    '''Set of handlers for reading an image.'''
-    def handle_h(self, cls, subheader, header_size, data_size, fh, segindex):
-        try:
-            t = cls(image_subheader=subheader,
-                    header_size=header_size,
-                    data_size=data_size)
-            t.read_from_file(fh, segindex)
-        except NitfImageCannotHandle:
-            return (False, None)
-        return (True, t)
+NitfSegmentDataHandleSet.add_default_handle(NitfImageReadNumpy)
+NitfSegmentDataHandleSet.add_default_handle(NitfImagePlaceHolder,
+                                            priority_order= -1000)
         
-def register_image_class(cls, priority_order=0):
-    NitfImageHandleSet.add_default_handle(cls, priority_order)
-
-def unregister_image_class(cls):
-    '''Remove a handler from the list. This isn't used all that often,
-    but it can be useful in testing.'''
-    NitfImageHandleSet.discard_default_handle(cls)
-    
-register_image_class(NitfImageReadNumpy)
-register_image_class(NitfImagePlaceHolder, priority_order=-1000)
-        
-__all__ = ["NitfImageCannotHandle", "NitfImage", "NitfImageWithSubset",
-           "NitfImagePlaceHolder",
+__all__ = ["NitfImageWithSubset", "NitfImagePlaceHolder",
            "NitfImageReadNumpy", "NitfImageWriteDataOnDemand",
-           "NitfImageWriteNumpy", "NitfRadCalc", 
-           "NitfImageHandleSet", "register_image_class",
-           "unregister_image_class"]
+           "NitfImageWriteNumpy", "NitfRadCalc"]
 

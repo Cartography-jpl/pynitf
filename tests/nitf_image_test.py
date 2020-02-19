@@ -11,7 +11,7 @@ def test_basic_read():
     t2 = NitfImageReadNumpy(mmap=True)
     with open(unit_test_data + "sample.ntf", 'rb') as fh:
         t.read_from_file(fh)
-        t2.image_subheader.read_from_file(fh)
+        t2.subheader.read_from_file(fh)
         t2.read_from_file(fh)
     assert t2.data.shape == (1, 10, 10)
     for i in range(10):

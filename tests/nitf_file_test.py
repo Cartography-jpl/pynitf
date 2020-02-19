@@ -87,7 +87,7 @@ def create_text_segment(f, security = None):
         'second_name': 'Rossum',
         'titles': ['BDFL', 'Developer'],
     }
-    ts = NitfTextSegment(text = json.dumps(d))
+    ts = NitfTextSegment(json.dumps(d))
     ts.subheader.textid = 'ID12345'
     ts.subheader.txtalvl = 0
     ts.subheader.txtitl = 'sample title'
@@ -110,7 +110,7 @@ def create_des(f, security = None):
         des.att_q3[n] = 10.1
         des.att_q4[n] = 10.1
 
-    de = NitfDesSegment(des=des)
+    de = NitfDesSegment(des)
     f.des_segment.append(de)
     
 def print_diag(f):

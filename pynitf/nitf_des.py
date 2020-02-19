@@ -60,18 +60,18 @@ class NitfDes(object, metaclass=abc.ABCMeta):
     # class is
     uh_class = None
     def __init__(self, des_id=None,
-                 des_subheader=None, header_size=None, data_size=None,
+                 subheader=None, header_size=None, data_size=None,
                  user_subheader=None,
                  security = security_unclassified):
-        if(des_subheader is not None):
-            self.des_subheader = des_subheader
+        if(subheader is not None):
+            self.subheader = subheader
         else:
             h = NitfDesSubheader()
             if(des_id is not None):
                 h.desid = des_id
             h.dsver = 1
             h.security = security
-            self.des_subheader = h
+            self.subheader = h
         self.header_size = header_size
         self.data_size = data_size
         self.user_subheader = user_subheader
@@ -130,12 +130,12 @@ class NitfDes(object, metaclass=abc.ABCMeta):
     @property
     def security(self):
         '''NitfSecurity for DES.'''
-        return self.des_subheader.security
+        return self.subheader.security
 
     @security.setter
     def security(self, v):
         '''Set NitfSecurity for DES.'''
-        self.des_subheader.security = v
+        self.subheader.security = v
 
     
 class NitfDesFieldStruct(NitfDes, _FieldStruct):
@@ -156,13 +156,13 @@ class NitfDesFieldStruct(NitfDes, _FieldStruct):
     des_tag = None
     data_after_allowed = None
     data_copy = None
-    def __init__(self, des_subheader=None, header_size=None,
+    def __init__(self, subheader=None, header_size=None,
                  user_subheader=None, data_size=None):
         NitfDes.__init__(self, self.des_tag,
-                         des_subheader, header_size, data_size,
+                         subheader, header_size, data_size,
                          user_subheader = user_subheader)
         _FieldStruct.__init__(self)
-        if(self.des_subheader.desid != self.des_tag):
+        if(self.subheader.desid != self.des_tag):
             raise NitfDesCannotHandle()
         self.data_start = None
         self.data_after_tre_size = None
@@ -234,16 +234,16 @@ class NitfDesObjectHandle(NitfDes):
     '''
     uh_class = None
     des_tag = None
-    def __init__(self, des_subheader=None, header_size=None,
+    def __init__(self, subheader=None, header_size=None,
                  user_subheader=None, data_size=None):
         if(DEBUG):
             print("In constructor for %s" % self.des_tag)
         super().__init__(self.des_tag,
-                         des_subheader, header_size, data_size,
+                         subheader, header_size, data_size,
                          user_subheader = user_subheader)
         if(DEBUG):
-            print("Trying to match %s" % self.des_subheader.desid)
-        if(self.des_subheader.desid != self.des_tag):
+            print("Trying to match %s" % self.subheader.desid)
+        if(self.subheader.desid != self.des_tag):
             if(DEBUG):
                 print("Match failed")
             raise NitfDesCannotHandle()
@@ -294,8 +294,8 @@ class NitfDesPlaceHolder(NitfDes):
     '''Implementation that doesn't actually read any data, useful as a
     final place holder if none of our other NitfDes classes can handle
     a particular DES. We just skip over the data when reading.'''
-    def __init__(self, des_subheader=None, header_size=None, data_size=None):
-        super().__init__("",des_subheader, header_size, data_size)
+    def __init__(self, subheader=None, header_size=None, data_size=None):
+        super().__init__("",subheader, header_size, data_size)
         self.data_start = None
 
     def __str__(self):
@@ -316,7 +316,7 @@ class DesPlaceHolderDiff(NitfDiffHandle):
            not isinstance(des2, NitfDesPlaceHolder)):
             return (False, None)
         logger.warning("Skipping DES %s, don't know how to read it.",
-                       des1.des_subheader.desid)
+                       des1.subheader.desid)
         return (True, True)
 
 NitfDiffHandleSet.add_default_handle(DesPlaceHolderDiff())
@@ -325,8 +325,8 @@ class NitfDesCopy(NitfDes):
     '''Implementation that reads from one file and just copies to the other.
     Not normally registered, but can be useful to use for some test cases (e.g.
     want to copy over an unimplemented DES'''
-    def __init__(self, des_subheader=None, header_size=None, data_size=None):
-        super().__init__("",des_subheader, header_size, data_size)
+    def __init__(self, subheader=None, header_size=None, data_size=None):
+        super().__init__("",subheader, header_size, data_size)
         self.data = None
 
     def __str__(self):
@@ -343,18 +343,18 @@ class NitfDesCopy(NitfDes):
     
 class TreOverflow(NitfDes):
     '''DES used to handle TRE overflow.'''
-    def __init__(self, des_subheader=None, header_size=None, data_size=None,
+    def __init__(self, subheader=None, header_size=None, data_size=None,
                  seg_index=None, overflow=None):
         '''Note that seg_index should be the normal 0 based index python
         uses elsewhere. Internal to the DES we translate this to the 1 based
         index that NITF uses.'''
-        super().__init__("TRE_OVERFLOW", des_subheader,
+        super().__init__("TRE_OVERFLOW", subheader,
                          header_size, data_size)
-        if(self.des_subheader.desid.encode("utf-8") != b'TRE_OVERFLOW'):
+        if(self.subheader.desid.encode("utf-8") != b'TRE_OVERFLOW'):
             raise NitfDesCannotHandle()
-        if(des_subheader is None):
-            self.des_subheader.desoflw = str.upper(overflow)
-            self.des_subheader.desitem = seg_index+1
+        if(subheader is None):
+            self.subheader.desoflw = str.upper(overflow)
+            self.subheader.desitem = seg_index+1
         self.data = None
 
     def read_from_file(self, fh):
@@ -453,7 +453,7 @@ class NitfDesHandleSet(PriorityHandleSet):
     '''Set of handlers for reading a DES.'''
     def handle_h(self, cls, subheader, header_size, data_size, fh):
         try:
-            t = cls(des_subheader=subheader,
+            t = cls(subheader=subheader,
                     header_size=header_size,
                     data_size=data_size)
             t.read_from_file(fh)

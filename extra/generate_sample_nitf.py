@@ -247,7 +247,7 @@ if __name__ ==  "__main__":
         'titles': ['BDFL', 'Developer'],
     }
 
-    ts = NitfTextSegment(txt = (json.dumps(d)))
+    ts = NitfTextSegment(data = (json.dumps(d)))
 
     ts.subheader.textid = 'ID12345'
     ts.subheader.txtalvl = 0
@@ -281,7 +281,7 @@ if __name__ ==  "__main__":
         d.q4[n] = 0.11111
     d.reserved_len = 0
 
-    de2 = NitfDesSegment(des = d)
+    de2 = NitfDesSegment(data = d)
     f.des_segment.append(de2)
 
     # -- CSEPHB --
@@ -311,7 +311,7 @@ if __name__ ==  "__main__":
         d.ephem_z[n] = n * n + offset2
     d.reserved_len = 0
 
-    de3 = NitfDesSegment(des=d)
+    de3 = NitfDesSegment(data=d)
     f.des_segment.append(de3)
 
     # -- EXT_DEF_CONTENT --
@@ -337,7 +337,7 @@ if __name__ ==  "__main__":
     h_f.close()
     d_ext.attach_file("mytestfile.hdf5")
 
-    de3 = NitfDesSegment(des=d_ext)
+    de3 = NitfDesSegment(data=d_ext)
     f.des_segment.append(de3)
 
     #print (f)

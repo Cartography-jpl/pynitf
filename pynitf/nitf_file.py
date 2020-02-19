@@ -4,7 +4,6 @@
 # file doc/Nitf_file.xmi (e.g., use umbrello) to see the design.
 
 from .nitf_file_header import NitfFileHeader
-from .nitf_image import NitfImageHandleSet
 from .nitf_des import NitfDesHandleSet
 from .nitf_tre import read_tre, prepare_tre_write, add_find_tre_function
 from .nitf_tre_engrda import add_engrda_function
@@ -14,6 +13,7 @@ from .nitf_segment import (NitfImageSegment, NitfGraphicSegment,
                            NitfResSegment)
 from .nitf_segment_hook import NitfSegmentHookSet
 from .nitf_segment_user_subheader_handle import NitfSegmentUserSubheaderHandleSet
+from .nitf_segment_data_handle import NitfSegmentDataHandleSet
 import io,copy,weakref
 import copy
 import collections
@@ -38,6 +38,8 @@ class NitfFile(object):
        :ivar segment_hook_set: The NitfSegmentHookSet to use for the file.
        :ivar user_subheader_handle_set: The NitfSegmentUserSubheaderHandleSet
                                to use for this file
+       :ivar data_handle_set:  The NitfSegmentDataHandleSet to use for this
+                               file
        :ivar report_raw:       If True, suppress NitfSegmentHook when printing
        :ivar image_segment:    List of NitfImageSegment objects for the file.
        :ivar graphic_segment:  List of NitfGraphicSegment objects for the file.
@@ -57,7 +59,7 @@ class NitfFile(object):
         self.report_raw = False
         self.segment_hook_set = copy.copy(NitfSegmentHookSet.default_hook_set())
         self.user_subheader_handle_set = copy.copy(NitfSegmentUserSubheaderHandleSet.default_handle_set())
-        self.image_handle_set = copy.copy(NitfImageHandleSet.default_handle_set())
+        self.data_handle_set = copy.copy(NitfSegmentDataHandleSet.default_handle_set())
         self.des_handle_set = copy.copy(NitfDesHandleSet.default_handle_set())
         # This is the order things appear in the file
         self.image_segment = ListNitfFileReference(self)

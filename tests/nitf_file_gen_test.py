@@ -150,7 +150,7 @@ def test_main(isolated_dir):
     img3 = NitfImageWriteDataOnDemand(nrow=400, ncol=300, data_type=np.dtype('>i2'),
                                       numbands=50, data_callback=write_by_row_p,
                                       image_gen_mode=NitfImageWriteDataOnDemand.IMAGE_GEN_MODE_ROW_P)
-    ih = img3.image_subheader
+    ih = img3.subheader
     ih.nbpr = 300
     ih.nbpc = 1
     ih.nppbh = 1
@@ -189,7 +189,7 @@ def test_main(isolated_dir):
         'titles': ['BDFL', 'Developer'],
     }
 
-    ts = NitfTextSegment(text = (json.dumps(d)))
+    ts = NitfTextSegment(json.dumps(d))
 
     ts.subheader.textid = 'ID12345'
     ts.subheader.txtalvl = 0
@@ -223,7 +223,7 @@ def test_main(isolated_dir):
         d.q4[n] = 0.11111
     d.reserved_len = 0
 
-    de2 = NitfDesSegment(des = d)
+    de2 = NitfDesSegment(d)
     f.des_segment.append(de2)
 
     # -- CSEPHB --
@@ -253,7 +253,7 @@ def test_main(isolated_dir):
         d.ephem_z[n] = n * n + offset2
     d.reserved_len = 0
 
-    de3 = NitfDesSegment(des=d)
+    de3 = NitfDesSegment(d)
     f.des_segment.append(de3)
 
     # -- EXT_DEF_CONTENT --
@@ -279,7 +279,7 @@ def test_main(isolated_dir):
     h_f.close()
     d_ext.attach_file("mytestfile.hdf5")
 
-    de3 = NitfDesSegment(des=d_ext)
+    de3 = NitfDesSegment(d_ext)
     f.des_segment.append(de3)
 
     #print (f)

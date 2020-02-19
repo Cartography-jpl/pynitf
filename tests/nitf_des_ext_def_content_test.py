@@ -11,7 +11,7 @@ def test_file(isolated_dir):
     f = NitfFile()
     d = DesEXT_DEF_CONTENT(data_size=10)
     d.user_subheader.content_description = b"hi there"
-    f.des_segment.append(NitfDesSegment(des = d))
+    f.des_segment.append(NitfDesSegment(d))
     f.write("des_test.ntf")
     f2 = NitfFile("des_test.ntf")
     assert f2.des_segment[0].des.user_subheader.content_description == b"hi there"
@@ -52,7 +52,7 @@ def test_h5py_file(isolated_dir):
     f = NitfFile()
     d = DesEXT_h5(file="test.h5")
     d.user_subheader.content_description = b"hi there"
-    f.des_segment.append(NitfDesSegment(des = d))
+    f.des_segment.append(NitfDesSegment(d))
     f.write("des_test.ntf")
     f2 = NitfFile("des_test.ntf")
     assert f2.des_segment[0].des.user_subheader.content_description == b"hi there"
