@@ -314,27 +314,27 @@ def test_copy_worldview(nitf_sample_wv2):
     '''
     # Some of the DESs aren't implemented yet. Just copy these over for
     # now, so we can test everything we do have.
-    try:
-        pynitf.register_des_class(pynitf.NitfDesCopy, priority_order=999)
-        f = NitfFile(nitf_sample_wv2)
-        original_output = str(f)
-        fname_copy = "worldview_copy.ntf"
-        f.write(fname_copy)
-        copy_output = str(NitfFile(fname_copy))
-        with open("f1.txt", "w") as fh:
-            print(original_output, file=fh)
-        with open("f2.txt", "w") as fh:
-            print(copy_output, file=fh)
-        # This is different, but just because the original worldview file put
-        # some of the TREs in the TRE_OVERFLOW DES, when they actually fit
-        # in the normal TRE header. So we have the same content, just a
-        # different arrangement. Don't have a easy way to test this, so we
-        # just skip the actual check. Can compare f1.txt and f2.txt manually
-        # if you want to verify the content.
-        #assert original_output == copy_output
-    finally:
-        # Remove, so this doesn't affect other tests
-        pynitf.unregister_des_class(pynitf.NitfDesCopy)
+    f = NitfFile()
+    f.data_handle_set.add_handle(pynitf.NitfDesCopy, priority_order=-999)
+    f.read(nitf_sample_wv2)
+    original_output = str(f)
+    fname_copy = "worldview_copy.ntf"
+    f.write(fname_copy)
+    f2 = NitfFile()
+    f2.data_handle_set.add_handle(pynitf.NitfDesCopy, priority_order=-999)
+    f2.read(fname_copy)
+    copy_output = str(f2)
+    with open("f1.txt", "w") as fh:
+        print(original_output, file=fh)
+    with open("f2.txt", "w") as fh:
+        print(copy_output, file=fh)
+    # This is different, but just because the original worldview file put
+    # some of the TREs in the TRE_OVERFLOW DES, when they actually fit
+    # in the normal TRE header. So we have the same content, just a
+    # different arrangement. Don't have a easy way to test this, so we
+    # just skip the actual check. Can compare f1.txt and f2.txt manually
+    # if you want to verify the content.
+    #assert original_output == copy_output
 
 def test_copy_ikonos(nitf_sample_ikonos):
     '''Test copying a ikonos NITF file. It creates a copy of the file and

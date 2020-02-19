@@ -4,7 +4,6 @@
 # file doc/Nitf_file.xmi (e.g., use umbrello) to see the design.
 
 from .nitf_file_header import NitfFileHeader
-from .nitf_des import NitfDesHandleSet
 from .nitf_tre import read_tre, prepare_tre_write, add_find_tre_function
 from .nitf_tre_engrda import add_engrda_function
 from .nitf_security import security_unclassified
@@ -60,7 +59,6 @@ class NitfFile(object):
         self.segment_hook_set = copy.copy(NitfSegmentHookSet.default_hook_set())
         self.user_subheader_handle_set = copy.copy(NitfSegmentUserSubheaderHandleSet.default_handle_set())
         self.data_handle_set = copy.copy(NitfSegmentDataHandleSet.default_handle_set())
-        self.des_handle_set = copy.copy(NitfDesHandleSet.default_handle_set())
         # This is the order things appear in the file
         self.image_segment = ListNitfFileReference(self)
         self.graphic_segment = ListNitfFileReference(self)

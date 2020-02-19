@@ -12,7 +12,7 @@ The NITF RES subheader is described in Table A-9, starting page 124.
 res_desc = [['re', "Reserve Extension Subheader Identifier", 2, str],
         ['resid', "Unique Reserve Segment Type Identifier", 25, str],
         ['resver', "Version of the Data Definition", 2, int],
-        ['reclas', "Reserve Extension Segment Security Classification", 1, str],
+        ['reclas', "Reserve Extension Segment Security Classification", 1, str, {'default' : 'U'}],
         ['reclsy', "Reserve Extension Segment Security Classification System", 2, str],
         ['recode', "RES Codewords", 11, str],
         ['rectlh', "RES Control and Handling", 2, str],

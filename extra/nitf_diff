@@ -69,7 +69,8 @@ args = pynitf.docopt_simple.docopt_simple(usage, version=version)
 # Load plugins for nitf
 if "NITF_PLUGIN" in os.environ:
     for m in os.environ["NITF_PLUGIN"].split(":"):
-        exec("import %s" % m)
+        if m != "":
+            exec("import %s" % m)
         
 # TODO Remove this
 # Temporary kludge, some extra pieces for geocal that will get

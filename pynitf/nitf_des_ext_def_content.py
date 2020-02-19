@@ -1,5 +1,7 @@
 from .nitf_field import *
 from .nitf_des import *
+from .nitf_segment_data_handle import (NitfDes,
+                                       NitfSegmentDataHandleSet)
 from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
 from .nitf_segment_user_subheader_handle import desid_to_user_subheader_handle
 import io
@@ -121,31 +123,32 @@ class DesEXT_DEF_CONTENT(NitfDes):
     '''This is the NITF EXT_DEF_CONTENT DES. This is a new DES defined in
     NSGPDD-A).'''
     uh_class = DesExtContentHeader
-    
-    def __init__(self, subheader = None, header_size=None,
-                 data_size=None, user_subheader=None):
-        super().__init__(des_id="EXT_DEF_CONTENT",
-                         subheader=subheader,
-                         header_size=header_size, data_size=data_size,
-                         user_subheader=user_subheader)
-        if(self.subheader.desid != "EXT_DEF_CONTENT"):
-            raise NitfDesCannotHandle()
-        self.user_subheader._des = self
+    des_tag = "EXT_DEF_CONTENT"
+    def __init__(self, seg=None, data_size=None):
+        super().__init__(seg)
+        if(not seg):
+            self.user_subheader._des = self
+            self.data_size = data_size
+        else:
+            self.data_size = self._seg.data_size
         self.data = None
 
     def str_hook(self, file):
         print("DesEXT_DEF_CONTENT", file=file)
 
-    def read_from_file(self, fh):
+    def read_from_file(self, fh, seg_index=None):
         '''Read DES from file.
 
         This version doesn't actually read in the data (which might be
         large). Instead, it memory maps a numpy array to the data.
         '''
+        if(self.subheader.desid != "EXT_DEF_CONTENT"):
+            return False
         foff = fh.tell()
         self.data = np.memmap(fh, mode="r", dtype=np.int8,
                               shape=(self.data_size,), offset=foff)
         fh.seek(self.data.size + foff, 0)
+        return True
 
     def write_to_file(self, fh):
         '''This is a dummy write operation. We just write self.data_size
@@ -162,16 +165,17 @@ desid_to_user_subheader_handle.add_des_user_subheader("EXT_DEF_CONTENT",
                                                       DesExtContentHeader)
 
 class DesEXT_h5(DesEXT_DEF_CONTENT):
-    def __init__(self, file = None, subheader = None, header_size=None,
-                 data_size=None, user_subheader=None,
+    def __init__(self, seg=None,file=None,
                  des_id1= b"h5file", des_id2= b"This is a h5 file",
                  temp_dir=None):
-        super().__init__(subheader = subheader, header_size=header_size,
-                         data_size=data_size, user_subheader=user_subheader)
-        self.user_subheader.content_type = b"application/x-hdf5"
-        if(not user_subheader):
+        super().__init__(seg)
+        if(not seg):
+            self.user_subheader.content_type = b"application/x-hdf5"
             self.user_subheader.des_id1 = des_id1
             self.user_subheader.des_id2 = des_id2
+            self.data_size = None
+        else:
+            self.data_size = seg.data_size
         self.file = None
         if(file):
             self.attach_file(file)
@@ -203,11 +207,14 @@ class DesEXT_h5(DesEXT_DEF_CONTENT):
         self._h5py_fh = h5py.File(self.tfh.name, "r")
         return self._h5py_fh
 
-    def read_from_file(self, fh):
-        super().read_from_file(fh)
+    def read_from_file(self, fh, seg_index=None):
+        if(self.subheader.desid != "EXT_DEF_CONTENT"):
+            return False
         if(self.user_subheader.content_type != b"application/x-hdf5"):
-            raise NitfDesCannotHandle()
-        
+            return False
+        super().read_from_file(fh, seg_index)
+        return True
+    
     def str_hook(self, file):
         print("DesEXT_h5", file=file)
 
@@ -226,8 +233,9 @@ class DesEXT_h5(DesEXT_DEF_CONTENT):
             fh.write(self.data)
 
 # Try DesEXT_h5 before falling back to more generic DesEXT_DEF_CONTENT
-register_des_class(DesEXT_DEF_CONTENT, priority_order=-1)
-register_des_class(DesEXT_h5)
+NitfSegmentDataHandleSet.add_default_handle(DesEXT_DEF_CONTENT,
+                                            priority_order=-1)
+NitfSegmentDataHandleSet.add_default_handle(DesEXT_h5)
 
 __all__ = ["DesEXT_DEF_CONTENT", "DesEXT_DEF_CONTENT_UH",
            "DesEXT_h5", "DesExtContentHeader"]

@@ -1,5 +1,6 @@
 from .nitf_field import *
 from .nitf_des import *
+from .nitf_segment_data_handle import NitfSegmentDataHandleSet
 from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
 from .nitf_des_associated_user_subheader import (add_uuid_des_function,
                                                  DesAssociatedUserSubheader)
@@ -52,7 +53,7 @@ def _summary(self):
 DesCSEPHB.summary = _summary
 
 add_uuid_des_function(DesCSEPHB)    
-register_des_class(DesCSEPHB)
+NitfSegmentDataHandleSet.add_default_handle(DesCSEPHB)
 
 class CsephbDiff(FieldStructDiff):
     '''Compare two DesCSEPHB.'''

@@ -12,7 +12,7 @@ The NITF DES subheader is described in Table A-8, starting page 112.
 des_desc = [['de', "Data Extension Subheader Identifier", 2, str],
         ['desid', "Unique Data Extension Segment Type Identifier", 25, str],
         ['dsver', "Version of the Data Definition", 2, int],
-        ['desclas', "Data Extension Segment Security Classification", 1, str],
+        ['desclas', "Data Extension Segment Security Classification", 1, str, {'default' : 'U'}],
         ['desclsy', "Data Extension Segment Security Classification System", 2, str],
         ['descode', "DES Codewords", 11, str],
         ['desctlh', "DES Control and Handling", 2, str],

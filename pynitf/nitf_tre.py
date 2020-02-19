@@ -13,7 +13,6 @@ from .nitf_field import (_FieldStruct, _FieldLoopStruct,
 from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
 import copy
 import io
-from .nitf_des import TreOverflow
 import logging
 
 class Tre(_FieldStruct):
@@ -219,6 +218,7 @@ def prepare_tre_write(tre_list, header, des_list, field_list = [],
         # something we particularly need to break. Instead, work around by
         # delaying the import
         from .nitf_file import NitfDesSegment
+        from .nitf_des import TreOverflow
         # We could in principle have multiple overflow TREs, one for
         # each row in the field_list. For now, we restrict this to only
         # the first row

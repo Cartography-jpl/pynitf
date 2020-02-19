@@ -200,14 +200,14 @@ def test_main(isolated_dir):
     #DES ------------------------------------------------------------------------------
 
     # -- CSATTB --
-    ds = DesCSATTB.uh_class()
+    d = DesCSATTB()
+    ds = d.user_subheader
     ds.id = '4385ab47-f3ba-40b7-9520-13d6b7a7f311'
     ds.numais = '010'
     for i in range(int(ds.numais)):
         ds.aisdlvl[i] = 5 + i
     ds.reservedsubh_len = 0
 
-    d = DesCSATTB(user_subheader=ds)
     d.qual_flag_att = 1
     d.interp_type_att = 1
     d.att_type = 1
@@ -228,7 +228,8 @@ def test_main(isolated_dir):
 
     # -- CSEPHB --
 
-    ds3 = DesCSEPHB.uh_class()
+    d = DesCSEPHB()
+    ds3 = d.user_subheader
     ds3.id = '4385ab47-f3ba-40b7-9520-13d6b7a7f31b'
     ds3.numais = '011'
     for i in range(int(ds3.numais)):
@@ -238,7 +239,6 @@ def test_main(isolated_dir):
     r = 100
     offset1 = 1000
     offset2 = 2000
-    d = DesCSEPHB(user_subheader=ds3)
     d.qual_flag_eph = 1
     d.interp_type_eph = 1
     d.ephem_flag = 1
@@ -310,7 +310,7 @@ def test_main(isolated_dir):
     assert csattb.dt_att == 900.5
     assert csattb.date_att == 20170501
     assert csattb.t0_att == 235959.100001000
-    csattb_uh = f2.des_segment[0].des.user_subheader
+    csattb_uh = f2.des_segment[0].user_subheader
     assert csattb_uh.id == '4385ab47-f3ba-40b7-9520-13d6b7a7f311'
     assert csattb_uh.numais == '010'
     print(f2.des_segment[0])
@@ -321,15 +321,15 @@ def test_main(isolated_dir):
     assert csephb.dt_ephem == 900.5
     assert csephb.date_ephem == 20170501
     assert csephb.t0_ephem == 235959.100001000
-    csephb_uh = f2.des_segment[1].des.user_subheader
+    csephb_uh = f2.des_segment[1].user_subheader
     assert csephb_uh.id == '4385ab47-f3ba-40b7-9520-13d6b7a7f31b'
     assert csephb_uh.numais == '011'
 
     
     assert f2.des_segment[2].subheader.desid == 'EXT_DEF_CONTENT'
-    # Come back to this, doesn't currently work
+    # TODO Come back to this, doesn't currently work
     if(False):
-        ext_uh = f2.des_segment[2].des.user_subheader
+        ext_uh = f2.des_segment[2].user_subheader
         assert ext_uh.content_headers_len == 3
         assert ext_uh.content_headers == b'1:2'
 

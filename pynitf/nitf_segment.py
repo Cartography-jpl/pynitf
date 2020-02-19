@@ -6,11 +6,26 @@ from .nitf_text_subheader import NitfTextSubheader
 from .nitf_des_subheader import NitfDesSubheader
 from .nitf_graphic_subheader import NitfGraphicSubheader
 from .nitf_res_subheader import NitfResSubheader
-from .nitf_des import NitfDesHandleSet
 import io
 import weakref
 import copy
 
+class NitfSharedHeader(object):
+    '''Both NitfData and NitfSegment need access to the subheader and
+    user_subheader of a segment. In some sense the NitfSegment "owns" this
+    since it is responsible for reading and writing the data. But often a
+    NitfData is created first. So we have a small object to hold this data,
+    and this object gets shared between the two. This is an implementation
+    detail, it shouldn't make any difference outside of these classes - the
+    subheader and user_subheader just "do the right thing" when shared between
+    the two.'''
+    def __init__(self, sh_class, uh_class):
+        self.subheader = sh_class()
+        if(uh_class):
+            self.user_subheader = uh_class()
+        else:
+            self.user_subheader = None
+        
 class NitfSegment(object):
     sh_class = None
     update_file_header_field = (None, None)    
@@ -20,11 +35,9 @@ class NitfSegment(object):
         # The isinstance is temporary, to work around the fact that we
         # handle NitfTextSegment data different now. This will go away
         if(self.data and not isinstance(self.data, str)):
-            self.subheader = data.subheader
-            self.user_subheader = data.user_subheader
+            self._shared_header = data._shared_header
         else:
-            self.subheader = self.sh_class()
-            self.user_subheader = None
+            self._shared_header = NitfSharedHeader(self.sh_class, None)
         self.header_size = header_size
         self.data_size = data_size
         # For simplicity, always have a tre_list. For types that don't have
@@ -43,13 +56,33 @@ class NitfSegment(object):
         if(self.nitf_file):
             self.nitf_file.segment_hook_set.after_init_hook(self,
                                                             self.nitf_file)
+
+    @property
+    def subheader(self):
+        '''Return subheader for NitfSegment'''
+        return self._shared_header.subheader
+
+    @subheader.setter
+    def subheader(self, v):
+        '''Set subheader for NitfSegment'''
+        self._shared_header.subheader = v
+    
+    @property
+    def user_subheader(self):
+        '''Return user_subheader for NitfSegment'''
+        return self._shared_header.user_subheader
+
+    @user_subheader.setter
+    def user_subheader(self, v):
+        '''Set user_subheader for NitfSegment'''
+        self._shared_header.user_subheader = v
+    
     @property
     def nitf_file(self):
         if(self._nitf_file is None):
             return None
         return self._nitf_file()
-
-
+    
     @property
     def security(self):
         '''NitfSecurity for Segment.'''
@@ -361,17 +394,6 @@ class NitfDesSegment(NitfSegment):
         '''Synonym for data, just a more descriptive name of content for
         a NitfDesSegment'''
         return self.data
-
-    def read_from_file(self, fh, seg_index=None):
-        '''Read from a file'''
-        self.subheader.read_from_file(fh)
-        self._read_user_subheader()
-        dhs = self.nitf_file.des_handle_set if self.nitf_file else NitfDesHandleSet.default_handle_set()
-        self.data = dhs.handle(self.subheader, self.header_size,
-                               self.data_size, fh)
-        # TODO: Determine if we actually want this copied. Perhaps user
-        # subheader can go through the handle
-        self.data.user_subheader = self.user_subheader
         
     def __str__(self):
         '''Text description of structure, e.g., something you can print out'''

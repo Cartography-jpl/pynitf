@@ -12,7 +12,8 @@ def test_text_subheader_basic():
 
     fh = io.BytesIO()
     t.write_to_file(fh)
-    assert fh.getvalue() == b'TEabcdefg001              ABCDEFG                                                                                                                                                                                                                                                0   00000'
+    print(fh.getvalue())
+    assert fh.getvalue() == b'TEabcdefg001              ABCDEFG                                                                         U                                                                                                                                                                      0   00000'
     fh2 = io.BytesIO(fh.getvalue())
     t2 = NitfTextSubheader()
     t2.read_from_file(fh2)

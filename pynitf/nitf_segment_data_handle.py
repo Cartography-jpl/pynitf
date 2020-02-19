@@ -1,5 +1,5 @@
 from .nitf_segment import (NitfImageSegment, NitfDesSegment, NitfTextSegment,
-                           NitfGraphicSegment, NitfResSegment)
+                           NitfGraphicSegment, NitfResSegment, NitfSharedHeader)
 from .nitf_image_subheader import NitfImageSubheader
 from .nitf_des_subheader import NitfDesSubheader
 from .nitf_text_subheader import NitfTextSubheader
@@ -7,6 +7,7 @@ from .nitf_graphic_subheader import NitfGraphicSubheader
 from .nitf_res_subheader import NitfResSubheader
 from .priority_handle_set import PriorityHandleSet
 import abc
+import io
 
 class NitfSegmentDataHandleSet(PriorityHandleSet):
     '''Handle reading the data in a segment (e.g, a image)'''
@@ -43,17 +44,44 @@ class NitfData(object, metaclass=abc.ABCMeta):
         gets passed in then we use the subheader and if available 
         user_subheader found in that segment. Otherwise we create new
         instances of the classes given by sh_class and uh_class.'''
-        self.seg = seg
+        self._seg = seg
         if seg:
-            self.subheader = seg.subheader
-            self.user_subheader = seg.user_subheader
+            self._shared_header = seg._shared_header
         else:
-            self.subheader = self.sh_class()
-            if(self.uh_class):
-                self.user_subheader = self.uh_class()
-            else:
-                self.user_subheader = None
-                
+            self._shared_header = NitfSharedHeader(self.sh_class,
+                                                   self.uh_class)
+
+    @property
+    def subheader(self):
+        '''Return subheader for NitfData'''
+        return self._shared_header.subheader
+
+    @subheader.setter
+    def subheader(self, v):
+        '''Set subheader for NitfData'''
+        self._shared_header.subheader = v
+    
+    @property
+    def user_subheader(self):
+        '''Return user_subheader for NitfData'''
+        return self._shared_header.user_subheader
+
+    @user_subheader.setter
+    def user_subheader(self, v):
+        '''Set user_subheader for NitfData'''
+        self._shared_header.user_subheader = v
+
+    @property
+    def user_subheader_size(self):
+        '''Return the size of the user subheader. This can be used to
+        make sure we aren't exceeding the size supported by desshl'''
+        if(self.user_subheader):
+            fh = io.BytesIO()
+            self.user_subheader.write_to_file(fh)
+            return len(fh.getvalue())
+        else:
+            return 0
+    
     @abc.abstractmethod
     def read_from_file(self, fh, seg_index = None):
         '''Attempt to read data from the given file.  If the data can't be
@@ -110,7 +138,15 @@ class NitfDes(NitfData):
     '''Base class for reading/writing data in a NitfDesSegment'''
     seg_class = NitfDesSegment
     sh_class = NitfDesSubheader
-
+    des_tag = None
+    des_ver = 1
+    def __init__(self, seg=None):
+        super().__init__(seg)
+        if(seg is None):
+            self.subheader.dsver = self.des_ver
+            if(self.des_tag):
+                self.subheader.desid = self.des_tag
+            
 class NitfText(NitfData):
     '''Base class for reading/writing data in a NitfTextSegment'''
     seg_class = NitfTextSegment

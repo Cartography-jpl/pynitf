@@ -1,5 +1,6 @@
 from .nitf_field import *
 from .nitf_des import *
+from .nitf_segment_data_handle import NitfSegmentDataHandleSet
 from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
 import io
 
@@ -42,7 +43,7 @@ def summary(self):
 
 DesCSATTA.summary = summary
 
-register_des_class(DesCSATTA)
+NitfSegmentDataHandleSet.add_default_handle(DesCSATTA)
 
 class CsattaDiff(FieldStructDiff):
     '''Compare two DesCSATTA.'''

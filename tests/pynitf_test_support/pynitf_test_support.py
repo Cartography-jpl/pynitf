@@ -123,14 +123,14 @@ def create_text_segment(f, first_name = 'Guido', textid = 'ID12345'):
 
 def create_des(f, date_att = 20170501, q = 0.1):
     '''Create a DES segment'''
-    ds = DesCSATTB.uh_class()
+    des = DesCSATTB()
+    ds = des.user_subheader
     ds.id = '4385ab47-f3ba-40b7-9520-13d6b7a7f311'
     ds.numais = '010'
     for i in range(int(ds.numais)):
         ds.aisdlvl[i] = 5 + i
     ds.reservedsubh_len = 0
 
-    des = DesCSATTB(user_subheader=ds)
     des.qual_flag_att = 1
     des.interp_type_att = 1
     des.att_type = 1

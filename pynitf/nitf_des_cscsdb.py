@@ -1,5 +1,6 @@
 from .nitf_field import *
 from .nitf_des import *
+from .nitf_segment_data_handle import NitfSegmentDataHandleSet
 from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
 from .nitf_des_associated_user_subheader import (add_uuid_des_function,
                                                  DesAssociatedUserSubheader)
@@ -213,8 +214,7 @@ def _summary(self):
 DesCSCSDB.summary = _summary
 
 add_uuid_des_function(DesCSCSDB)    
-register_des_class(DesCSCSDB)
-
+NitfSegmentDataHandleSet.add_default_handle(DesCSCSDB)
 
 class CsscdbDiff(FieldStructDiff):
     '''Compare two DesCSCSDB.'''
