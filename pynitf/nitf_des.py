@@ -27,113 +27,6 @@ DEBUG = False
 
 logger = logging.getLogger('nitf_diff')
 
-# TODO Delete this        
-class NitfDesOld(object, metaclass=abc.ABCMeta):
-    '''This contains a DES that we want to read or write from NITF.
-    
-    This class supplies a basic interface, a specific type of DES can
-    derive from this class and supply some of the missing functionality.
-
-    We take in the DES subheader (a NitfDesSubheader object), derived classes
-    should fill in details of the subheader as needed.
-
-    We also take a class to use for the user defined subheader, if any. 
-    Not all DESs have user defined subheaders, but for those that do we
-    include this (e.g., CSATTB).
-
-    A DES doesn't actually have to derive from NitfDesa if for some
-    reason that is inconvenient, we use the standard duck typing and
-    any class that supplies the right functions can be used. But this
-    base class supplies what the interface should be.
-
-    Note that a NitfDes class doesn't need to handle all types of
-    DES. If it can't handle reading a particular DES, it return False
-    from read_from_file. The NitfDesSegment class will then just move
-    on to next possible handler class.
-    '''
-
-    # Derived classes that override this with whatever their user subheader
-    # class is
-    uh_class = None
-    def __init__(self, des_id=None,
-                 subheader=None, header_size=None, data_size=None,
-                 user_subheader=None,
-                 security = security_unclassified):
-        if(subheader is not None):
-            self.subheader = subheader
-        else:
-            h = NitfDesSubheader()
-            if(des_id is not None):
-                h.desid = des_id
-            h.dsver = 1
-            h.security = security
-            self.subheader = h
-        self.header_size = header_size
-        self.data_size = data_size
-        self.user_subheader = user_subheader
-        if(self.user_subheader is None and
-           self.uh_class is not None):
-            self.user_subheader = self.uh_class()
-        
-        # Derived classes should fill in information.
-
-    def str_hook(self, file):
-        '''Convenient to have a place to add stuff in __str__ for derived
-        classes. This gets called after the DES name is written, but before
-        any fields. Default is to do nothing, but derived classes can 
-        override this if desired.'''
-        print('NitfDes', file=fh)
-
-    # Derived classes may want to override this to give a more detailed
-    # description of what kind of DES data this is.
-    def __str__(self):
-        fh = io.StringIO()
-        self.str_hook(fh)
-        if(self.user_subheader):
-            print("User-Defined Subheader: ", file=fh)
-            print(self.user_subheader, file=fh)
-        return fh.getvalue()
-
-    @property
-    def user_subheader_size(self):
-        '''Return the size of the user subheader. This can be used to
-        make sure we aren't exceeding the size supported by desshl'''
-        if(self.uh_class):
-            fh = io.BytesIO()
-            self.user_subheader.write_to_file(fh)
-            return len(fh.getvalue())
-        else:
-            return 0
-
-    @abc.abstractmethod
-    def read_from_file(self, fh):
-        '''Read an DES from a file. For larger DES a derived class might
-        want to not actually read in the data (e.g., you might memory
-        map the data or otherwise generate a 'read on demand'), but at
-        the end of the read fh should point past the end of the DES data
-        (e.g., do a fh.seek(start_pos + size of DES) or something like 
-        that).
-
-        This should also handle the reading of the user defined subheader.
-        '''
-        raise NotImplementedError()
-
-    @abc.abstractmethod
-    def write_to_file(self, fh):
-        '''Write an DES to a file.'''
-        raise NotImplementedError()
-
-    @property
-    def security(self):
-        '''NitfSecurity for DES.'''
-        return self.subheader.security
-
-    @security.setter
-    def security(self, v):
-        '''Set NitfSecurity for DES.'''
-        self.subheader.security = v
-
-    
 class NitfDesFieldStruct(NitfDes, _FieldStruct):
     '''There is a class of DES that are essentially like big TREs. The data
     is just a bunch of field data, possibly with user defined subheaders.
@@ -161,7 +54,6 @@ class NitfDesFieldStruct(NitfDes, _FieldStruct):
         if(self.subheader.desid != self.des_tag):
             return False
         t = fh.tell()
-        print(self.__class__)
         _FieldStruct.read_from_file(self,fh, nitf_literal)
         self.data_start = fh.tell()
         self.data_after_tre_size = self._seg.data_size - (self.data_start - t)
@@ -185,6 +77,7 @@ class NitfDesFieldStruct(NitfDes, _FieldStruct):
         any fields. Default is to do nothing, but derived classes can 
         override this if desired.'''
         pass
+    
     def __str__(self):
         '''Text description of structure, e.g., something you can print
         out.'''
@@ -211,10 +104,6 @@ class NitfDesFieldStruct(NitfDes, _FieldStruct):
             print("Extra data of length %d" % self.data_after_tre_size,
                   file=res)
         return res.getvalue()
-
-    def summary(self):
-        res = io.StringIO()
-        #print("TRE - %s" % self.tre_tag, file=res)
 
 class NitfDesObjectHandle(NitfDes):
     '''This is a class where the DES is handled by an object type
@@ -265,10 +154,6 @@ class NitfDesObjectHandle(NitfDes):
         print(getattr(self, self.des_implementation_field), file=res)
         return res.getvalue()
 
-    def summary(self):
-        res = io.StringIO()
-        #print("TRE - %s" % self.tre_tag, file=res)
-
 # TODO May want to rework this, not sure if having handle_diff in the
 # object is the right way to handle this.
 
@@ -282,42 +167,10 @@ class DesObjectDiff(NitfDiffHandle):
 
 NitfDiffHandleSet.add_default_handle(DesObjectDiff())
     
-class NitfDesPlaceHolder(NitfDes):
-    '''Implementation that doesn't actually read any data, useful as a
-    final place holder if none of our other NitfDes classes can handle
-    a particular DES. We just skip over the data when reading.'''
-    def __init__(self, seg=None):
-        super().__init__(seg)
-        self.data_start = None
-
-    def __str__(self):
-        return "NitfDesPlaceHolder %d bytes of data" % (self._seg.data_size)
-        
-    def read_from_file(self, fh, seg_index=None, nitf_literal = False):
-        self.data_start = fh.tell()
-        fh.seek(self._seg.data_size, 1)
-        return True
-
-    def write_to_file(self, fh):
-        '''Write an DES to a file.'''
-        raise NotImplementedError("Can't write a NitfDesPlaceHolder")
-
-class DesPlaceHolderDiff(NitfDiffHandle):
-    '''Compare two NitfDesPlaceHolder.'''
-    def handle_diff(self, des1, des2, nitf_diff):
-        if(not isinstance(des1, NitfDesPlaceHolder) or
-           not isinstance(des2, NitfDesPlaceHolder)):
-            return (False, None)
-        logger.warning("Skipping DES %s, don't know how to read it.",
-                       des1.subheader.desid)
-        return (True, True)
-
-NitfDiffHandleSet.add_default_handle(DesPlaceHolderDiff())
-    
 class NitfDesCopy(NitfDes):
     '''Implementation that reads from one file and just copies to the other.
     Not normally registered, but can be useful to use for some test cases (e.g.
-    want to copy over an unimplemented DES'''
+    want to copy over an unimplemented DES)'''
     def __init__(self, seg=None):
         super().__init__(seg)
         self.data = None
@@ -350,7 +203,7 @@ class TreOverflow(NitfDes):
 
     def read_from_file(self, fh, seg_index=None):
         '''Read an DES from a file.'''
-        if(self.subheader.desid.encode("utf-8") != b'TRE_OVERFLOW'):
+        if(self.subheader.desid != self.des_tag):
             return False
         self.data = fh.read(self._seg.data_size)
         return True
@@ -445,11 +298,8 @@ def create_nitf_des_structure(name, desc_data, desc_uh = None, hlp = None,
     return (res, res2)
 
 NitfSegmentDataHandleSet.add_default_handle(TreOverflow)
-NitfSegmentDataHandleSet.add_default_handle(NitfDesPlaceHolder,
-                                            priority_order=-1000)
 # Don't normally use, but you can add this if desired
 #NitfSegmentDataHandleSet.add_default_handle(NitfDesCopy, priority_order=-999)
 
-__all__ = [ "NitfDesPlaceHolder", "NitfDesCopy", "TreOverflow",
-            "create_nitf_des_structure"]
+__all__ = [ "NitfDesCopy", "TreOverflow", "create_nitf_des_structure"]
 

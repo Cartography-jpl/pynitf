@@ -145,10 +145,6 @@ class NitfSegment(object):
             prepare_tre_write(self.tre_list, self.subheader,des_list,
                               self._tre_field_list, seg_index)
 
-    def write_user_subheader(self, fh):
-        # By default, segment doesn't have user subheaders
-        pass
-    
     def read_from_file(self, fh, seg_index=None):
         '''Read from a file. Note that we pass in the 0 based segment index 
         number. Most readers don't care at all about this, but it can be

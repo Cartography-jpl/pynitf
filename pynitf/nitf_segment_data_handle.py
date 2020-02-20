@@ -27,7 +27,7 @@ class NitfSegmentDataHandleSet(PriorityHandleSet):
         first check that the seg is the same class as cls.seg_class,
         and if so try to read the data from file.
         '''
-        if not isinstance(seg, cls.seg_class):
+        if cls.seg_class is not None and not isinstance(seg, cls.seg_class):
             return (False, None)
         t = cls(seg = seg)
         could_handle = t.read_from_file(fh, seg_index)
@@ -163,61 +163,33 @@ class NitfRes(NitfData):
     seg_class = NitfResSegment
     sh_class = NitfResSubheader
 
-# Put in placeholders for graphic and RES segments, since we don't really
-# have support for these yet.
-    
-class NitfGraphicPlaceHolder(NitfGraphic):
+class NitfDataPlaceHolder(NitfData):
     '''Implementation that doesn't actually read any data, useful as a
-    final place holder if none of our other NitfGraphic classes can handle
-    a particular DES. We just skip over the data when reading.'''
+    final place holder if none of our other NitfData classes can handle
+    a particular segment. We just skip over the data when reading.'''
     def __str__(self):
-        return "NitfGraphicPlaceHolder %d bytes of data" % (self._seg.data_size)
+        return "NitfDataPlaceHolder %d bytes of data" % (self._seg.data_size)
         
     def read_from_file(self, fh, seg_index=None):
         fh.seek(self._seg.data_size, 1)
         return True
 
     def write_to_file(self, fh):
-        raise NotImplementedError("Can't write a NitfGraphicPlaceHolder")
+        raise NotImplementedError("Can't write a NitfDataPlaceHolder")
 
-class GraphicPlaceHolderDiff(NitfDiffHandle):
-    '''Compare two NitfGraphicPlaceHolder'''
+class DataPlaceHolderDiff(NitfDiffHandle):
+    '''Compare two NitfDataPlaceHolder'''
     def handle_diff(self, g1, g2, nitf_diff):
-        if(not isinstance(g1, NitfGraphicPlaceHolder) or
-           not isinstance(g2, NitfGraphicPlaceHolder)):
+        if(not isinstance(g1, NitfDataPlaceHolder) or
+           not isinstance(g2, NitfDataPlaceHolder)):
             return (False, None)
-        logger.warning("Skipping graphic %s, don't know how to read it.",
-                       g1.subheader.sid)
+        logger.warning("Skipping data, don't know how to read it.")
         return (True, True)
 
-NitfDiffHandleSet.add_default_handle(GraphicPlaceHolderDiff())
-NitfSegmentDataHandleSet.add_default_handle(NitfGraphicPlaceHolder,
-                                            priority_order=-1000)
+NitfDiffHandleSet.add_default_handle(DataPlaceHolderDiff())
+NitfSegmentDataHandleSet.add_default_handle(NitfDataPlaceHolder,
+                                            priority_order=-9999)
 
-class NitfResPlaceHolder(NitfRes):
-    '''Implementation that doesn't actually read any data, useful as a
-    final place holder if none of our other NitfRes classes can handle
-    a particular DES. We just skip over the data when reading.'''
-    def __str__(self):
-        return "NitfResPlaceHolder %d bytes of data" % (self._seg.data_size)
-        
-    def read_from_file(self, fh, seg_index=None):
-        fh.seek(self._seg.data_size, 1)
-        return True
-
-    def write_to_file(self, fh):
-        raise NotImplementedError("Can't write a NitfResPlaceHolder")
-
-class ResPlaceHolderDiff(NitfDiffHandle):
-    '''Compare two NitfResPlaceHolder'''
-    def handle_diff(self, g1, g2, nitf_diff):
-        if(not isinstance(g1, NitfResPlaceHolder) or
-           not isinstance(g2, NitfResPlaceHolder)):
-            return (False, None)
-        logger.warning("Skipping res %s, don't know how to read it.",
-                       g1.subheader.sid)
-        return (True, True)
-
-NitfDiffHandleSet.add_default_handle(ResPlaceHolderDiff())
-NitfSegmentDataHandleSet.add_default_handle(NitfResPlaceHolder,
-                                            priority_order=-1000)
+__all__ = ["NitfSegmentDataHandleSet", "NitfData", "NitfImage",
+           "NitfDes", "NitfText", "NitfGraphic", "NitfRes",
+           "NitfDataPlaceHolder"]
