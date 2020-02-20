@@ -441,6 +441,7 @@ def test_nitf_sample_nitf(nitf_sample_files):
 # This is a streaming file, which we don't currently support
 flist2 = ["ns3321a.nsf",]
 
+# TODO Add support for this
 @skip        
 def test_nitf_sample_nitf_streaming(nitf_sample_files):
     for fname in flist2:

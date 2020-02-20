@@ -28,6 +28,9 @@ Options:
        the raw field data without having in interpreted. Use this option
        to report the raw fields instead.
 
+  --summary
+       Write out a summary, rather than detailed information.
+
   -v --version      
        Print program version
 
@@ -44,4 +47,7 @@ if(args.debug):
     pynitf.nitf_des.DEBUG = True
 f = pynitf.NitfFile(args.input_file)
 f.report_raw = args.report_raw
-print(f)
+if(args.summary):
+    print(f.summary())
+else:
+    print(f)
