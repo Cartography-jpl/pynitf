@@ -135,6 +135,15 @@ class NitfImageReadNumpy(NitfImageWithSubset):
         # needed, just need to work though juggling the data here.
         if(ih.imode != "B" and ih.imode != "P"):
             return False
+        # Likewise, we don't work with 1 bit data
+        if(ih.nbpp == 1):
+            return False
+        # Finally, there may be some weird combination of nbpp and pvtype
+        # that we don't recognize. In this case, skip handling
+        try:
+            dt = ih.dtype
+        except RuntimeError:
+            return False
         if(self.do_mmap):
             foff = fh.tell()
             self.data = np.memmap(fh, mode="r", dtype = ih.dtype,

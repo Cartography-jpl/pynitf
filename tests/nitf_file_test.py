@@ -409,6 +409,45 @@ def test_full_file_security(isolated_dir):
     print("Text Data:")
     print(f2.text_segment[0].data)        
 
+# This is a set of sample NITF files found at
+# https://gwg.nga.mil/ntb/baseline/software/testfile/Nitfv2_1/scen_2_1.html.
+# Go through an make sure we can read them all (as a minimum check)
+flist = ["i_3001a.ntf", "i_3004g.ntf", "i_3008a.ntf", "i_3015a.ntf",
+         "i_3018a.ntf", "i_3025b.ntf", "i_3034c.ntf", "i_3034f.ntf",
+         "i_3041a.ntf", "i_3051e.ntf", "i_3052a.ntf", "i_3060a.ntf",
+         "i_3063f.ntf", "i_3068a.ntf", "i_3076a.ntf", "i_3090m.ntf",
+         "i_3090u.ntf", "i_3113g.ntf", "i_3114e.ntf", "i_3117ax.ntf",
+         "i_3128b.ntf", "i_3201c.ntf", "i_3228c.ntf", "i_3228e.ntf",
+         "i_3301a.ntf", "i_3301c.ntf", "i_3301h.ntf", "i_3301k.ntf",
+         "i_3303a.ntf", "i_3309a.ntf", "i_3311a.ntf", "i_3405a.ntf",
+         "i_3430a.ntf", "i_3450c.ntf", "i_5012c.ntf", "ns3004f.nsf",
+         "ns3005b.nsf", "ns3010a.nsf", "ns3017a.nsf", "ns3022b.nsf",
+         "ns3033b.nsf", "ns3034d.nsf", "ns3038a.nsf", "ns3050a.nsf",
+         "ns3051v.nsf", "ns3059a.nsf", "ns3061a.nsf", "ns3063h.nsf",
+         "ns3073a.nsf", "ns3090i.nsf", "ns3090q.nsf", "ns3101b.nsf",
+         "ns3114a.nsf", "ns3114i.nsf", "ns3118b.nsf", "ns3119b.nsf",
+         "ns3201a.nsf", "ns3228b.nsf", "ns3228d.nsf", "ns3229b.nsf",
+         "ns3301b.nsf", "ns3301e.nsf", "ns3301j.nsf", "ns3302a.nsf",
+         "ns3304a.nsf", "ns3310a.nsf", "ns3361c.nsf",
+         "ns3417c.nsf", "ns3437a.nsf", "ns3450e.nsf", "ns5600a.nsf"]
+
+
+def test_nitf_sample_nitf(nitf_sample_files):
+    for fname in flist:
+        f = NitfFile(nitf_sample_files + "/SampleFiles/" + fname)
+        print(fname + ":")
+        print(f.summary())
+
+# This is a streaming file, which we don't currently support
+flist2 = ["ns3321a.nsf",]
+
+@skip        
+def test_nitf_sample_nitf_streaming(nitf_sample_files):
+    for fname in flist2:
+        f = NitfFile(nitf_sample_files + "/SampleFiles/" + fname)
+        print(fname + ":")
+        print(f.summary())
+        
 # May expand this to check a large file, or we might just separately
 # profile reading large files we already have. Can also do
 # "python -m cProfile script.py" to test a standalone script

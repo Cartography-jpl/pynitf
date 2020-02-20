@@ -340,6 +340,10 @@ class _FieldValue(object):
                     self.value(parent_obj)[key] = None
                 elif(self.ty == str):
                     self.value(parent_obj)[key] = t.rstrip().decode("utf-8", "replace")
+                elif(self.ty == bytes):
+                    # Don't strip spaces or nulls, since these are valid
+                    # byte values
+                    self.value(parent_obj)[key] = self.ty(t)
                 else:
                     v = t.rstrip()
                     if(v == b''):

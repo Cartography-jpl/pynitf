@@ -147,6 +147,13 @@ class NitfFile(object):
         self.file_name = file_name
         with open(file_name, 'rb') as fh:
             self.file_header.read_from_file(fh)
+            # We don't currently support streaming file format. This is
+            # indicated by fl being 999999999999 (the maximum file size
+            # allowed is 999999999998). Report this. We could perhaps add
+            # support for this if needed, but for now just catch that we
+            # encountered this and give up
+            if(self.file_header.fl == 999999999999):
+                raise RuntimeError("We don't currently support reading streaming NITF files")
             self.image_segment = \
                [NitfImageSegment(header_size=self.file_header.lish[i],
                                  data_size=self.file_header.li[i],

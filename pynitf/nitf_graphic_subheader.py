@@ -55,6 +55,7 @@ NitfGraphicSubheader.sm_value = hardcoded_value("SY")
 def _summary(self):
     res = io.StringIO()
     print("%s %s %s" % (self.sy, self.sid, self.sname), file=res)
+    return res.getvalue()
 
 NitfGraphicSubheader.summary = _summary
 

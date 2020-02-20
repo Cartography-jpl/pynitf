@@ -445,7 +445,8 @@ def create_nitf_des_structure(name, desc_data, desc_uh = None, hlp = None,
     return (res, res2)
 
 NitfSegmentDataHandleSet.add_default_handle(TreOverflow)
-NitfSegmentDataHandleSet.add_default_handle(NitfDesPlaceHolder, priority_order=-1000)
+NitfSegmentDataHandleSet.add_default_handle(NitfDesPlaceHolder,
+                                            priority_order=-1000)
 # Don't normally use, but you can add this if desired
 #NitfSegmentDataHandleSet.add_default_handle(NitfDesCopy, priority_order=-999)
 
