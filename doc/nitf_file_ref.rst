@@ -36,28 +36,10 @@ NitfSegmentUserSubheaderHandleSet
 .. autoclass:: NitfSegmentUserSubheaderHandleSet
    :members:	       
 
-ResUserSubheaderHandleSet
+UserSubheaderHandle
 ---------------------------------
 
-.. autoclass:: ResUserSubheaderHandleSet
-   :members:	       
-
-ResUserSubheaderHandle
----------------------------------
-
-.. autoclass:: ResUserSubheaderHandle
-   :members:	       
-
-DesUserSubheaderHandleSet
----------------------------------
-
-.. autoclass:: DesUserSubheaderHandleSet
-   :members:	       
-
-DesUserSubheaderHandle
----------------------------------
-
-.. autoclass:: DesUserSubheaderHandle
+.. autoclass:: UserSubheaderHandle
    :members:	       
 
 DesIdToUSHHandle
@@ -66,3 +48,51 @@ DesIdToUSHHandle
 .. autoclass:: DesIdToUSHHandle
    :members:	       
 
+ResIdToUSHHandle
+----------------
+
+.. autoclass:: ResIdToUSHHandle
+   :members:	       
+      
+NitfSegmentDataHandleSet
+---------------------------------
+
+.. autoclass:: NitfSegmentDataHandleSet
+   :members:	       
+
+NitfData
+--------
+
+.. autoclass:: NitfData
+   :members:	       
+
+NitfImage
+---------
+
+.. autoclass:: NitfImage
+   :members:	       
+
+NitfDes
+--------
+
+.. autoclass:: NitfDes
+   :members:	       
+
+NitfText
+--------
+
+.. autoclass:: NitfText
+   :members:	       
+
+NitfGraphic
+-----------
+
+.. autoclass:: NitfGraphic
+   :members:	       
+
+NitfDataPlaceHolder
+-------------------
+
+.. autoclass:: NitfDataPlaceHolder
+   :members:	       
+   
