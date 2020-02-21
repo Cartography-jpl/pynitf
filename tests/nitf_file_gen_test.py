@@ -13,6 +13,7 @@ from pynitf.nitf_tre_histoa import *
 from pynitf.nitf_tre_bandsb import *
 from pynitf.nitf_tre_engrda import *
 from pynitf.nitf_des import *
+from pynitf.nitf_text import *
 from pynitf.nitf_des_csatta import *
 from pynitf.nitf_des_csattb import *
 from pynitf.nitf_des_csephb import *
@@ -189,7 +190,7 @@ def test_main(isolated_dir):
         'titles': ['BDFL', 'Developer'],
     }
 
-    ts = NitfTextSegment(json.dumps(d))
+    ts = NitfTextSegment(NitfTextStr(json.dumps(d)))
 
     ts.subheader.textid = 'ID12345'
     ts.subheader.txtalvl = 0

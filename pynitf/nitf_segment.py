@@ -34,9 +34,7 @@ class NitfSegment(object):
     def __init__(self, data=None, header_size=None, data_size=None,
                  nitf_file = None, security = None):
         self.data = data
-        # The isinstance is temporary, to work around the fact that we
-        # handle NitfTextSegment data different now. This will go away
-        if(self.data and not isinstance(self.data, str)):
+        if(self.data):
             self._shared_header = data._shared_header
         else:
             self._shared_header = NitfSharedHeader(self.sh_class, None)
@@ -278,40 +276,6 @@ class NitfTextSegment(NitfSegment):
         '''Synonym for data, just a more descriptive name of content for
         a NitfTextSegment'''
         return self.data
-        
-    def read_from_file(self, fh, seg_index=None):
-        '''Read from a file'''
-        self.subheader.read_from_file(fh)
-        self.data = fh.read(self.data_size)
-
-    @property
-    def data_as_bytes(self):
-        '''Return data as bytes, encoding if needed'''
-        if isinstance(self.data, str):
-            return self.data.encode('utf-8')
-        return self.data
-            
-    @property
-    def data_as_str(self):
-        '''Return data as str, encoding if needed'''
-        if isinstance(self.data, str):
-            return self.data
-        return self.data.decode('utf-8')
-
-    def write_to_file(self, fh, seg_index):
-        '''Write to a file. The returns (sz_header, sz_data), because this
-        information is needed by NitfFile.'''
-        # TODO Can likely replace this with the NitfSegment version.
-        start_pos = fh.tell()
-        self.subheader.write_to_file(fh)
-        sz_header = fh.tell() - start_pos
-        start_pos = fh.tell()
-        fh.write(self.data_as_bytes)
-        sz_data = fh.tell() - start_pos
-        if(self.nitf_file):
-            self._update_file_header(fh, seg_index, sz_header,
-                                    sz_data)
-        return (sz_header, sz_data)
 
 class NitfDesSegment(NitfSegment):
     '''Data extension segment (DES), allows for the addition of different data 

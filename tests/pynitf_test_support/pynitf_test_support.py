@@ -5,6 +5,7 @@ from pynitf.nitf_security import NitfSecurity
 from pynitf.nitf_image import NitfImageWriteNumpy
 from pynitf.nitf_file import (NitfImageSegment, NitfTextSegment,
                               NitfDesSegment)
+from pynitf.nitf_text import NitfTextStr
 from pynitf.nitf_des_csattb import DesCSATTB
 from pynitf.nitf_tre_csde import TreUSE00A
 from pynitf.nitf_diff_handle import DifferenceFormatter
@@ -108,20 +109,21 @@ def create_tre(f, angle_to_north = 270):
     t.sun_az = 131.3
     f.tre_list.append(t)
 
-def create_text_segment(f, first_name = 'Guido', textid = 'ID12345'):
+def create_text_segment(f, first_name = 'Guido', textid = 'ID12345',
+                        security = None):
     '''Create a text segment'''
     d = {
         'first_name': first_name,
         'second_name': 'Rossum',
         'titles': ['BDFL', 'Developer'],
     }
-    ts = NitfTextSegment(json.dumps(d))
+    ts = NitfTextSegment(NitfTextStr(json.dumps(d)), security=security)
     ts.subheader.textid = textid
     ts.subheader.txtalvl = 0
     ts.subheader.txtitl = 'sample title'
     f.text_segment.append(ts)
 
-def create_des(f, date_att = 20170501, q = 0.1):
+def create_des(f, date_att = 20170501, q = 0.1, security=None):
     '''Create a DES segment'''
     des = DesCSATTB()
     ds = des.user_subheader
@@ -146,7 +148,7 @@ def create_des(f, date_att = 20170501, q = 0.1):
         des.q4[n] = q
     des.reserved_len = 0
 
-    de = NitfDesSegment(des)
+    de = NitfDesSegment(des, security=security)
     f.des_segment.append(de)
     
     

@@ -10,17 +10,12 @@
 from .nitf_field import (FieldData, _FieldStruct, _FieldLoopStruct, 
                          _create_nitf_field_structure,
                          create_nitf_field_structure)
-from .nitf_des_subheader import NitfDesSubheader
 from .nitf_segment_data_handle import (NitfDes,
                                        NitfSegmentDataHandleSet)
 from .nitf_diff_handle import (NitfDiffHandle, NitfDiffHandleSet,
                                DiffContextFilter)
-from .priority_handle_set import PriorityHandleSet
-from .nitf_security import security_unclassified
 import copy
 import io
-import abc
-import collections
 import logging
 
 DEBUG = False

@@ -22,40 +22,10 @@ import filecmp
 # Turn on debug messages
 #pynitf.nitf_field.DEBUG = True
 #pynitf.nitf_des.DEBUG = True
-
-def create_tre(f):
-    t = TreUSE00A()
-    t.angle_to_north = 270
-    t.mean_gsd = 105.2
-    t.dynamic_range = 2047
-    t.obl_ang = 34.12
-    t.roll_ang = -21.15
-    t.n_ref = 0
-    t.rev_num = 3317
-    t.n_seg = 1
-    t.max_lp_seg = 6287
-    t.sun_el = 68.5
-    t.sun_az = 131.3
-    f.tre_list.append(t)
-
-def create_tre2(f):
-    t = TreUSE00A()
-    t.angle_to_north = 290
-    t.mean_gsd = 105.2
-    t.dynamic_range = 2047
-    t.obl_ang = 34.12
-    t.roll_ang = -21.15
-    t.n_ref = 0
-    t.rev_num = 3317
-    t.n_seg = 1
-    t.max_lp_seg = 6287
-    t.sun_el = 68.5
-    t.sun_az = 131.3
-    f.tre_list.append(t)
     
-def check_tre(t):    
+def check_tre(t, angle_to_north = 270):    
     assert t.tre_tag == "USE00A"
-    assert t.angle_to_north == 270
+    assert t.angle_to_north == angle_to_north
     assert_almost_equal(t.mean_gsd, 105.2)
     assert t.dynamic_range == 2047
     assert_almost_equal(t.obl_ang, 34.12)
@@ -67,52 +37,6 @@ def check_tre(t):
     assert_almost_equal(t.sun_el, 68.5)
     assert_almost_equal(t.sun_az, 131.3)
 
-def check_tre2(t):    
-    assert t.tre_tag == "USE00A"
-    assert t.angle_to_north == 290
-    assert_almost_equal(t.mean_gsd, 105.2)
-    assert t.dynamic_range == 2047
-    assert_almost_equal(t.obl_ang, 34.12)
-    assert_almost_equal(t.roll_ang, -21.15)
-    assert t.n_ref == 0
-    assert t.rev_num == 3317
-    assert t.n_seg == 1
-    assert t.max_lp_seg == 6287
-    assert_almost_equal(t.sun_el, 68.5)
-    assert_almost_equal(t.sun_az, 131.3)
-
-def create_text_segment(f, security = None):
-    d = {
-        'first_name': 'Guido',
-        'second_name': 'Rossum',
-        'titles': ['BDFL', 'Developer'],
-    }
-    ts = NitfTextSegment(json.dumps(d))
-    ts.subheader.textid = 'ID12345'
-    ts.subheader.txtalvl = 0
-    ts.subheader.txtitl = 'sample title'
-    if(security):
-        ts.security = security
-    f.text_segment.append(ts)
-
-def create_des(f, security = None):
-    des = DesCSATTA()
-    if(security):
-        des.security = security
-    des.att_type = 'ORIGINAL'
-    des.dt_att = '900.5000000000'
-    des.date_att = 20170501
-    des.t0_att = '235959.100001'
-    des.num_att = 5
-    for n in range(des.num_att):
-        des.att_q1[n] = 10.1
-        des.att_q2[n] = 10.1
-        des.att_q3[n] = 10.1
-        des.att_q4[n] = 10.1
-
-    de = NitfDesSegment(des)
-    f.des_segment.append(de)
-    
 def print_diag(f):
     '''Print out diagnostic information, useful to make sure the file
     we generate is valid.'''
@@ -162,7 +86,7 @@ def test_basic_write(isolated_dir):
     f = NitfFile()
     create_image_seg(f)
     create_tre(f)
-    create_tre2(f.image_segment[0])
+    create_tre(f.image_segment[0], 290)
     f.write("z.ntf")
     f2 = NitfFile("z.ntf")
     assert len(f2.image_segment) == 1
@@ -174,7 +98,7 @@ def test_basic_write(isolated_dir):
     assert len(f2.tre_list) == 1
     assert len(f2.image_segment[0].tre_list) == 1
     check_tre(f2.tre_list[0])
-    check_tre2(f2.image_segment[0].tre_list[0])
+    check_tre(f2.image_segment[0].tre_list[0], 290)
     print_diag(f2)
 
 def test_large_tre_write(isolated_dir):
@@ -189,7 +113,7 @@ def test_large_tre_write(isolated_dir):
     f.tre_list.append(TreBig())
     f.image_segment[0].tre_list.append(TreBig())
     create_tre(f)
-    create_tre2(f.image_segment[0])
+    create_tre(f.image_segment[0], 290)
     f.write("z.ntf")
     # Write a second time. We had a bug where the tre would appear twice,
     # once when we write the tre_list and once when the old tre overflow des
@@ -214,8 +138,8 @@ def test_large_tre_write(isolated_dir):
     assert len(f3.image_segment[0].tre_list) == 2
     check_tre([tre for tre in f2.tre_list if tre.tre_tag == "USE00A"][0])
     check_tre([tre for tre in f3.tre_list if tre.tre_tag == "USE00A"][0])
-    check_tre2([tre for tre in f2.image_segment[0].tre_list if tre.tre_tag == "USE00A"][0])
-    check_tre2([tre for tre in f3.image_segment[0].tre_list if tre.tre_tag == "USE00A"][0])
+    check_tre([tre for tre in f2.image_segment[0].tre_list if tre.tre_tag == "USE00A"][0], 290)
+    check_tre([tre for tre in f3.image_segment[0].tre_list if tre.tre_tag == "USE00A"][0], 290)
     print_diag(f2)
     print_diag(f3)
     assert filecmp.cmp("z.ntf", "z2.ntf", shallow=False)
@@ -234,7 +158,7 @@ def test_tre_overflow_write(isolated_dir):
     f.image_segment[0].tre_list.append(TreBig())
     f.image_segment[0].tre_list.append(TreBig())
     create_tre(f)
-    create_tre2(f.image_segment[0])
+    create_tre(f.image_segment[0], 290)
     f.write("z.ntf")
     # Write a second time. We had a bug where the tre would appear twice,
     # once when we write the tre_list and once when the old tre overflow des
@@ -259,8 +183,8 @@ def test_tre_overflow_write(isolated_dir):
     assert len(f3.image_segment[0].tre_list) == 3
     check_tre([tre for tre in f2.tre_list if tre.tre_tag == "USE00A"][0])
     check_tre([tre for tre in f3.tre_list if tre.tre_tag == "USE00A"][0])
-    check_tre2([tre for tre in f2.image_segment[0].tre_list if tre.tre_tag == "USE00A"][0])
-    check_tre2([tre for tre in f3.image_segment[0].tre_list if tre.tre_tag == "USE00A"][0])
+    check_tre([tre for tre in f2.image_segment[0].tre_list if tre.tre_tag == "USE00A"][0], 290)
+    check_tre([tre for tre in f3.image_segment[0].tre_list if tre.tre_tag == "USE00A"][0], 290)
     with open("f.txt", "w") as fh:
         print(str(f), file=fh)
     with open("f2.txt", "w") as fh:
@@ -370,7 +294,7 @@ def test_full_file(isolated_dir):
     f = NitfFile()
     create_image_seg(f)
     create_tre(f)
-    create_tre2(f)
+    create_tre(f, 290)
     create_text_segment(f)
     create_des(f)
     print(f)
@@ -396,7 +320,7 @@ def test_full_file_security(isolated_dir):
     f = NitfFile(security=security_fake)
     create_image_seg(f, security=security_fake)
     create_tre(f)
-    create_tre2(f)
+    create_tre(f, 290)
     create_text_segment(f, security=security_fake)
     create_des(f, security=security_fake)
     print(f)
@@ -466,7 +390,7 @@ def test_profile(isolated_dir):
     f = NitfFile()
     create_image_seg(f)
     create_tre(f)
-    create_tre2(f)
+    create_tre(f, 290)
     create_text_segment(f)
     create_des(f)
     f.write("basic_nitf.ntf")
