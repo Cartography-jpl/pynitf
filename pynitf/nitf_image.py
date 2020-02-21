@@ -43,7 +43,7 @@ class NitfImagePlaceHolder(NitfImage):
     a particular image. We just skip over the data when reading.'''
     
     def __str__(self):
-        return "NitfImagePlaceHolder %d bytes of data" % (self._seg.data_size)
+        return "NitfImagePlaceHolder %d bytes of data" % (self._seg().data_size)
 
     def __eq__(self, other):
         if not isinstance(other, NitfImagePlaceHolder):
@@ -61,9 +61,9 @@ class NitfImagePlaceHolder(NitfImage):
         that)'''
         self.data_start = fh.tell()
         self.fh_in_name = fh.name
-        fh.seek(self._seg.data_size, 1)
+        fh.seek(self._seg().data_size, 1)
         # Save, in case we are copying
-        self._data_size = self._seg.data_size
+        self._data_size = self._seg().data_size
         return True
 
     def write_to_file(self, fh):

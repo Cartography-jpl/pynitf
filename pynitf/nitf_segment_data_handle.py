@@ -9,6 +9,7 @@ from .nitf_diff_handle import (NitfDiffHandle, NitfDiffHandleSet)
 from .priority_handle_set import PriorityHandleSet
 import abc
 import io
+import weakref
 
 class NitfSegmentDataHandleSet(PriorityHandleSet):
     '''Handle reading the data in a segment (e.g, a image)'''
@@ -45,10 +46,11 @@ class NitfData(object, metaclass=abc.ABCMeta):
         gets passed in then we use the subheader and if available 
         user_subheader found in that segment. Otherwise we create new
         instances of the classes given by sh_class and uh_class.'''
-        self._seg = seg
         if seg:
+            self._seg = weakref.ref(seg)
             self._shared_header = seg._shared_header
         else:
+            self._seg = None
             self._shared_header = NitfSharedHeader(self.sh_class,
                                                    self.uh_class)
 
@@ -168,10 +170,10 @@ class NitfDataPlaceHolder(NitfData):
     final place holder if none of our other NitfData classes can handle
     a particular segment. We just skip over the data when reading.'''
     def __str__(self):
-        return "NitfDataPlaceHolder %d bytes of data" % (self._seg.data_size)
+        return "NitfDataPlaceHolder %d bytes of data" % (self._seg().data_size)
         
     def read_from_file(self, fh, seg_index=None):
-        fh.seek(self._seg.data_size, 1)
+        fh.seek(self._seg().data_size, 1)
         return True
 
     def write_to_file(self, fh):

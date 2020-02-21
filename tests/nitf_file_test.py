@@ -18,6 +18,7 @@ import os
 import json
 import numpy as np
 import filecmp
+import gc
 
 # Turn on debug messages
 #pynitf.nitf_field.DEBUG = True
@@ -409,3 +410,34 @@ def test_too_many_file(isolated_dir):
     f.write("large_nitf.ntf")
     f1 = NitfFile("large_nitf.ntf")
     f2 = NitfFile("large_nitf.ntf")
+
+def test_gc(isolated_dir):
+    '''We have various pieces that reference each other. This can prevent
+    reference counting from cleaning up data. The garbage collector will 
+    eventually find all these cycles, but it is desirable to just set things 
+    up if possible so things get cleaned up right away (since potentially 
+    the NitfFile object can be large).'''
+
+    # Create the file. We don't supply a name yet, that comes when we actually
+    # write
+    
+    f = NitfFile()
+    create_image_seg(f)
+    create_tre(f)
+    create_tre(f, 290)
+    create_text_segment(f)
+    create_des(f)
+    f.write("basic_nitf.ntf")
+    f2 = NitfFile("basic_nitf.ntf")
+    # Clean up whatever happens to be there before this test
+    gc.collect()
+    # Remove reference to files. Ideally they will then get
+    # cleaned up
+    f = None
+    f2 = None
+    # Run gc again with debugging turned on, to see if it finds
+    # anything. Ideally there should be nothing
+    old_flags = gc.get_debug()
+    gc.set_debug(gc.DEBUG_STATS | gc.DEBUG_COLLECTABLE)
+    gc.collect()
+    gc.set_debug(old_flags)

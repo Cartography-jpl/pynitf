@@ -21,7 +21,7 @@ class NitfTextStr(NitfText):
             return "NitfTextStr:\n%s" % (self.string.decode("utf-8"))
         
     def read_from_file(self, fh, seg_index=None):
-        self.string = fh.read(self._seg.data_size)
+        self.string = fh.read(self._seg().data_size)
         return True
 
     def write_to_file(self, fh):

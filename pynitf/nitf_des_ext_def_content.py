@@ -130,7 +130,7 @@ class DesEXT_DEF_CONTENT(NitfDes):
             self.user_subheader._des = self
             self.data_size = data_size
         else:
-            self.data_size = self._seg.data_size
+            self.data_size = self._seg().data_size
         self.data = None
 
     def str_hook(self, file):

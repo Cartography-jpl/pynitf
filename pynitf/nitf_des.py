@@ -51,10 +51,10 @@ class NitfDesFieldStruct(NitfDes, _FieldStruct):
         t = fh.tell()
         _FieldStruct.read_from_file(self,fh, nitf_literal)
         self.data_start = fh.tell()
-        self.data_after_tre_size = self._seg.data_size - (self.data_start - t)
+        self.data_after_tre_size = self._seg().data_size - (self.data_start - t)
         if(self.data_after_tre_size != 0):
             if(not self.data_after_allowed):
-                raise RuntimeError("DES %s TRE length was expected to be %d but was actually %d" % (self.des_tag, self._seg.data_size, (self.data_start - t)))
+                raise RuntimeError("DES %s TRE length was expected to be %d but was actually %d" % (self.des_tag, self._seg().data_size, (self.data_start - t)))
             if(self.data_copy):
                 self.data_to_copy = fh.read(self.data_after_tre_size)
             else:
@@ -174,7 +174,7 @@ class NitfDesCopy(NitfDes):
         return "NitfDesCopy %d bytes of data" % (len(self.data))
         
     def read_from_file(self, fh, seg_index=None, nitf_literal = False):
-        self.data = fh.read(self._seg.data_size)
+        self.data = fh.read(self._seg().data_size)
         return True
 
     def write_to_file(self, fh):
@@ -200,7 +200,7 @@ class TreOverflow(NitfDes):
         '''Read an DES from a file.'''
         if(self.subheader.desid != self.des_tag):
             return False
-        self.data = fh.read(self._seg.data_size)
+        self.data = fh.read(self._seg().data_size)
         return True
     
     def write_to_file(self, fh):
