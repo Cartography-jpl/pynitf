@@ -1004,9 +1004,9 @@ class NitfLiteral(object):
     any padding.'''
     def __init__(self, value, trunc_size = None):
         if(trunc_size is None):
-            self.value = str(value)
+            self.value = bytes(value)
         else:
-            self.value = str(value)[0:(trunc_size-1)]
+            self.value = bytes(value)[0:(trunc_size-1)]
 
 def create_nitf_field_structure(name, description, hlp = None):
     '''Create a nitf field structure and return a class for dealing with this. 

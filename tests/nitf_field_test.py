@@ -1,4 +1,5 @@
 from pynitf.nitf_field import *
+from pynitf.nitf_field_new import *
 from pynitf.nitf_file_diff import NitfDiff
 from pynitf.nitf_diff_handle import AlwaysTrueHandle, NitfDiffHandle
 from pynitf_test_support import *
@@ -7,6 +8,7 @@ import math
 from pynitf_test_support import *
 import copy
 import logging
+import struct
 
 @pytest.yield_fixture(scope="function")
 def nitf_diff_field_struct(print_logging):
@@ -26,7 +28,210 @@ def test_float_to_fixed_width():
     if(False):
         for i in range(-7,7):
             print(float_to_fixed_width(pow(10,i), 7))
-        
+
+            
+def test_nitf_field_basic_str():
+    '''Basic str type test for NitfField'''
+    f = NitfField(None, "foo", 4, str, None, {})
+    f[()] = "blah"
+    assert f[()] == "blah"
+    assert f.bytes() == b"blah"
+    fh = io.BytesIO()
+    f.write_to_file((),fh)
+    assert fh.getvalue() == b"blah"
+    f[()] = "fred"
+    assert fh.getvalue() == b"blah"
+    f.update_file((),fh)
+    assert fh.getvalue() == b"fred"
+    f2 = NitfField(None, "foo", 4, str, None, {})
+    fh2 = io.BytesIO(fh.getvalue())
+    f2.read_from_file((),fh2)
+    assert f2[()] == "fred"
+
+def test_nitf_field_basic_int():
+    '''Basic int type test for NitfField'''
+    f = NitfField(None, "foo", 4, int, None, {})
+    f[()] = 1
+    assert f[()] == 1
+    assert f.bytes() == b"0001"
+    fh = io.BytesIO()
+    f.write_to_file((),fh)
+    assert fh.getvalue() == b"0001"
+    f2 = NitfField(None, "foo", 4, int, None, {})
+    fh2 = io.BytesIO(fh.getvalue())
+    f2.read_from_file((),fh2)
+    assert f2[()] == 1
+    fh2 = io.BytesIO(fh.getvalue())
+    f2.read_from_file((),fh2, nitf_literal=True)
+    assert f2[()] == 1
+    assert f2.get_raw_bytes(()) == b"0001"
+
+def test_nitf_field_basic_float():
+    '''Basic float type test for NitfField'''
+    f = NitfField(None, "foo", 8, float, None, {})
+    f[()] = 1.23
+    assert f[()] == 1.23
+    assert f.bytes() == b"1.230000"
+    fh = io.BytesIO()
+    f.write_to_file((),fh)
+    assert fh.getvalue() == b"1.230000"
+    f2 = NitfField(None, "foo", 8, float, None, {})
+    fh2 = io.BytesIO(fh.getvalue())
+    f2.read_from_file((),fh2)
+    assert f2[()] == 1.23
+    fh2 = io.BytesIO(fh.getvalue())
+    f2.read_from_file((),fh2, nitf_literal=True)
+    assert f2[()] == 1.23
+    assert f2.get_raw_bytes(()) == b"1.230000"
+
+def test_nitf_field_frmt():
+    '''Test NitfField with frmt string'''
+    f = NitfField(None, "foo", 8, float, None, {"frmt" : "%07.2lf"})
+    f[()] = 1.23
+    assert f[()] == 1.23
+    assert f.bytes() == b"0001.23 "
+    fh = io.BytesIO()
+    f.write_to_file((),fh)
+    assert fh.getvalue() == b"0001.23 "
+    f2 = NitfField(None, "foo", 8, float, None, {})
+    fh2 = io.BytesIO(fh.getvalue())
+    f2.read_from_file((),fh2)
+    assert f2[()] == 1.23
+    fh2 = io.BytesIO(fh.getvalue())
+    f2.read_from_file((),fh2, nitf_literal=True)
+    assert f2[()] == 1.23
+    assert f2.get_raw_bytes(()) == b"0001.23 "
+
+def test_nitf_field_frmt():
+    '''Test NitfField with frmt function'''
+    # This is taken from the RPC code
+    def _tre_rpc_coeff_format(v):
+        t = "%+010.6lE" % v
+        # Replace 2 digit exponent with 1 digit
+        t = re.sub(r'E([+-])0', r'E\1', t)
+        return t
+    
+    f = NitfField(None, "foo", 12, float, None,
+                  {"frmt" : _tre_rpc_coeff_format})
+    f[()] = 1.23
+    assert f[()] == 1.23
+    assert f.bytes() == b"+1.230000E+0"
+    fh = io.BytesIO()
+    f.write_to_file((),fh)
+    assert fh.getvalue() == b"+1.230000E+0"
+    f2 = NitfField(None, "foo", 12, float, None, {})
+    fh2 = io.BytesIO(fh.getvalue())
+    f2.read_from_file((),fh2)
+    assert f2[()] == 1.23
+    fh2 = io.BytesIO(fh.getvalue())
+    f2.read_from_file((),fh2, nitf_literal=True)
+    assert f2[()] == 1.23
+    assert f2.get_raw_bytes(()) == b"+1.230000E+0"
+
+def test_nitf_field_default():
+    '''Test NitfField with default value'''
+    f = NitfField(None, "foo", 4, int, None, {"default" : 20})
+    assert f[()] == 20
+    assert f.bytes() == b"0020"
+    f[()] = 10
+    assert f[()] == 10
+
+def test_nitf_field_hardcoded_value():
+    '''Test NitfField with hardcoded_value'''
+    f = NitfField(None, "foo", 4, int, None,
+                  {"default" : 20, "hardcoded_value" : True})
+    assert f[()] == 20
+    assert f.bytes() == b"0020"
+    with pytest.raises(RuntimeError):
+        f[()] = 10
+
+def test_nitf_field_optional():
+    '''Test NitfField with optional'''
+    f = NitfField(None, "foo", 4, int, None, {})
+    with pytest.raises(RuntimeError):
+        f[()] = None
+    f = NitfField(None, "foo", 4, int, None, {"optional" : True})
+    f[()] = None
+    assert f[()] == None
+    assert f.bytes() == b"    "
+    fh = io.BytesIO()
+    f.write_to_file((),fh)
+    assert fh.getvalue() == b"    "
+    f2 = NitfField(None, "foo", 4, int, None, {"optional" : True})
+    fh2 = io.BytesIO(fh.getvalue())
+    f2.read_from_file((),fh2)
+    assert f2[()] == None
+    fh2 = io.BytesIO(fh.getvalue())
+    f2.read_from_file((),fh2, nitf_literal=True)
+    assert f2[()] == None
+    assert f2.get_raw_bytes(()) == b"    "
+
+def test_nitf_field_optional_char():
+    '''Test NitfField with optional_char'''
+    f = NitfField(None, "foo", 4, int, None, {})
+    with pytest.raises(RuntimeError):
+        f[()] = None
+    f = NitfField(None, "foo", 4, int, None, {"optional" : True,
+                                              "optional_char" : '-'})
+    f[()] = None
+    assert f[()] == None
+    assert f.bytes() == b"----"
+    fh = io.BytesIO()
+    f.write_to_file((),fh)
+    assert fh.getvalue() == b"----"
+    f2 = NitfField(None, "foo", 4, int, None, {"optional" : True,
+                                               "optional_char" : '-'})
+    fh2 = io.BytesIO(fh.getvalue())
+    f2.read_from_file((),fh2)
+    assert f2[()] == None
+    fh2 = io.BytesIO(fh.getvalue())
+    f2.read_from_file((),fh2, nitf_literal=True)
+    assert f2[()] == None
+    assert f2.get_raw_bytes(()) == b"----"
+
+def test_string_field_data():
+    f = StringFieldDataNew(None, "foo", 12, None, None,
+                           {"field_value_class" : StringFieldDataNew,
+                            "size_not_updated" : True})
+    f[()] = "blahblahblah"
+    assert f[()] == "blahblahblah"
+    assert f.bytes() == b"blahblahblah"
+
+def test_float_field_data():
+    f = FloatFieldDataNew(None, "foo", 4, None, None,
+                          {"field_value_class" : FloatFieldDataNew,
+                           "size_not_updated" : True})
+    f[()] = 1.23
+    assert f[()] == pytest.approx(1.23)
+    assert struct.unpack(">f", f.bytes())[0] == pytest.approx(1.23)
+    fh = io.BytesIO()
+    f.write_to_file((),fh)
+    f2 = FloatFieldDataNew(None, "foo", 4, None, None,
+                          {"field_value_class" : FloatFieldDataNew,
+                           "size_not_updated" : True})
+    fh2 = io.BytesIO(fh.getvalue())
+    f2.read_from_file((),fh2)
+    assert f2[()] == pytest.approx(1.23)
+
+def test_int_field_data():
+    for sgn in (True, False):
+        for sz in (1, 2, 3, 4, 8):
+            f = IntFieldDataNew(None, "foo", sz, None, None,
+                                {"field_value_class" : IntFieldDataNew,
+                                 "size_not_updated" : True,
+                                 "signed" : sgn})
+            f[()] = 123
+            assert f[()] == 123
+            fh = io.BytesIO()
+            f.write_to_file((),fh)
+            f2 = IntFieldDataNew(None, "foo", sz, None, None,
+                                 {"field_value_class" : IntFieldDataNew,
+                                  "size_not_updated" : True,
+                                  "signed" : sgn})
+            fh2 = io.BytesIO(fh.getvalue())
+            f2.read_from_file((),fh2)
+            assert f2[()] == 123
+    
 def test_basic(nitf_diff_field_struct):
     '''Basic test, just set and read values.'''
     d = nitf_diff_field_struct # Shorter name
