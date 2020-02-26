@@ -256,6 +256,10 @@ def nitf_sample_files(isolated_dir):
         return "/opt/nitf_files/NitfSamples/"
     elif(os.path.exists("/data2/smythdata/NitfSamples/")):
         return "/data2/smythdata/NitfSamples/"
+    elif(os.path.exists("/data2/smythdata/NitfSamples/")):
+        return "/data2/smythdata/NitfSamples/"
+    elif(os.path.exists("/Users/smyth/NitfSamples/")):
+        return "/Users/smyth/NitfSamples/"
     pytest.skip("Require NitfSamples test data to run")
 
 @pytest.yield_fixture(scope="function")

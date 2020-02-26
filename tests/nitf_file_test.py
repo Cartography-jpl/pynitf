@@ -396,7 +396,8 @@ def test_profile(isolated_dir):
     create_des(f)
     f.write("basic_nitf.ntf")
     cProfile.run('import pynitf; pynitf.NitfFile("basic_nitf.ntf")')
-    
+
+# TODO Come back and rework use of mmap to reduce number of files    
 @skip
 def test_too_many_file(isolated_dir):
     '''Because of how we currently use np.memmap for images, we can

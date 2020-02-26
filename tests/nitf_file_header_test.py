@@ -63,6 +63,7 @@ def test_write():
 
 # Note this doesn't currently work. We may rework FieldStruct stuff to fix
 # this, so leave the test in place for use later.
+# TODO Add support for pickle and/or dill
 @skip
 def test_pickle():
     '''Test pickling of NitfFileHeader'''

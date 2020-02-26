@@ -1,13 +1,38 @@
 from .nitf_field import float_to_fixed_width, NitfLiteral
+from .nitf_diff_handle import NitfDiffHandle
 from collections import defaultdict, OrderedDict
+import itertools
+import operator
 import weakref
 import copy
+import math
 from struct import pack, unpack
+import logging
 import io
 
 # Add a bunch of debugging if you are diagnosing a problem
 DEBUG = False
 
+def _eval_or_exec_expr(fs, key, expr, do_eval):
+    '''We have a few places where we evaluate or execute an expression,
+    with various local variables set up for the evaluation context. As
+    a convenience we centralize this to one place, so there is only
+    one function to update if we add new variables (e.g., add to the number
+    of index variables).'''
+    f = fs
+    if(len(key) > 0):
+        i1 = key[0]
+    if(len(key) > 1):
+        i2 = key[1]
+    if(len(key) > 2):
+        i3 = key[2]
+    if(len(key) > 3):
+        i4 = key[3]
+    if(do_eval):
+        return eval(expr)
+    else:
+        exec(expr)
+    
 class NitfField(object):
     '''A NITF field is complicated enough that we have a separate class
     to handle it. This class worries about the looping structure, conditional
@@ -25,14 +50,16 @@ class NitfField(object):
             self.fs = None
             self.fs_name = "None"
         else:
-            self.fs = weakref.proxy(fs)
+            self.fs = fs
             self.fs_name = type(fs).__name__
         self.field_name = field_name
         self._size = size
         self.size_offset = options.get("size_offset", 0)
         self.size_not_updated = options.get("size_not_updated", False)
         self.ty = ty
-        self.loop = loop
+        self.loop = None
+        if(loop):
+            self.loop = weakref.proxy(loop)
         self.frmt = options.get("frmt", None)
         self.default = options.get("default", None)
         self.condition = options.get("condition", None)
@@ -60,6 +87,43 @@ class NitfField(object):
         # we separately handling going to and from bytes.
         self._check_or_set_size = False
 
+    @property
+    def has_loop(self):
+        return self.loop.dim_size != 0
+
+    @property
+    def dim_size(self):
+        '''The dimension size of this field (e.g., 2d, 3d). For a scalar
+        this returns 0.'''
+        return self.loop.dim_size
+
+    def shape(self, key):
+        return self.loop.shape(key)
+
+    @classmethod
+    def is_shape_equal(cls, fld1, fld2, lead=()):
+        '''Return True if the shape of fld1 and fld2 are the same,
+        False otherwise'''
+        return NitfLoop.is_shape_equal(fld1.loop, fld2.loop)
+    
+    def to_list(self):
+        '''Return the data as a nested list. Scalar items as returned as a 
+        scalar'''
+        return self.loop.to_list(self)
+
+    def values(self):
+        '''Iterate through values. This uses the 'C' like order, where we
+        vary the last index the fastest. This is like doing a flatten on 
+        the results of to_list'''
+        for k in self.loop.keys():
+            yield self[k]
+                        
+    def items(self):
+        '''Likes values(), but iterator through a tuple of the (index,value)
+        instead of just values.'''
+        for k in self.loop.keys():
+            yield (k, self[k])
+    
     def size(self, key):
         '''Return the size. In the simplest case, this is just self._size,
         but if self._size is an expression then we evaluate it. We also
@@ -112,32 +176,13 @@ class NitfField(object):
         '''This is used to evaluate an expression. In this expression,
         'f' if the FieldStruct, i1 through i4 are indices. So this
         might be 'f.foo[i1,i2]' '''
-        f = self.fs
-        if(len(key) > 0):
-            i1 = key[0]
-        if(len(key) > 1):
-            i2 = key[1]
-        if(len(key) > 2):
-            i3 = key[2]
-        if(len(key) > 3):
-            i4 = key[3]
-        return eval(expr)
+        return _eval_or_exec_expr(self.fs, key, expr, True)
 
     def exec_expr(self, key, expr):
         '''This is used to execute an expression. In this expression,
         'f' if the FieldStruct, i1 through i4 are indices. So this
         might be 'f.foo[i1,i2]' '''
-        f = self.fs
-        if(len(key) > 0):
-            i1 = key[0]
-        if(len(key) > 1):
-            i2 = key[1]
-        if(len(key) > 2):
-            i3 = key[2]
-        if(len(key) > 3):
-            i4 = key[3]
-        print("Executing: %s" % expr)
-        exec(expr)
+        _eval_or_exec_expr(self.fs, key, expr, False)
     
     def check_condition(self, key):
         '''Evaluate the condition (if present) and return False if it isn't
@@ -149,11 +194,18 @@ class NitfField(object):
             print("Condition: " + self.condition)
             print("eval: " + str(v))
         return v
+
+    def key_as_tuple(self, key):
+        '''Handle degenerate case of single value, making it a tuple so
+        we don't need any special handling in other code.'''
+        if(not isinstance(key, tuple)):
+            return (key,)
+        return key
     
     def get_raw_bytes(self, key):
         '''Like self[key], but returns the raw bytes in the NITF file 
         without converting to the field type.'''
-        t = self.value_dict[key]
+        t = self.value_dict[self.key_as_tuple(key)]
         if(not isinstance(t, NitfLiteral)):
             raise RuntimeError("get_no_type_conversion can only be called if data is a NitfLiteral (e.g. read was done with nitf_literal=True)")
         return t.value
@@ -161,13 +213,14 @@ class NitfField(object):
     def __getitem__(self, key):
         if(self.field_name is None):
             return ''
+        k = self.key_as_tuple(key)
         if(self.loop is not None):
-            self.loop.check_index(key)
-        if(not self.check_condition(key)):
+            self.loop.check_index(k)
+        if(not self.check_condition(k)):
             return None
         try:
             v = None
-            v = self.value_dict[key]
+            v = self.value_dict[k]
             if(self.optional and v is None):
                 return None
             if(isinstance(v, NitfLiteral)):
@@ -185,12 +238,13 @@ class NitfField(object):
             else:
                 raise RuntimeError("Error occurred getting '%s[%s]' from '%s'. Value '%s'" % (self.field_name, key, self.fs_name, v)) from e
             
-    def __setitem__(self,key,v):
+    def __setitem__(self, key, v):
         if(self.field_name is None):
             raise RuntimeError("Can't set a reserved field")
+        k = self.key_as_tuple(key)
         if(self.loop is not None):
-            self.loop.check_index(key)
-        if(not self.check_condition(key)):
+            self.loop.check_index(k)
+        if(not self.check_condition(k)):
             raise RuntimeError("Can't set value for field %s because the condition '%s' isn't met" % (self.field_name, self.condition))
         if(self.hardcoded_value):
             raise RuntimeError("Can't set value for field " + self.field_name)
@@ -200,30 +254,31 @@ class NitfField(object):
             raise RuntimeError("You can't directly set fields in %s TRE. Instead, set this through the %s object" % (self.fs.cetag_value(), self.fs.tre_implementation_field))
         if(v is None and not self.optional):
             raise RuntimeError("Can only set a field to 'None' if it is marked as being optional")
-        self.value_dict[key] = v
+        self.value_dict[k] = v
         if self._check_or_set_size:
             if(self.size_not_updated):
-                sz = self.size(key)
+                sz = self.size(k)
                 if(len(v) != sz):
                     raise RuntimeError("FieldData was expected to be exactly %d bytes, but data that we tried to set was instead %d bytes" % (sz, len(v)))
             else:
-                self._set_size(key, len(v))
-        
+                self._set_size(k, len(v))
+ 
     def bytes(self, key=()):
         '''Return bytes version of this value, formatted and padded as
         NITF will store this.'''
         # If we have a NitfLiteral we assume some sort of funky formating
         # that is handled outside of this class. Pad, but otherwise don't
         # process this.
-        sz = self.size(key)
-        if(isinstance(self.value_dict[key], NitfLiteral)):
-            t = ("{:%ds}" % sz).format(self.value_dict[key].value)
+        k = self.key_as_tuple(key)
+        sz = self.size(k)
+        if(isinstance(self.value_dict[k], NitfLiteral)):
+            t = ("{:%ds}" % sz).format(self.value_dict[k].value)
         else:
             # Otherwise, get the value and do the formatting that has been
-            # supplied to us. Note that we have the explicit getitem to call
+            # supplied to us. Note that we have the explicit getitem in call
             # here because FieldData may override this, but we want this low
             # level raw value
-            v = NitfField.__getitem__(self,key)
+            v = NitfField.__getitem__(self,k)
             if(v is None and self.optional):
                 t = ("{:%ds}" % sz).format("").replace(" ", self.optional_char)
             elif self.ty == bytes:
@@ -237,33 +292,36 @@ class NitfField(object):
         else:
             return t.encode("utf-8")
         
-    def write_to_file(self, key, fh):
-        if(not self.check_condition(key)):
+    def write_to_file(self, fh, key):
+        k = self.key_as_tuple(key)
+        if(not self.check_condition(k)):
             return
         if(self.field_name is not None):
             if(DEBUG):
-                print("Writing: ", self.field_name, self.bytes(key))
-            self.fh_loc[key] = fh.tell()
-        fh.write(self.bytes(key))
+                print("Writing: ", self.field_name, self.bytes(k))
+            self.fh_loc[k] = fh.tell()
+        fh.write(self.bytes(k))
         
-    def update_file(self, key, fh):
+    def update_file(self, fh, key):
         '''Rewrite to a file after the value of this field has been updated'''
         # Not sure if updating a field that doesn't meet the condition should
         # just be a noop, or an error. For now treat as an error but we can
         # change this behavior if needed.
-        if(not self.check_condition(key)):
+        k = self.key_as_tuple(key)
+        if(not self.check_condition(k)):
             raise RuntimeError("Can't update value for field %s because the condition '%s' isn't met" % (self.field_name, self.condition))
         if(DEBUG):
             print("Updating: ", self.field_name)
         last_pos = fh.tell()
-        fh.seek(self.fh_loc[key])
-        fh.write(self.bytes(key))
+        fh.seek(self.fh_loc[k])
+        fh.write(self.bytes(k))
         fh.seek(last_pos)
         
-    def read_from_file(self, key, fh, nitf_literal=False):
-        if(not self.check_condition(key)):
+    def read_from_file(self, fh, nitf_literal, key):
+        k = self.key_as_tuple(key)
+        if(not self.check_condition(k)):
             return
-        sz = self.size(key)
+        sz = self.size(k)
         if(DEBUG and self.field_name is not None):
             print("Reading: ", self.field_name, " bytes: ", sz)
         t = fh.read(sz)
@@ -274,30 +332,32 @@ class NitfField(object):
         if(self.field_name is not None):
             try:
                 if(nitf_literal):
-                    self.value_dict[key] = NitfLiteral(t)
+                    self.value_dict[k] = NitfLiteral(t)
                 elif(self.optional and
                  t.rstrip(self.optional_char.encode('utf-8') + b' ') == b''):
-                    self.value_dict[key] = None
+                    self.value_dict[k] = None
                 elif(self.ty == str):
-                    self.value_dict[key] = t.rstrip().decode("utf-8", "replace")
+                    self.value_dict[k] = t.rstrip().decode("utf-8", "replace")
                 elif(self.ty == bytes):
                     # Don't strip spaces or nulls, since these are valid
                     # byte values
-                    self.value_dict[key] = self.ty(t)
+                    self.value_dict[k] = self.ty(t)
                 else:
                     v = t.rstrip()
                     if(v == b''):
                         raise RuntimeError("Empty string read for field %s" % self.field_name)
-                    self.value_dict[key] = self.ty(v)
+                    self.value_dict[k] = self.ty(v)
             except Exception as e:
                 raise Exception("Exception while parsing ", self.field_name, " from ", t.rstrip(), "underlying error: ", e)
 
 class FieldDataNew(NitfField):
-    '''Class to handle generic variable size data.  
+    '''Class to handle generic variable size data, which in some cases
+    might be binary data.
     
     Derived classes should supply a "pack" and "unpack" function to take
     the underlying data to and from bytes.  Often derived classes will
-    also want to supply different get_print function also'''
+    also want to supply a different get_print function.
+    '''
     def __init__(self, fs, field_name, size, ty, loop, options):
         super().__init__(fs, field_name, size, bytes, loop, options)
         self._check_or_set_size = True
@@ -400,7 +460,156 @@ class IntFieldDataNew(FieldDataNew):
             return pack(">q", v)
         else:
             raise Exception("Can't determine number format")
+
+class NitfLoop(object):
+    '''This handles a NITF looping structure.
+
+    Because it is convenient, we have a "null" pseudo loop as the
+    outer loop.  This just allows us to treat the outer fields not in
+    a loop the same way we treat the loops.  This is indicated by
+    having parent_list None.
+
+    The keys of the pseudo loop are just the list [(),]
+    ''' 
+    def __init__(self, fs, parent_loop, desc, field):
+        '''Note, this also fills in data in the OrderedDict field.'''
+        self.fs = fs
+        self.parent_list = None
+        if(parent_loop):
+            if(parent_loop.parent_list):
+                self.parent_list = (*parent_loop.parent_list,
+                                    weakref.proxy(parent_loop),)
+            else:
+                self.parent_list = (weakref.proxy(parent_loop),)
+        self.field_list = []
+        if(self.parent_list):
+            if(desc[0][0] != "loop"):
+                raise RuntimeError("Error parsing looping structure:\n" + desc)
+            self._shape = desc[0][1]
+            desc_rest = desc[1:]
+        else:
+            self._shape = None
+            desc_rest = desc
+        for row in desc_rest:
+            if(isinstance(row[0], list)):
+                self.field_list.append(NitfLoop(self.fs, self, row, field))
+            else:
+                field_name, desc, size, ty, rest = row[0],row[1],row[2],row[3],row[4:]
+                options = {}
+                if(len(rest) > 0):
+                    options = rest[0]
+                fv = options.get("field_value_class", NitfField)(self.fs,
+                              field_name, size, ty, self, options)
+                if(field_name):
+                    field[field_name] = fv
+                self.field_list.append(fv)
+                
+    def shape(self, key):
+        '''Return size of this dimension.'''
+        if(len(key) >= self.dim_size - 1):
+            t = _eval_or_exec_expr(self.fs, key, self._shape, True)
+            if(t is None):
+                t = 0
+            return t
+        else:
+            return self.parent_list[len(key)+1].shape(key)
+
+    @property
+    def dim_size(self):
+        '''Return the dim size of this loop (e.g., 2d, 3d, etc)'''
+        if(self.parent_list is None):
+            return 0
+        return len(self.parent_list)
     
+    def check_index(self, key):
+        '''Check if key is within the range of the loops'''
+        # Skip if we are null outer loop
+        if(self.parent_list is None):
+            return
+        if(len(key) != self.dim_size):
+            raise IndexError()
+        if(isinstance(key[-1], slice)):
+            raise RuntimeError("FieldStruct doesn't support slices in arrays")
+        if(key[-1] < 0 or key[-1] >= self.shape(key[:-1])):
+            raise IndexError()
+
+    def key_subloop(self, lead):
+        '''Iterate through the set of keys for this specific loop.'''
+        if(self.dim_size == 0):
+            yield ()
+            return
+        for i in range(self.shape(lead)):
+            yield (*lead,i)
+        
+    def keys(self,lead=()):
+        '''Iterate through all the key tuples.'''
+        for k2 in self.key_subloop(lead):
+            if(len(k2) == self.dim_size):
+                yield k2
+            else:
+                for j in self.keys(k2):
+                    yield j
+                    
+    def key_to_str(self, key):
+        '''Write out key as a string (with handling for key = ())'''
+        if(len(key) == 0):
+            return ""
+        return "[" + ", ".join(str(i) for i in key) + "]"
+        
+    def write_to_file(self, fh, lead=()):
+        '''Write data stored in the loop to a file'''
+        for k in self.key_subloop(lead):
+            for fv in self.field_list:
+                fv.write_to_file(fh, k)
+            
+    def read_from_file(self, fh, nitf_literal=False, lead=()):
+        '''Read data from a file for the fields in this loop'''
+        for k in self.key_subloop(lead):
+            for fv in self.field_list:
+                fv.read_from_file(fh, nitf_literal, k)
+
+    def to_list(self, fld,lead=()):
+        '''Return the data in NitfField fld as a nested list. Scalar items 
+        are returned as a scalar'''
+        if(self.dim_size == 0):
+            return fld[()]
+        if(len(lead) == self.dim_size - 1):
+            return [fld[(*lead, i)] for i in range(self.shape(lead))]
+        return [self.to_list(fld, lead=(*lead, i))
+                for i in range(self.shape(lead))]
+
+    @classmethod
+    def is_shape_equal(cls, loop1, loop2, lead=()):
+        '''Check if two loops have the same shape.'''
+        if(loop1.dim_size != loop2.dim_size):
+            return False
+        if(len(lead) == loop1.dim_size - 1):
+            return loop1.shape(lead) == loop2.shape(lead)
+        for k in loop1.key_subloop(lead):
+            if not cls.is_shape_equal(loop1, loop2, lead=k):
+                return False
+        return True
+
+    def print_to_fh(self, fh):
+        '''Print a description of fields in this loop'''
+        max_len = max((len(fld.field_name) for fld in self.field_list
+                       if(not isinstance(fld, NitfLoop)) and
+                       fld.field_name is not None),default=10)
+        max_len += max((len(self.key_to_str(k)) for k in self.keys()),
+                       default=0)
+        if(self.dim_size > 0):
+            print("  " * (self.dim_size-1) + "Loop - %s" % self._shape,
+                  file=fh)
+        lead_space = "  " * self.dim_size
+        for f in self.field_list:
+            if(isinstance(f, NitfLoop)):
+                f.print_to_fh(fh)
+            elif(f.field_name is not None):
+                for k in self.keys():
+                    print(lead_space +
+                          (f.field_name + self.key_to_str(k)).ljust(max_len) +
+                          ": " + f.get_print(k), file=fh)
+                
 class FieldStructNew(object):
     '''This class is used to handle NITF field structure (e.g., 
     a TRE or NitfFileHeader).
@@ -409,11 +618,19 @@ class FieldStructNew(object):
     class that handles a field structure, but often it is useful to do
     so.
 
-    This takes a "description" which is any array of fields. For each
+    This takes a "description" which is any array of field rows. For each
     row, we take a field_name, help description, size, type 'ty', and
-    a set of optionally parameters.
+    a set of optionally parameters. Rows can be nested with a "loop"
+    structure. So a sample field structure description might be:
 
-    size can be an expression, e.g. "f.foo[i1,i2]". See 
+        [["fhdr", "", 4, str, {"default" : "NITF"}],
+         ["numi", "", 3, int],
+         [["loop", "f.numi"],
+          ['lish', "", 6, int],
+          ['li', "", 10, int]]
+        ]
+
+    The size can be an expression, e.g. "f.foo[i1,i2]". See 
     NitfField.eval_expr.
 
     The field_name can be the "None" object if this needs to reserve
@@ -495,34 +712,58 @@ class FieldStructNew(object):
     when some of the data might not be there, or when different indices
     have different dimensions.
     '''
-    def __init__(self, description):
+    def __init__(self, description = None):
+        '''If description is not passed in, we use self.desc. This is
+        to make it easier for subclasses, you can just define the class
+        variable Class.desc to the description to populate this, no need
+        to write a __init__ function.'''
+
+        # We have two closely related variables. self.field maps from
+        # field name to NitfField, it is focused on accessing the data.
+        # self.pseudo_outer_loop is a pseudo outer loop of size 1 for the entire
+        # structure including reserve fields (without a field name) and
+        # looping structure. It is focused on the layout of the data
+        # in the NITF file.
+        
+        self.pseudo_outer_loop = None
+        
         # Note that as of python 3.7 the normal dict preserved insert
         # order. However, we don't want to assume we are using that new
         # of a version. So for now, we use a OrderedDict.
-        # We use super().__setattr__ because our setattr doesn't work until
-        # we have field defined.
-        super().__setattr__("field", OrderedDict())
-        self.desc = copy.deepcopy(description)
-        for row in self.desc:
-            field_name, desc, size, ty, rest = row[0],row[1],row[2],row[3],row[4:]
-            options = {}
-            if(len(rest) > 0):
-                options = rest[0]
-            loop = None
-            if(field_name):
-                self.field[field_name] = options.get("field_value_class",
-                    NitfField)(self, field_name, size, ty, loop, options)
+        
+        self.field = OrderedDict()
+        if(description):
+            self.desc = copy.deepcopy(description)
+        # Note this also fills in self.field
+        self.pseudo_outer_loop = NitfLoop(weakref.proxy(self), None, self.desc,
+                                          self.field)
+
+    def __deepcopy__(self, dict):
+        '''Generate a deepcopy. 
+
+        This implementation isn't particularly efficient, if we end
+        up doing this a lot we can try to do something more intelligent'''
+        res = FieldStructNew(self.desc)
+        fh = io.BytesIO()
+        self.write_to_file(fh)
+        fh2 = io.BytesIO(fh.getvalue())
+        res.read_from_file(fh2)
+        return res
+        
             
     def __getattr__(self, nm):
-        if(nm not in self.field):
+        if("field" not in self.__dict__):
             raise AttributeError()
-        t = self.field[nm]
-        return t if t.loop else t[()]
+        fld = self.__dict__["field"]
+        if(nm not in fld):
+            raise AttributeError()
+        t = fld[nm]
+        return t if t.has_loop else t[()]
     
     def __setattr__(self, nm, value):
-        if(nm in self.field):
+        if("field" in self.__dict__ and nm in self.__dict__["field"]):
             t = self.field[nm]
-            if(t.loop):
+            if(t.has_loop):
                 raise RuntimeError("Need to supply index to %s" % nm)
             t[()] = value
         else:
@@ -550,11 +791,14 @@ class FieldStructNew(object):
         '''
         for f in self.field.values():
             if(f.field_name is not None):
-                yield (f.field_name, f[()])
+                if(array_as_list):
+                    yield (f.field_name, f.to_list())
+                else:
+                    yield (f.field_name, getattr(self, f.field_name))
+                
     def write_to_file(self, fh):
         '''Write to a file stream.'''
-        for f in self.field.values():
-            f.write_to_file((), fh)
+        self.pseudo_outer_loop.write_to_file(fh)
 
     def read_from_file(self, fh, nitf_literal=False):
         '''Read from a file stream.  
@@ -566,32 +810,142 @@ class FieldStructNew(object):
         it can be useful for cases hard to capture otherwise (e.g.,
         heritage systems that depend on specific formatting).
         '''
-        for f in self.field.values():
-            f.read_from_file((), fh, nitf_literal)
+        self.pseudo_outer_loop.read_from_file(fh, nitf_literal)
             
     def update_field(self, fh, field_name, value, key = ()):
         '''Update a field name in an open file'''
         fv = self.field[field_name]
         fv[key] = value
-        fv.update_file(key, fh)
+        fv.update_file(fh, key)
         
     def __str__(self):
         '''Text description of structure, e.g., something you can print
         out.'''
-        try:
-            maxlen = max(len(k) for k in self.field.keys())
-        except ValueError:
-            # We have no _FieldValue, so just set maxlen to a fixed value
-            maxlen = 10
         res = io.StringIO()
-        for f in self.field.values():
-            if(f.field_name is not None):
-                print(f.field_name.ljust(maxlen) + ": " + f.get_print(()),
-                      file=res)
-            else:
-                print(f.desc(self), file=res, end='')
+        self.pseudo_outer_loop.print_to_fh(res)
         return res.getvalue()
+
+    def summary(self):
+        return "FieldStruct with %d fields" % len(self.field)
                 
-            
+
+logger = logging.getLogger('nitf_diff')
+class FieldStructNewDiff(NitfDiffHandle):
+    '''Base class for comparing the various NITF Field Structure objects
+    (e.g., NitfFileHeader).
+
+    While we could just create new NitfDiffHandle objects for each
+    structure (e.g., each of the TREs in the file), we instead try to
+    provide a good deal of functionality through "configuration". The
+    configuration is a dictionary type object that derived class get
+    from the nitf_diff object.  This then contains keyword/value pairs
+    for controlling things. While derived classes can others, these
+    are things that can be defined:
+
+    exclude           - list of fields to exclude from comparing
+    exclude_but_warn  - list of fields to exclude from comparing, but warn if 
+                        different
+    include           - if nonempty, only include the given fields
+    eq_fun            - a dictionary going from field name to a function
+                        to compare
+    rel_tol           - a dictionary going from field name to a relative
+                        tolerance. Only used for fields with float type.
+    abs_tol           - a dictionary going from field name to absolute
+                        tolerance. Only used for fields with float type.
+
+    If a function isn't otherwise defined in eq_fun, we use operator.eq, 
+    except for floating point numbers. For floating point numbers we use
+    math.isclose. The rel_tol and/or abs_tol can be supplied. The default
+    values are used for math.isclose if not supplied (so 1e-9 and 0.0).
+    
+    For array/loop fields we compare the shape, and if the same we compare
+    each element in the array.
+    '''
+    def configuration(self, nitf_diff):
+        '''Derived class should extract out the appropriate configuration
+        from the supplied NitfDiff object.'''
+        # Default is no configuration
+        return {}
+    def _is_diff_ignored(self, s, *args):
+        logger.difference_ignored(s, *args)
+    def _is_diff(self, s, *args):
+        logger.difference(s, *args)
+        self.is_same = False
+
+    def handle_diff(self, obj1, obj2, nitf_diff):
+        '''Derived class will likely override this to check for their
+        specific types'''
+        if(not isinstance(obj1, FieldStructNew) or
+           not isinstance(obj2, FieldStructNew)):
+            return (False, None)
+        return (True, self.compare_obj(obj1, obj2, nitf_diff))
+
+    def _cmp_func(self, fn1, v1, c):
+        '''Compare function to use'''
+        rel_tol = c.get('rel_tol', {})
+        abs_tol = c.get('abs_tol', {})
+        eq_fun = c.get('eq_fun', {})
+        if(isinstance(v1, float) or (isinstance(v1, NitfField) and
+                                     v1.ty == float)):
+            def _f(a,b):
+                if(a is None and b is None):
+                    return True
+                if(a is None or b is None):
+                    return False
+                return math.isclose(a,b,rel_tol = rel_tol.get(fn1, 1e-9),
+                                    abs_tol = abs_tol.get(fn1, 0.0))
+            def_eq_fun = _f
+        else:
+            def_eq_fun = operator.eq
+        return eq_fun.get(fn1, def_eq_fun)
+
+    def _cmp_nitf_field(self, fn1, v1, v2, cmp_func, rep_diff):
+        '''Compare a field, which is like an array'''
+        if(not NitfField.is_shape_equal(v1, v2)):
+            rep_diff("%s: array shapes are different", fn1)
+            return
+        diff_count = 0
+        total_count = 0
+        for (ind, av1), av2 in itertools.zip_longest(v1.items(), v2.values()):
+            total_count += 1
+            if(not cmp_func(av1, av2)):
+                ind_str = ", ".join(str(i) for i in ind)
+                logger.difference_detail("%s[%s]: %s != %s", fn1, ind_str,
+                                         av1, av2)
+                diff_count += 1
+        if(diff_count > 0):
+            rep_diff("%s: array had %d of %d different", fn1, diff_count,
+                     total_count)
+        
+    def compare_obj(self, obj1, obj2, nitf_diff):
+        c = self.configuration(nitf_diff)
+        exclude = c.get('exclude', [])
+        exclude_but_warn = c.get('exclude_but_warn', [])
+        include = c.get('include', [])
+        self.is_same = True
+        for (fn1, v1), (fn2, v2) in \
+            itertools.zip_longest(obj1.items(array_as_list=False),
+                                  obj2.items(array_as_list=False),
+                                  fillvalue=("No_field", None)):
+            if(fn1 != fn2):
+                logger.difference("different fields found. Field in object 1 is %s and object 2 is %s. Stopping comparison." % (fn1, fn2))
+                return False
+            if fn1 in exclude:
+                continue
+            if len(include) > 0 and fn1 not in include:
+                continue
+            if fn1 in exclude_but_warn:
+                rep_diff = self._is_diff_ignored
+            else:
+                rep_diff = self._is_diff
+            cmp_func = self._cmp_func(fn1, v1, c)
+            if(isinstance(v1, NitfField)):
+                self._cmp_nitf_field(fn1, v1, v2, cmp_func, rep_diff)
+            elif not cmp_func(v1, v2):
+                rep_diff("%s: %s != %s", fn1, v1, v2)
+        return self.is_same
+
+    
 __all__ = ["FieldStructNew", "NitfField", "FieldDataNew",
-           "StringFieldDataNew", "FloatFieldDataNew", "IntFieldDataNew"]
+           "StringFieldDataNew", "FloatFieldDataNew", "IntFieldDataNew",
+           "FieldStructNewDiff",]

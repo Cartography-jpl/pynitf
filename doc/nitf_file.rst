@@ -54,7 +54,7 @@ The NitfFile class structure is shown in :numref:`nitf_file`.
       Base class of NITF segments.
 
       Note not all segment types can have
-      user_header or TREs. Just to prevent needing
+      user_subheaders or TREs. Just to prevent needing
       special handling for each segment type, we
       include this in all segment types but set to
       None (for user_subheader) or an empty list (for
