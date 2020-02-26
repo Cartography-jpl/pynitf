@@ -231,7 +231,57 @@ def test_int_field_data():
             fh2 = io.BytesIO(fh.getvalue())
             f2.read_from_file((),fh2)
             assert f2[()] == 123
-    
+
+def test_field_struct_basic():
+    '''Simple field struct, see that we can set and read values.'''
+    t = FieldStructNew([["fhdr", "", 4, str,  {"default" : "NITF"}],
+                        ["clevel", "", 2, int ],])
+    assert t.fhdr == "NITF"
+    t.fhdr = 'FOO'
+    assert t.fhdr == "FOO"
+    t.clevel = 1
+    assert t.clevel == 1
+    assert list(t.items()) == [('fhdr', 'FOO'), ('clevel', 1)]
+    fh = io.BytesIO()
+    t.write_to_file(fh)
+    assert fh.getvalue() == b'FOO 01'
+    fh2 = io.BytesIO(b'BOO 02')
+    t2 = FieldStructNew(t.desc)
+    t2.read_from_file(fh2)
+    assert t2.fhdr == "BOO"
+    assert t2.clevel == 2
+    assert str(t2) == \
+'''fhdr  : BOO
+clevel: 2
+'''
+
+def test_field_struct_conditional():
+    d = nitf_diff_field_struct # Shorter name
+    t = FieldStructNew(
+        [["fhdr", "", 4, str, {"default" : "NITF"}],
+         ["udhdl", "", 5, int],
+         ["udhofl", "", 3, int, {"condition" : "f.udhdl != 0"}],
+         ["flttst", "", 10, float, {"condition" : "f.udhdl != 0"}],
+        ])
+    with pytest.raises(RuntimeError):
+        t.udhofl = 1
+    fh = io.BytesIO()
+    t.write_to_file(fh)
+    assert fh.getvalue() == b'NITF00000'
+    assert t.udhofl is None
+    assert t.flttst is None
+    assert list(t.items()) == [('fhdr', 'NITF'), ('udhdl', 0), ('udhofl', None),
+                               ('flttst', None)]
+    t.udhdl = 10
+    t.udhofl = 20
+    t.flttst = 1.123467
+    fh = io.BytesIO()
+    t.write_to_file(fh)
+    assert fh.getvalue() == b'NITF000100201.12346700'
+    assert t.udhofl == 20
+    assert list(t.items()) == [('fhdr', 'NITF'), ('udhdl', 10), ('udhofl', 20),
+                               ('flttst', 1.123467)]
+        
 def test_basic(nitf_diff_field_struct):
     '''Basic test, just set and read values.'''
     d = nitf_diff_field_struct # Shorter name

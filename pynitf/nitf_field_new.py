@@ -1,8 +1,9 @@
 from .nitf_field import float_to_fixed_width, NitfLiteral
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 import weakref
 import copy
 from struct import pack, unpack
+import io
 
 # Add a bunch of debugging if you are diagnosing a problem
 DEBUG = False
@@ -38,7 +39,7 @@ class NitfField(object):
         self.optional = options.get("optional", False)
         self.optional_char = options.get("optional_char", " ")
         self.hardcoded_value = options.get("hardcoded_value", False)
-        # Have s a dictionary that maps the index/looping key to a value.
+        # Have a dictionary that maps the index/looping key to a value.
         # To prevent needing special handling, a single value is still
         # treated as a dict with a key of (). You
         # get the value by self.value_dict[key].  
@@ -485,20 +486,112 @@ class FieldStructNew(object):
     If size is instead a value (e.g., 10), then we ignore size_not_updated.
     The default is size_not_updated = False. In all cases, this only
     applies if we have a field_value_class.
+
+    For fields that loop, you can access them like an array, e.g. 
+    fs.foo[0,1], and assign like fs.foo[0,1] = 2.  Note however that
+    we do *not* support slices. This is because in general a NITF loop
+    isn't the same size, and might be missing for some indices (e.g.,
+    a conditional isn't met). It isn't really clear what a slice means
+    when some of the data might not be there, or when different indices
+    have different dimensions.
     '''
     def __init__(self, description):
+        # Note that as of python 3.7 the normal dict preserved insert
+        # order. However, we don't want to assume we are using that new
+        # of a version. So for now, we use a OrderedDict.
+        # We use super().__setattr__ because our setattr doesn't work until
+        # we have field defined.
+        super().__setattr__("field", OrderedDict())
         self.desc = copy.deepcopy(description)
-        self.field_name = [d[0] for d in self.desc if d[0]]
-        self.value = {}
-        self.default_value = {}
-        #for d in self.desc if d[0]:
+        for row in self.desc:
+            field_name, desc, size, ty, rest = row[0],row[1],row[2],row[3],row[4:]
+            options = {}
+            if(len(rest) > 0):
+                options = rest[0]
+            loop = None
+            if(field_name):
+                self.field[field_name] = options.get("field_value_class",
+                    NitfField)(self, field_name, size, ty, loop, options)
             
     def __getattr__(self, nm):
-        if(nm not in self.field_name):
+        if(nm not in self.field):
             raise AttributeError()
-        return self.value.get(nm, self.default_value[nm])
+        t = self.field[nm]
+        return t if t.loop else t[()]
+    
     def __setattr__(self, nm, value):
-        raise AttributeError()
+        if(nm in self.field):
+            t = self.field[nm]
+            if(t.loop):
+                raise RuntimeError("Need to supply index to %s" % nm)
+            t[()] = value
+        else:
+            super().__setattr__(nm, value)
+
+    def items(self, array_as_list = True):
+        '''Return an iterator that gives returns tuples with the field name
+        and value of that field. 
+
+        By default, for arrays/looped data we convert the data to a
+        possible nested list (e.g., [1,2,3] for a field in a loop of
+        size 3, [[1,2,3], [1,2]] for a field with an outer loop of
+        size 2, and inner loop of (3,2).
+
+        Note that some fields in a FieldStruct might be conditional. In all
+        cases the field name is returned, even if it is conditional with
+        the condition false. In the case that the conditional field isn't 
+        present, its value is returned as None.
+
+        Depending on the application, converting arrays to lists might not
+        be desirable. If the array_as_list keyword is set to False we instead
+        return a FieldValueArray. Note that FieldValueArray has its own 
+        iterate function which can be used to step through the array (e.g.,
+        in comparing 2 arrays).
+        '''
+        for f in self.field.values():
+            if(f.field_name is not None):
+                yield (f.field_name, f[()])
+    def write_to_file(self, fh):
+        '''Write to a file stream.'''
+        for f in self.field.values():
+            f.write_to_file((), fh)
+
+    def read_from_file(self, fh, nitf_literal=False):
+        '''Read from a file stream.  
         
+        nitf_literal set to True is to handle odd formatting rules,
+        where we want to read the values from a file as a string and
+        not apply any additional formatting. The data is read as
+        NitfLiteral objects. Normally you don't want this option, but
+        it can be useful for cases hard to capture otherwise (e.g.,
+        heritage systems that depend on specific formatting).
+        '''
+        for f in self.field.values():
+            f.read_from_file((), fh, nitf_literal)
+            
+    def update_field(self, fh, field_name, value, key = ()):
+        '''Update a field name in an open file'''
+        fv = self.field[field_name]
+        fv[key] = value
+        fv.update_file(key, fh)
+        
+    def __str__(self):
+        '''Text description of structure, e.g., something you can print
+        out.'''
+        try:
+            maxlen = max(len(k) for k in self.field.keys())
+        except ValueError:
+            # We have no _FieldValue, so just set maxlen to a fixed value
+            maxlen = 10
+        res = io.StringIO()
+        for f in self.field.values():
+            if(f.field_name is not None):
+                print(f.field_name.ljust(maxlen) + ": " + f.get_print(()),
+                      file=res)
+            else:
+                print(f.desc(self), file=res, end='')
+        return res.getvalue()
+                
+            
 __all__ = ["FieldStructNew", "NitfField", "FieldDataNew",
            "StringFieldDataNew", "FloatFieldDataNew", "IntFieldDataNew"]
