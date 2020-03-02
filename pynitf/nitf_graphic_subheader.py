@@ -1,4 +1,4 @@
-from .nitf_field_old import *
+from .nitf_field import FieldStruct, BytesFieldData, FieldStructDiff
 from .nitf_security import NitfSecurity
 from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
 import io
@@ -12,7 +12,8 @@ cryptic, but these are documented in detail in the NITF 2.10 documentation
 The NITF graphic subheader is described in Table A-5, starting page 102.
 '''
 
-desc = [['sy', "File Part Type", 2, str],
+desc = [['sy', "File Part Type", 2, str, {"default" : "SY",
+                                          "hardcoded_value" : True}],
         ['sid', "Graphic Identifier", 10, str],
         ['sname', "Graphic name", 20, str],
         ['ssclas', "Graphic Security Classification", 1, str, {'default' : 'U'}],
@@ -43,31 +44,29 @@ desc = [['sy', "File Part Type", 2, str],
         ['sres2', "Reserved for Future use", 2, int],
         ['sxshdl', "Graphic Extended Subheader Data Length", 5, int],
         ['sxofl', "", 3, int, {'condition' : 'f.sxshdl != 0'}],
-        ['sxshd', "", 'f.sxshdl', None, {'field_value_class' : FieldDataOld,
+        ['sxshd', "", 'f.sxshdl', None, {'field_value_class' : BytesFieldData,
                                    'size_offset' : 3}]
 ]
 
-NitfGraphicSubheader = create_nitf_field_structure("NitfGraphicSubheader", desc,
-                                                 hlp=hlp)
+class NitfGraphicSubheader(FieldStruct):
+    __doc__ = help
+    desc = desc
 
-NitfGraphicSubheader.sm_value = hardcoded_value("SY")
+    @property
+    def security(self):
+        return NitfSecurity.get_security(self, "f")
 
-def _summary(self):
-    res = io.StringIO()
-    print("%s %s %s" % (self.sy, self.sid, self.sname), file=res)
-    return res.getvalue()
+    @security.setter
+    def security(self, s):
+        s.set_security(self, "f")
+        
+    def summary(self):
+        res = io.StringIO()
+        print("%s %s %s" % (self.sy, self.sid, self.sname), file=res)
+        return res.getvalue()
 
-NitfGraphicSubheader.summary = _summary
 
-def _get_security(self):
-    return NitfSecurity.get_security(self, "ss")
-
-def _set_security(self, s):
-    s.set_security(self, "ss")
-
-NitfGraphicSubheader.security = property(_get_security, _set_security)
-
-class GraphicSubheaderDiff(FieldStructDiffOld):
+class GraphicSubheaderDiff(FieldStructDiff):
     '''Compare two graphic subheaders.'''
     def configuration(self, nitf_diff):
         return nitf_diff.config.get("Graphic Subheader", {})
@@ -81,10 +80,12 @@ class GraphicSubheaderDiff(FieldStructDiffOld):
 
 NitfDiffHandleSet.add_default_handle(GraphicSubheaderDiff())
 _default_config = {}
+
 # Ignore all the structural differences about the file. We compare all
 # the individual pieces, so this will get reported as we go through each
 # element. But it is not useful to also report that udhd varies if we are
 # already saying the TREs are different.
+
 _default_config["exclude"] = ['sxshdl', 'sxofl', 'sxshd'] 
  
 

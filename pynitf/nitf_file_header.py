@@ -1,4 +1,4 @@
-from .nitf_field_old import *
+from .nitf_field import FieldStruct, BytesFieldData, FieldStructDiff
 from .nitf_security import NitfSecurity
 from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
 
@@ -10,10 +10,13 @@ cryptic, but these are documented in detail in the NITF 2.10 documentation
 
 The NITF File header is described in Table A-1, starting page 66.
 '''
-desc = [['fhdr', "File Profile Name", 4, str],
-        ['fver', "File Version", 5, str],
+desc = [['fhdr', "File Profile Name", 4, str, {"default" : "NITF",
+                                               "hardcoded_value" : True}],
+        ['fver', "File Version", 5, str, {"default" : "02.10",
+                                          "hardcoded_value" : True}],
         ['clevel', "Complexity Level", 2, int, {"default" : 3}],
-        ['stype', "Standard Type", 4, str],
+        ['stype', "Standard Type", 4, str, {"default" : "BF01",
+                                            "hardcoded_value" : True}],
         ['ostaid', "Originating Station ID", 10, str],
         ['fdt', "File Data and Time", 14, str],
         ['ftitle', "File Title", 80, str],
@@ -64,37 +67,34 @@ desc = [['fhdr', "File Profile Name", 4, str],
          ['lre', "", 7, int]],
         ['udhdl', "", 5, int],
         ["udhofl", "", 3, int, {"condition" : "f.udhdl != 0"}],
-        ['udhd', "", 'f.udhdl', None, {'field_value_class' : FieldDataOld,
+        ['udhd', "", 'f.udhdl', None, {'field_value_class' : BytesFieldData,
                                      'size_offset' : 3}],
         ['xhdl', "", 5, int],
         ["xhdlofl", "", 3, int, {"condition" : "f.xhdl != 0"}],
-        ['xhd', "", 'f.xhdl', None, {'field_value_class' : FieldDataOld,
+        ['xhd', "", 'f.xhdl', None, {'field_value_class' : BytesFieldData,
                                      'size_offset' : 3}],
         ]
 
-NitfFileHeader = create_nitf_field_structure("NitfFileHeader", desc, hlp=hlp)
-NitfFileHeader.fhdr_value = hardcoded_value("NITF")
-NitfFileHeader.fver_value = hardcoded_value("02.10")
-NitfFileHeader.stype_value = hardcoded_value("BF01")
+class NitfFileHeader(FieldStruct):
+    __doc__ = help
+    desc = desc
 
-def _get_security(self):
-    return NitfSecurity.get_security(self, "f")
+    @property
+    def security(self):
+        return NitfSecurity.get_security(self, "f")
 
-def _set_security(self, s):
-    s.set_security(self, "f")
+    @security.setter
+    def security(self, s):
+        s.set_security(self, "f")
+        
+    def summary(self):
+        res = io.StringIO()
+        print("%s %s %s MD5: " % (self.fhdr, self.fver, self.ftitle), file=res)
+        print("%d Image Segments, %d Graphic Segments, %d Text Segments, %d DESs"
+              % (self.numi, self.nums, self.numt, self.numdes), file=res)
+        return res.getvalue()
 
-NitfFileHeader.security = property(_get_security, _set_security)
-
-def summary(self):
-    res = io.StringIO()
-    print("%s %s %s MD5: " % (self.fhdr, self.fver, self.ftitle), file=res)
-    print("%d Image Segments, %d Graphic Segments, %d Text Segments, %d DESs"
-          % (self.numi, self.nums, self.numt, self.numdes), file=res)
-    return res.getvalue()
-
-NitfFileHeader.summary = summary
-
-class FileHeaderDiff(FieldStructDiffOld):
+class FileHeaderDiff(FieldStructDiff):
     '''Compare two file headers.'''
     def configuration(self, nitf_diff):
         return nitf_diff.config.get("File Header", {})
@@ -108,14 +108,18 @@ class FileHeaderDiff(FieldStructDiffOld):
 
 NitfDiffHandleSet.add_default_handle(FileHeaderDiff())
 _default_config = {}
+
 # A user might not care at all about the fdt changing, but by default
 # give a warning since they might care. The user can change the configuration
 # of nitf_diff to completely ignore this if desired.
+
 _default_config["exclude_but_warn"] = ["fdt"]
+
 # Ignore all the structural differences about the file. We compare all
 # the individual pieces, so this will get reported as we go through each
 # element. But it is not useful to also report that udhd varies if we are
 # already saying the TREs are different.
+
 _default_config["exclude"] = ['fl', 'hl',
                               'numi', 'lish', 'li',
                               'nums', 'lssh', 'ls',

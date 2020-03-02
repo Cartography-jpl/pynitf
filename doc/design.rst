@@ -299,6 +299,8 @@ The design for this is shown in :numref:`field_struct`.
       different get_print function.   
    end note
    
+   class BytesFieldData
+
    class StringFieldData
    
    class FloatFieldData
@@ -339,6 +341,7 @@ The design for this is shown in :numref:`field_struct`.
    FieldStruct o-- NitfLoop
    NitfLoop o-- "many" NitfField
    NitfField <|-- FieldData
+   FieldData <|-- BytesFieldData
    FieldData <|-- StringFieldData
    FieldData <|-- FloatFieldData
    FieldData <|-- IntFieldData

@@ -1,4 +1,4 @@
-from .nitf_field_old import *
+from .nitf_field import FieldStruct, BytesFieldData, FieldStructDiff
 from .nitf_security import NitfSecurity
 from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
 import io
@@ -12,7 +12,8 @@ cryptic, but these are documented in detail in the NITF 2.10 documentation
 The NITF image subheader is described in Table A-3, starting page 78.
 '''
 
-desc = [['im', "File Part Type", 2, str],
+desc = [['im', "File Part Type", 2, str, {"default" : "IM",
+                                          "hardcoded_value": True}],
         ['iid1', "Image Identifier 1", 10, str],
         ['idatim', "Image Date and Time", 14, str],
         ['tgtid', "Target Identifier", 17, str],
@@ -54,15 +55,19 @@ desc = [['im', "File Part Type", 2, str],
         [["loop", "f.nbands if f.nbands > 0 else f.xbands"],
          ['irepband', "Band Representation", 2, str, {'default' : 'M'}],
          ['isubcat', "Band Subcategory", 6, str],
-         ['ifc', "Band Filter Condition", 1, str],
-         ['imflt', "Band Standard Image Filter Code", 3, str],
+         ['ifc', "Band Filter Condition", 1, str, {"default" : "N",
+                                                   "hardcoded_value": True}],
+         ['imflt', "Band Standard Image Filter Code", 3, str,
+          {"default" : "   ", "hardcoded_value": True}],
          ['nluts', "Number of LUTS", 1, int],
          ['nelut', "", 5, int, {'condition' : "f.nluts[i1] != 0"}],
          [["loop", "f.nluts[i1]"],
-          ['lutd', "", 'f.nelut[i1]', None, {'field_value_class' : FieldDataOld}]
+          ['lutd', "", 'f.nelut[i1]', None, {'field_value_class' :
+                                             BytesFieldData}]
          ],
         ],
-        ['isync', "Image Sync Code", 1, int],
+        ['isync', "Image Sync Code", 1, int, {"default" : 0,
+                                              "hardcoded_value": True}],
         ['imode', "Image Mode", 1, str, {'default' : 'B'}],
         ['nbpr', "Number of Blocks per Row", 4, int, {'default' : 1 }],
         ['nbpc', "Number of Blocks per Column", 4, int, {'default' : 1}],
@@ -75,139 +80,164 @@ desc = [['im', "File Part Type", 2, str],
         ['imag', "Image Magnification", 4, str, {'default' : '1.0'}],
         ['udidl', "User Defined Image Data Length", 5, int],
         ['udofl', "", 3, int, {'condition' : 'f.udidl != 0'}],
-        ['udid', "", 'f.udidl', None, {'field_value_class' : FieldDataOld,
+        ['udid', "", 'f.udidl', None, {'field_value_class' : BytesFieldData,
                                      'size_offset' : 3}],
         ['ixshdl', "Image Extended Subheader Data Length", 5, int],
         ['ixofl', "", 3, int, {'condition' : 'f.ixshdl != 0'}],
-        ['ixshd', "", 'f.ixshdl', None, {'field_value_class' : FieldDataOld,
+        ['ixshd', "", 'f.ixshdl', None, {'field_value_class' : BytesFieldData,
                                    'size_offset' : 3}]
 ]
 
-NitfImageSubheader = create_nitf_field_structure("NitfImageSubheader", desc,
-                                                 hlp=hlp)
+class NitfImageSubheader(FieldStruct):
+    __doc__ = help
+    desc = desc
 
-NitfImageSubheader.im_value = hardcoded_value("IM")
-NitfImageSubheader.ifc_value = hardcoded_value("N")
-NitfImageSubheader.imflt_value = hardcoded_value("   ")
-NitfImageSubheader.isync_value = hardcoded_value(0)
+    @property
+    def security(self):
+        return NitfSecurity.get_security(self, "f")
 
-def _summary(self):
-    res = io.StringIO()
-    print("%s %s %s" % (self.im, self.iid1, self.iid2), file=res)
-    numBands = self.nbands
-    if (numBands == 0):
-        numBands = self.xbands
-    print("%d X %d, %d Band(s), %d/%d bpp"
-          % (self.nrows, self.ncols, numBands, self.abpp, self.nbpp), file=res)
-    return res.getvalue()
+    @security.setter
+    def security(self, s):
+        s.set_security(self, "f")
+        
+    def summary(self):
+        res = io.StringIO()
+        print("%s %s %s" % (self.im, self.iid1, self.iid2), file=res)
+        numBands = self.nbands
+        if (numBands == 0):
+            numBands = self.xbands
+        print("%d X %d, %d Band(s), %d/%d bpp"
+              % (self.nrows, self.ncols, numBands, self.abpp, self.nbpp),
+              file=res)
+        return res.getvalue()
 
-NitfImageSubheader.summary = _summary
+    @property
+    def number_band(self):
+        return (self.nbands if self.nbands > 0 else self.xbands)
 
-def _number_band(self):
-    return (self.nbands if self.nbands > 0 else self.xbands)
+    @number_band.setter
+    def number_band(self, numband):
+        # If the number of bands is < 10, it gets placed in nbands. Otherwise
+        #  it is read/written as xbands.
+        if (numband < 10):
+            self.nbands = numband
+        else:
+            self.nbands = 0
+            self.xbands = numband
 
-def _set_number_band(self, numband):
-    if (numband < 10):
-        self.nbands = numband
-    else:
-        self.nbands = 0
-        self.xbands = numband
+    @property
+    def dtype(self):
+        '''Return the data type. Note that this is always big endian because
+        this is what NITF uses. This is the opposite of the native intel format
+        (which is little endian).'''
+        if(self.nbpp == 8 and self.pvtype == "INT"):
+            return np.dtype(np.uint8)
+        elif(self.nbpp == 8 and self.pvtype == "SI"):
+            return np.dtype(np.int8)
+        elif(self.nbpp ==16 and self.pvtype == "INT"):
+            return np.dtype('>u2')
+        elif(self.nbpp ==16 and self.pvtype == "SI"):
+            return np.dtype('>i2')
+        elif(self.nbpp ==32 and self.pvtype == "INT"):
+            return np.dtype('>u4')
+        elif(self.nbpp ==32 and self.pvtype == "SI"):
+            return np.dtype('>i4')
+        elif(self.nbpp ==32 and self.pvtype == "R"):
+            return np.dtype('>f4')
+        elif(self.nbpp ==64 and self.pvtype == "C"):
+            return np.dtype('>c8')
+        elif(self.nbpp ==64 and self.pvtype == "R"):
+            return np.dtype('>f8')
+        elif(self.nbpp ==128 and self.pvtype == "C"):
+            return np.dtype('>c16')
+        else:
+            raise RuntimeError("Unrecognized nbpp %d and pvtype %s" %
+                               (self.nbpp, self.pvtype))
 
-# If the number of bands is < 10, it gets placed in nbands. Otherwise it
-# is read/written as xbands.
-
-NitfImageSubheader.number_band = property(_number_band, _set_number_band)
-
-def _dtype(ih):
-    '''Return the data type. Note that this is always big endian because
-    this is what NITF uses. This is the opposite of the native intel format
-    (which is little endian).'''
-    if(ih.nbpp == 8 and ih.pvtype == "INT"):
-        return np.dtype(np.uint8)
-    elif(ih.nbpp == 8 and ih.pvtype == "SI"):
-        return np.dtype(np.int8)
-    elif(ih.nbpp ==16 and ih.pvtype == "INT"):
-        return np.dtype('>u2')
-    elif(ih.nbpp ==16 and ih.pvtype == "SI"):
-        return np.dtype('>i2')
-    elif(ih.nbpp ==32 and ih.pvtype == "INT"):
-        return np.dtype('>u4')
-    elif(ih.nbpp ==32 and ih.pvtype == "SI"):
-        return np.dtype('>i4')
-    elif(ih.nbpp ==32 and ih.pvtype == "R"):
-        return np.dtype('>f4')
-    elif(ih.nbpp ==64 and ih.pvtype == "C"):
-        return np.dtype('>c8')
-    elif(ih.nbpp ==64 and ih.pvtype == "R"):
-        return np.dtype('>f8')
-    elif(ih.nbpp ==128 and ih.pvtype == "C"):
-        return np.dtype('>c16')
-    else:
-        raise RuntimeError("Unrecognized nbpp %d and pvtype %s" %
-                           (ih.nbpp, ih.pvtype))
+    @dtype.setter
+    def dtype(self, data_type):
+        '''The data_type should be a numpy type. Note that the NITF image is
+        always big endian (the opposite of the intel ordering). Since
+        the various read/write classes handle the endian conversion,
+        we don't worry here if the data_type is big or little endian,
+        so np.dtype('<i2'), np.dtype('i2') and np.dtype('>i2') are all
+        treated the same by this function.
     
-def _set_dtype(ih, data_type):
-    '''The data_type should be a numpy type. Note that the NITF image is 
-    always big endian (the opposite of the intel ordering). Since the 
-    various read/
-    write classes handle the endian conversion, we don't worry here if the
-    data_type is big or little endian, so np.dtype('<i2'), np.dtype('i2') and
-    np.dtype('>i2') are all treated the same by this function.
+        Note this results in the weird behavior that blah.dtype = d_type and
+        then blah.dtype == d_type might return false (if we converted to big
+        endian). I believe this is what we want, but if it turns out that this
+        is confusing or a bad idea, then we can revisit this.
+
+        '''
+        if (data_type == np.uint8):
+            self.abpp = 8
+            self.nbpp = 8
+            self.pvtype = "INT"
+        elif (data_type == np.int8):
+            self.abpp = 8
+            self.nbpp = 8
+            self.pvtype = "SI"
+        elif (data_type == np.dtype('<u2') or data_type == np.dtype('>u2')):
+            self.abpp = 16
+            self.nbpp = 16
+            self.pvtype = "INT"
+        elif (data_type == np.dtype('<i2') or data_type == np.dtype('>i2')):
+            self.abpp = 16
+            self.nbpp = 16
+            self.pvtype = "SI"
+        elif (data_type == np.dtype('<u4') or data_type == np.dtype('>u4')):
+            self.abpp = 32
+            self.nbpp = 32
+            self.pvtype = "INT"
+        elif (data_type == np.dtype('<i4') or data_type == np.dtype('>i4')):
+            self.abpp = 32
+            self.nbpp = 32
+            self.pvtype = "SI"
+        elif (data_type == np.dtype('<f4') or data_type == np.dtype('>f4')):
+            self.abpp = 32
+            self.nbpp = 32
+            self.pvtype = "R"
+        elif (data_type == np.dtype('<c8') or data_type == np.dtype('>c8')):
+            self.abpp = 64
+            self.nbpp = 64
+            self.pvtype = "C"
+        elif (data_type == np.dtype('<f8') or data_type == np.dtype('>f8')):
+            self.abpp = 64
+            self.nbpp = 64
+            self.pvtype = "R"
+        elif (data_type == np.dtype('<c16') or data_type == np.dtype('>c16')):
+            self.abpp = 128
+            self.nbpp = 128
+            self.pvtype = "C"
+        else:
+            raise RuntimeError("Unsupported data_type")
+
+    @property
+    def geolo_corner(self):
+        '''These gets the IGEOLO corners. We return icoords, corners, utm_zone
+        as the inverse for _set_geolo_corner.'''
+        icoords = self.icords
+        corners, utm_zone = nitf_read_igeolo(self.icords,
+                                             self.igeolo.encode('utf-8'))
+        return icoords, corners, utm_zone
     
-    Note this results in the weird behavior that blah.dtype = d_type and
-    then blah.dtype == d_type might return false (if we converted to big
-    endian). I believe this is what we want, but if it turns out that this
-    is confusing or a bad idea, then we can revisit this.
-    '''
-    if (data_type == np.uint8):
-        ih.abpp = 8
-        ih.nbpp = 8
-        ih.pvtype = "INT"
-    elif (data_type == np.int8):
-        ih.abpp = 8
-        ih.nbpp = 8
-        ih.pvtype = "SI"
-    elif (data_type == np.dtype('<u2') or data_type == np.dtype('>u2')):
-        ih.abpp = 16
-        ih.nbpp = 16
-        ih.pvtype = "INT"
-    elif (data_type == np.dtype('<i2') or data_type == np.dtype('>i2')):
-        ih.abpp = 16
-        ih.nbpp = 16
-        ih.pvtype = "SI"
-    elif (data_type == np.dtype('<u4') or data_type == np.dtype('>u4')):
-        ih.abpp = 32
-        ih.nbpp = 32
-        ih.pvtype = "INT"
-    elif (data_type == np.dtype('<i4') or data_type == np.dtype('>i4')):
-        ih.abpp = 32
-        ih.nbpp = 32
-        ih.pvtype = "SI"
-    elif (data_type == np.dtype('<f4') or data_type == np.dtype('>f4')):
-        ih.abpp = 32
-        ih.nbpp = 32
-        ih.pvtype = "R"
-    elif (data_type == np.dtype('<c8') or data_type == np.dtype('>c8')):
-        ih.abpp = 64
-        ih.nbpp = 64
-        ih.pvtype = "C"
-    elif (data_type == np.dtype('<f8') or data_type == np.dtype('>f8')):
-        ih.abpp = 64
-        ih.nbpp = 64
-        ih.pvtype = "R"
-    elif (data_type == np.dtype('<c16') or data_type == np.dtype('>c16')):
-        ih.abpp = 128
-        ih.nbpp = 128
-        ih.pvtype = "C"
-    else:
-        raise RuntimeError("Unsupported data_type")
+    @geolo_corner.setter
+    def geolo_corner(self, v):
+        '''Set IGEOLO corners. We pass the icoords to specify the encoding,
+        the corners, and for UTM the utm_zone. The corners are an array
+        of 4 pairs. Each pair is X, Y which is longitude, latitude or UTM
+        X, Y. The corners are in the order upper left, upper right, lower right,
+        lower left (these are in the image space)'''
+        icoords, corners, utm_zone = v
+        self.icords = icoords
+        self.igeolo = nitf_write_igeolo(icoords, utm_zone,
+                                        corners).decode('utf-8')
 
-NitfImageSubheader.dtype = property(_dtype, _set_dtype)
 
-def _shape(self):
-    return (self.number_band, self.nrows, self.ncols)
+    @property
+    def shape(self):
+        return (self.number_band, self.nrows, self.ncols)
 
-NitfImageSubheader.shape = property(_shape)
 
 # This is GDAL code copied out as python. It is a bit klunky since this is
 # C++ rather than python, but we try to stay as close as possible to GDAL since
@@ -340,25 +370,6 @@ def nitf_read_igeolo(chICORDS, s):
             res.append([x,y])
     return res, nZone
 
-def _set_geolo_corner(self, v):
-    '''Set IGEOLO corners. We pass the icoords to specify the encoding,
-    the corners, and for UTM the utm_zone. The corners are an array
-    of 4 pairs. Each pair is X, Y which is longitude, latitude or UTM
-    X, Y. The corners are in the order upper left, upper right, lower right,
-    lower left (these are in the image space)'''
-    icoords, corners, utm_zone = v
-    self.icords = icoords
-    self.igeolo = nitf_write_igeolo(icoords, utm_zone, corners).decode('utf-8')
-
-def _get_geolo_corner(self):
-    '''These gets the IGEOLO corners. We return icoords, corners, utm_zone
-    as the inverse for _set_geolo_corner.'''
-    icoords = self.icords
-    corners, utm_zone = nitf_read_igeolo(self.icords,
-                                         self.igeolo.encode('utf-8'))
-    return icoords, corners, utm_zone
-
-NitfImageSubheader.geolo_corner = property(_get_geolo_corner, _set_geolo_corner)
 
 def set_default_image_subheader(ih, nrow, ncol, data_type, numbands=1,
                                 iid1 = "Test data",
@@ -407,15 +418,7 @@ def set_default_image_subheader(ih, nrow, ncol, data_type, numbands=1,
     ih.irepband[int(numbands / 2)] = "G"
     ih.irepband[0] = "R"
 
-def _get_security(self):
-    return NitfSecurity.get_security(self, "is")
-
-def _set_security(self, s):
-    s.set_security(self, "is")
-
-NitfImageSubheader.security = property(_get_security, _set_security)
-
-class ImageSubheaderDiff(FieldStructDiffOld):
+class ImageSubheaderDiff(FieldStructDiff):
     '''Compare two image subheaders.'''
     def configuration(self, nitf_diff):
         return nitf_diff.config.get("Image Subheader", {})
@@ -429,10 +432,12 @@ class ImageSubheaderDiff(FieldStructDiffOld):
 
 NitfDiffHandleSet.add_default_handle(ImageSubheaderDiff())
 _default_config = {}
+
 # Ignore all the structural differences about the file. We compare all
 # the individual pieces, so this will get reported as we go through each
 # element. But it is not useful to also report that udhd varies if we are
 # already saying the TREs are different.
+
 _default_config["exclude"] = ['udidl', 'udofl', 'udid', 
                               'ixshdl', 'ixofl', 'ixshd'] 
  

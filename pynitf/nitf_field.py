@@ -391,6 +391,21 @@ class StringFieldData(FieldData):
             return v
         return v.encode("utf-8")
 
+class BytesFieldData(FieldData):
+    def get_print(self, key):
+        t = self[key]
+        if(len(t) == 0):
+            return "Not used"
+        return "Data length %s" % len(t)
+
+    def unpack(self, key, bdata):
+        return bdata
+
+    def pack(self, key, v):
+        if(isinstance(v, bytes)):
+            return v
+        return v.encode("utf-8")
+    
 class FloatFieldData(FieldData):
     def get_print(self, key):
         t = self[key]
@@ -732,8 +747,10 @@ class FieldStruct(object):
         # of a version. So for now, we use a OrderedDict.
         
         self.field = OrderedDict()
+        self._desc_init_none = True
         if(description):
             self.desc = copy.deepcopy(description)
+            self._desc_init_none = False
         # Note this also fills in self.field
         self.pseudo_outer_loop = NitfLoop(weakref.proxy(self), None, self.desc,
                                           self.field)
@@ -743,7 +760,10 @@ class FieldStruct(object):
 
         This implementation isn't particularly efficient, if we end
         up doing this a lot we can try to do something more intelligent'''
-        res = FieldStruct(self.desc)
+        if(self._desc_init_none):
+            res = self.__class__()
+        else:
+            res = self.__class__(self.desc)
         fh = io.BytesIO()
         self.write_to_file(fh)
         fh2 = io.BytesIO(fh.getvalue())
@@ -946,6 +966,6 @@ class FieldStructDiff(NitfDiffHandle):
         return self.is_same
 
     
-__all__ = ["FieldStruct", "NitfField", "FieldData",
+__all__ = ["FieldStruct", "NitfField", "FieldData", "BytesFieldData",
            "StringFieldData", "FloatFieldData", "IntFieldData",
            "FieldStructDiff", "float_to_fixed_width", "NitfLiteral"]

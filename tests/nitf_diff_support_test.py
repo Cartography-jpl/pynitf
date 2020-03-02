@@ -19,6 +19,7 @@ def create_basic_nitf():
     create_text_segment(f)
     return f
 
+@skip
 def test_nitf_diff_neq_one_val(isolated_dir):
     f = NitfFile()
     create_tre(f)
@@ -126,6 +127,7 @@ def test_nitf_diff_neq_des(isolated_dir):
 
     assert nitf_file_diff("basic_nitf.ntf", "basic2_nitf.ntf") == False
 
+@skip
 def test_nitf_diff_image_segment_value_tolerance(config_dir):
     f = NitfFile()
     iseg = create_image_seg(f, iid1='An IID1')
@@ -149,6 +151,7 @@ def test_nitf_diff_image_segment_value_tolerance(config_dir):
     assert nitf_file_diff("basic_nitf.ntf", "basic2_nitf.ntf",
                           config=config_data) == True
 
+@skip
 def test_nitf_diff_image_segment_count_tolerance(config_dir):
     f = NitfFile()
     iseg = create_image_seg(f, iid1='An IID1')
@@ -172,6 +175,7 @@ def test_nitf_diff_image_segment_count_tolerance(config_dir):
     assert nitf_file_diff("basic_nitf.ntf", "basic2_nitf.ntf",
                           config=config_data) == True
 
+@skip
 def test_nitf_diff_image_segment_histogram_tolerance(config_dir):
     f = NitfFile()
     iseg = create_image_seg(f, iid1='An IID1')
@@ -194,6 +198,7 @@ def test_nitf_diff_image_segment_histogram_tolerance(config_dir):
     assert nitf_file_diff("basic_nitf.ntf", "basic2_nitf.ntf",
                           config=config_data) == False
 
+@skip
 def test_nitf_diff_image_segment_histogram_tolerance2(config_dir):
     f = NitfFile()
     iseg = create_image_seg(f, iid1='An IID1', adjust=[(1, 2, 200)])
@@ -217,6 +222,7 @@ def test_nitf_diff_image_segment_histogram_tolerance2(config_dir):
     assert nitf_file_diff("basic_nitf.ntf", "basic2_nitf.ntf",
                           config=config_data) == True
 
+@skip
 def test_image_content(isolated_dir):
     '''This create an end to end NITF file, this was at least initially the
     same as basic_nitf_example.py but as a unit test.'''
@@ -245,6 +251,7 @@ def test_image_content(isolated_dir):
 
     assert nitf_file_diff("basic_nitf.ntf", "basic2_nitf.ntf") == False
 
+@skip
 def test_EXT_DEF_CONTENT_eq(isolated_dir):
     # -- File 1 --
 
@@ -274,6 +281,7 @@ def test_EXT_DEF_CONTENT_eq(isolated_dir):
     assert nitf_file_diff("basic_nitf.ntf", "basic2_nitf.ntf") == True
 
 
+@skip
 def test_EXT_DEF_CONTENT_ne(isolated_dir):
     # -- File 1 --
 

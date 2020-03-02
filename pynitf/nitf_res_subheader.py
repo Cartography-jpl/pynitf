@@ -1,4 +1,4 @@
-from .nitf_field_old import *
+from .nitf_field import FieldStruct, BytesFieldData, FieldStructDiff
 from .nitf_security import NitfSecurity
 from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
 import io
@@ -9,7 +9,8 @@ cryptic, but these are documented in detail in the NITF 2.10 documentation
 
 The NITF RES subheader is described in Table A-9, starting page 124.
 '''
-res_desc = [['re', "Reserve Extension Subheader Identifier", 2, str],
+desc = [['re', "Reserve Extension Subheader Identifier", 2, str,
+         {"default" : "RE", "hardcoded_value" : True}],
         ['resid', "Unique Reserve Segment Type Identifier", 25, str],
         ['resver', "Version of the Data Definition", 2, int],
         ['reclas', "Reserve Extension Segment Security Classification", 1, str, {'default' : 'U'}],
@@ -29,28 +30,29 @@ res_desc = [['re', "Reserve Extension Subheader Identifier", 2, str],
         ['resrdt', "RES Security Source Date", 8, str],
         ['rectln', "RES Security Control Number", 15, str],
         ['resshl', "RES User-Defined Subheader Length", 4, int],
-        ['resshf', "", 'f.desshl', None, {'field_value_class' : FieldDataOld}],
+        ['resshf', "", 'f.desshl', None, {'field_value_class' :
+                                          BytesFieldData}],
 ]
-NitfResSubheader = create_nitf_field_structure("NitfResSubheader", res_desc, hlp=hlp)
 
-NitfResSubheader.de_value = hardcoded_value("RE")
 
-def summary(self):
-    res = io.StringIO()
-    print("%s %s %s " % (self.re, self.resid, self.resver), file=res)
-    return res.getvalue()
+class NitfResSubheader(FieldStruct):
+    __doc__ = help
+    desc = desc
 
-NitfResSubheader.summary = summary
+    @property
+    def security(self):
+        return NitfSecurity.get_security(self, "f")
 
-def _get_security(self):
-    return NitfSecurity.get_security(self, "re")
+    @security.setter
+    def security(self, s):
+        s.set_security(self, "f")
+        
+    def summary(self):
+        res = io.StringIO()
+        print("%s %s %s " % (self.re, self.resid, self.resver), file=res)
+        return res.getvalue()
 
-def _set_security(self, s):
-    s.set_security(self, "re")
-
-NitfResSubheader.security = property(_get_security, _set_security)
-
-class ResSubheaderDiff(FieldStructDiffOld):
+class ResSubheaderDiff(FieldStructDiff):
     '''Compare two res subheaders.'''
     def configuration(self, nitf_diff):
         return nitf_diff.config.get("Res Subheader", {})
@@ -64,14 +66,14 @@ class ResSubheaderDiff(FieldStructDiffOld):
 
 NitfDiffHandleSet.add_default_handle(ResSubheaderDiff())
 _default_config = {}
+
 # Ignore all the structural differences about the file. We compare all
 # the individual pieces, so this will get reported as we go through each
 # element. But it is not useful to also report that udhd varies if we are
 # already saying the TREs are different.
+
 _default_config["exclude"] = ['resshl', 'resshf'] 
  
-
 NitfDiffHandleSet.default_config["Res Subheader"] = _default_config
-
 
 __all__ = ["NitfResSubheader",]

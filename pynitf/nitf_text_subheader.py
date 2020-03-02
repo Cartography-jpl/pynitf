@@ -1,4 +1,4 @@
-from .nitf_field_old import *
+from .nitf_field import FieldStruct, BytesFieldData, FieldStructDiff
 from .nitf_security import NitfSecurity
 from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
 import io
@@ -9,7 +9,8 @@ cryptic, but these are documented in detail in the NITF 2.10 documentation
 
 The NITF text subheader is described in Table A-6, starting page 107.
 '''
-desc = [['te', "", 2, str],
+desc = [['te', "", 2, str, {"default" : "TE",
+                            "hardcoded_value" : True}],
         ['textid', "", 7, str],
         # Note, according to the NITF specification, this should always be
         # present, and if there is no value it should be "000". *However*,
@@ -40,30 +41,28 @@ desc = [['te', "", 2, str],
         ['txtfmt', "", 3, str],
         ['txshdl', "", 5, int],
         ['txsofl', "", 3, int, {'condition' : 'f.txshdl != 0'}],
-        ['txshd', "", 'f.txshdl', None, {'field_value_class' : FieldDataOld,
+        ['txshd', "", 'f.txshdl', None, {'field_value_class' : BytesFieldData,
                                    'size_offset' : 3}],
         ]
 
-NitfTextSubheader = create_nitf_field_structure("NitfTextSubheader", desc, hlp=hlp)
+class NitfTextSubheader(FieldStruct):
+    __doc__ = help
+    desc = desc
 
-NitfTextSubheader.te_value = hardcoded_value("TE")
+    @property
+    def security(self):
+        return NitfSecurity.get_security(self, "f")
 
-def _summary(self):
-    res = io.StringIO()
-    print("%s %s %s" % (self.te, self.textid, self.txtitl), file=res)
-    return res.getvalue()
+    @security.setter
+    def security(self, s):
+        s.set_security(self, "f")
+        
+    def summary(self):
+        res = io.StringIO()
+        print("%s %s %s" % (self.te, self.textid, self.txtitl), file=res)
+        return res.getvalue()
 
-NitfTextSubheader.summary = _summary
-
-def _get_security(self):
-    return NitfSecurity.get_security(self, "ts")
-
-def _set_security(self, s):
-    s.set_security(self, "ts")
-
-NitfTextSubheader.security = property(_get_security, _set_security)
-
-class TextSubheaderDiff(FieldStructDiffOld):
+class TextSubheaderDiff(FieldStructDiff):
     '''Compare two text subheaders.'''
     def configuration(self, nitf_diff):
         return nitf_diff.config.get("Text Subheader", {})
@@ -77,12 +76,13 @@ class TextSubheaderDiff(FieldStructDiffOld):
 
 NitfDiffHandleSet.add_default_handle(TextSubheaderDiff())
 _default_config = {}
+
 # Ignore all the structural differences about the file. We compare all
 # the individual pieces, so this will get reported as we go through each
 # element. But it is not useful to also report that udhd varies if we are
 # already saying the TREs are different.
-_default_config["exclude"] = ['txshdl', 'txsofl', 'txshd']
 
+_default_config["exclude"] = ['txshdl', 'txsofl', 'txshd']
 
 NitfDiffHandleSet.default_config["Text Subheader"] = _default_config
 
