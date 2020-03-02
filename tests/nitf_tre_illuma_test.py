@@ -3,7 +3,7 @@ from pynitf.nitf_tre_illuma import *
 from pynitf_test_support import *
 import io
 
-@skip
+@skip(reason="TRE ILLUMA while likely be dropped in favor of ILLUMB")
 def test_tre_illuma_basic():
 
     t = TreILLUMA()

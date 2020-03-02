@@ -1,5 +1,5 @@
-from .nitf_field_old import FieldDataOld, hardcoded_value, FieldStructDiffOld
-from .nitf_des import *
+from .nitf_field import BytesFieldData, FieldStructDiff
+from .nitf_des import NitfDesFieldStruct
 from .nitf_segment_data_handle import NitfSegmentDataHandleSet
 from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
 from .nitf_des_associated_user_subheader import (add_uuid_des_function,
@@ -16,8 +16,7 @@ The NITF DES subheader is described in a separate DRAFT document for the SNIP st
 
 _quat_format = "%+18.15lf"
 
-desc2 =["CSCSDB",
-        ['cov_version_date', 'Covariance Version Date', 8, str],
+desc =[['cov_version_date', 'Covariance Version Date', 8, str],
         ['core_sets', "Number of Core Sets", 1, int],
         [['loop', 'f.core_sets'],
          ["ref_frame_position", "Reference Frame for Position Coordinate Syste of the nth Core Set", 1, int],
@@ -193,30 +192,27 @@ desc2 =["CSCSDB",
         ],
         ["reserved_len", "Length of Reserved Portion", 9, int,
          {"default" : 0}],
-        ["reserved", "Reserved Data Field", "f.reserved_len", None, {'field_value_class' : FieldDataOld}],
+        ["reserved", "Reserved Data Field", "f.reserved_len", None, {'field_value_class' : BytesFieldData}],
 ]        
 
-#print (desc2)
+class DesCSCSDB(NitfDesFieldStruct):
+    __doc__ = hlp
+    desc = desc
+    des_tag = "CSCSDB"
+    des_ver = 1
+    uh_class = DesAssociatedUserSubheader
+    def summary(self):
+        res = io.StringIO()
+        print("CSCSDB", file=res)
+        return res.getvalue()
 
-(DesCSCSDB, _) = create_nitf_des_structure("DesCSCSDB", desc2, None, hlp=hlp)
 
-DesCSCSDB.uh_class = DesAssociatedUserSubheader
 desid_to_user_subheader_handle.add_des_user_subheader("CSCSDB",
                       DesAssociatedUserSubheader)
-DesCSCSDB.desid = hardcoded_value("CSCSDB")
-DesCSCSDB.desver = hardcoded_value("01")
-
-def _summary(self):
-    res = io.StringIO()
-    print("CSCSDB", file=res)
-    return res.getvalue()
-
-DesCSCSDB.summary = _summary
-
 add_uuid_des_function(DesCSCSDB)    
 NitfSegmentDataHandleSet.add_default_handle(DesCSCSDB)
 
-class CsscdbDiff(FieldStructDiffOld):
+class CsscdbDiff(FieldStructDiff):
     '''Compare two DesCSCSDB.'''
     def configuration(self, nitf_diff):
         return nitf_diff.config.get("DesCSCSDB", {})
@@ -229,7 +225,9 @@ class CsscdbDiff(FieldStructDiffOld):
             return (True, self.compare_obj(h1, h2, nitf_diff))
 
 NitfDiffHandleSet.add_default_handle(CsscdbDiff())
+
 # No default configuration
+
 _default_config = {}
 NitfDiffHandleSet.default_config["DesCSCSDB"] = _default_config
 

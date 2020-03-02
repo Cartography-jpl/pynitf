@@ -1,5 +1,5 @@
-from .nitf_field_old import FieldDataOld, hardcoded_value, FieldStructDiffOld
-from .nitf_des import *
+from .nitf_field import BytesFieldData, FieldStructDiff
+from .nitf_des import NitfDesFieldStruct
 from .nitf_segment_data_handle import NitfSegmentDataHandleSet
 from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
 from .nitf_des_associated_user_subheader import (add_uuid_des_function,
@@ -16,8 +16,7 @@ The NITF DES subheader is described in a separate DRAFT document for the SNIP st
 
 _quat_format = "%+18.15lf"
 
-desc2 =["CSATTB",
-        ['qual_flag_att', 'Attitude Data Quality Flag', 1, int],
+desc =[['qual_flag_att', 'Attitude Data Quality Flag', 1, int],
         ['interp_type_att', 'Interpolation Type', 1, int],
         ['interp_order_att', 'Order of Lagrange Interpolation Polynomials', 1, int, {'condition': 'f.interp_type_att==2'}],
         ['att_type', "Attitude Type", 1, int],
@@ -33,28 +32,26 @@ desc2 =["CSATTB",
          ["q4", "Quaternion Q4 of Attitude Reference Point", 18, float, {"frmt": _quat_format}],
         ], #end loop
         ["reserved_len", "Size of the Reserved Field", 9, int],
-        ["reserved", "Reserved Data Field", "f.reserved_len", None, {'field_value_class' : FieldDataOld}]
+        ["reserved", "Reserved Data Field", "f.reserved_len", None, {'field_value_class' : BytesFieldData}]
        ]
 
-(DesCSATTB, _) = create_nitf_des_structure("DesCSATTB", desc2, None, hlp=hlp)
-
-DesCSATTB.uh_class = DesAssociatedUserSubheader
+class DesCSATTB(NitfDesFieldStruct):
+    __doc__ = hlp
+    desc = desc
+    des_tag = "CSATTB"
+    des_ver = 1
+    uh_class = DesAssociatedUserSubheader
+    def summary(self):
+        res = io.StringIO()
+        print("CSATTB %s:  %d points" % (self.att_type, self.num_att), file=res)
+        return res.getvalue()
+    
 desid_to_user_subheader_handle.add_des_user_subheader("CSATTB",
                       DesAssociatedUserSubheader)
-DesCSATTB.desid = hardcoded_value("CSATTB")
-DesCSATTB.desver = hardcoded_value("01")
-
-def _summary(self):
-    res = io.StringIO()
-    print("CSATTB %s:  %d points" % (self.att_type, self.num_att), file=res)
-    return res.getvalue()
-
-DesCSATTB.summary = _summary
-
 add_uuid_des_function(DesCSATTB)    
 NitfSegmentDataHandleSet.add_default_handle(DesCSATTB)
 
-class CsattbDiff(FieldStructDiffOld):
+class CsattbDiff(FieldStructDiff):
     '''Compare two DesCSATTB.'''
     def configuration(self, nitf_diff):
         return nitf_diff.config.get("DesCSATTB", {})
@@ -67,7 +64,9 @@ class CsattbDiff(FieldStructDiffOld):
             return (True, self.compare_obj(h1, h2, nitf_diff))
 
 NitfDiffHandleSet.add_default_handle(CsattbDiff())
+
 # No default configuration
+
 _default_config = {}
 NitfDiffHandleSet.default_config["DesCSATTB"] = _default_config
 

@@ -408,7 +408,7 @@ def test_tre_sensrb_sample():
     print(t)
 
 
-#import pynitf.nitf_field
+import pynitf.nitf_field
 
 def test_tre_sensrb_sample2():
     '''Sample data with attitude unit vectors, to test reading'''

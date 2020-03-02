@@ -1,5 +1,5 @@
-from .nitf_field_old import (hardcoded_value, FieldStructDiffOld)
-from .nitf_des import *
+from .nitf_field import FieldStructDiff
+from .nitf_des import NitfDesFieldStruct
 from .nitf_segment_data_handle import NitfSegmentDataHandleSet
 from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
 import io
@@ -16,8 +16,7 @@ The NITF DES subheader is described in Table A-8, starting page 112.
 
 _quat_format = "%08.5lf"
 
-desc2 =["CSATTA",
-        ['att_type', "Type of attitude data being provided", 12, str],
+desc =[['att_type', "Type of attitude data being provided", 12, str],
         ['dt_att', "Time interval between attitude reference points", 14, str],
         ['date_att', "Day of First Attitude Reference Point", 8, int],
         ['t0_att', "UTC of First Attitude Reference Point", 13, str],
@@ -32,20 +31,20 @@ desc2 =["CSATTA",
 
 #print (desc2)
 
-(DesCSATTA, a) = create_nitf_des_structure("DesCSATTA", desc2, None, hlp=hlp)
+class DesCSATTA(NitfDesFieldStruct):
+    __doc__ = hlp
+    desc = desc
+    des_tag = "CSATTA"
+    des_ver = 1
 
-DesCSATTA.desver = hardcoded_value("01")
-
-def summary(self):
-    res = io.StringIO()
-    print("CSATTA %s:  %d points" % (self.att_type, self.num_att), file=res)
-    return res.getvalue()
-
-DesCSATTA.summary = summary
+    def summary(self):
+        res = io.StringIO()
+        print("CSATTA %s:  %d points" % (self.att_type, self.num_att), file=res)
+        return res.getvalue()
 
 NitfSegmentDataHandleSet.add_default_handle(DesCSATTA)
 
-class CsattaDiff(FieldStructDiffOld):
+class CsattaDiff(FieldStructDiff):
     '''Compare two DesCSATTA.'''
     def configuration(self, nitf_diff):
         return nitf_diff.config.get("DesCSATTA", {})
@@ -58,7 +57,9 @@ class CsattaDiff(FieldStructDiffOld):
             return (True, self.compare_obj(h1, h2, nitf_diff))
 
 NitfDiffHandleSet.add_default_handle(CsattaDiff())
+
 # No default configuration
+
 _default_config = {}
 NitfDiffHandleSet.default_config["DesCSATTB"] = _default_config
 

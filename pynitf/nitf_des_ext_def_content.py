@@ -1,6 +1,4 @@
-from .nitf_field_old import (StringFieldDataOld, create_nitf_field_structure,
-                             FieldStructDiffOld)
-from .nitf_des import *
+from .nitf_field import BytesFieldData, FieldStruct, FieldStructDiff
 from .nitf_segment_data_handle import (NitfDes,
                                        NitfSegmentDataHandleSet)
 from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
@@ -25,16 +23,17 @@ except ImportError:
 hlp = '''This is NITF EXT_DEF_CONTENT DES. This is a new DES defined in NSGPDD-A).
 '''
 
-desc =[['content_headers_len', 'Length in bytes of the CONTENT_HEADERS field', 4, int],
-        ['content_headers', 'Metadata describing the embedded content', 'f.content_headers_len', None,
-          {'field_value_class' : StringFieldDataOld}]]
+desc =[['content_headers_len', 'Length in bytes of the CONTENT_HEADERS field',
+        4, int],
+        ['content_headers', 'Metadata describing the embedded content',
+         'f.content_headers_len', None,
+         {'field_value_class' : BytesFieldData}]]
 
-DesEXT_DEF_CONTENT_UH = create_nitf_field_structure("DesEXT_DEF_CONTENT_UH",
-       desc, hlp = "This is the user defined subheader for DesEXT_DEF_CONTENT")
-
-class DesExtContentHeader(DesEXT_DEF_CONTENT_UH):
+class DesExtContentHeader(FieldStruct):
     '''This handles the contents header portion of the DES. See Table 
     7.4.7.10.1-1 in NSGPDD-A Base U'''
+    desc = desc
+    
     hlist = [[b"Content-Type", "content_type"],
              [b"Content-Use", "content_use"],
              [b"Content-Encoding", "content_encoding"],
@@ -101,8 +100,7 @@ class DesExtContentHeader(DesEXT_DEF_CONTENT_UH):
                 print("  " + t.decode('utf-8'), file=fh)
         return fh.getvalue()
     
-
-class DesExtContentHeaderDiff(FieldStructDiffOld):
+class DesExtContentHeaderDiff(FieldStructDiff):
     '''Compare two user headers.'''
     def configuration(self, nitf_diff):
         return nitf_diff.config.get("DesExtContentHeader", {})
@@ -238,5 +236,4 @@ NitfSegmentDataHandleSet.add_default_handle(DesEXT_DEF_CONTENT,
                                             priority_order=-1)
 NitfSegmentDataHandleSet.add_default_handle(DesEXT_h5)
 
-__all__ = ["DesEXT_DEF_CONTENT", "DesEXT_DEF_CONTENT_UH",
-           "DesEXT_h5", "DesExtContentHeader"]
+__all__ = ["DesEXT_DEF_CONTENT", "DesEXT_h5", "DesExtContentHeader"]

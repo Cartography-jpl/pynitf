@@ -236,7 +236,7 @@ def test_int_field_data():
 # defaultdict so we can use pickle. Unfortunately multiprocessing doesn't
 # work out of the box with dill, so it would be desirable to have plain
 # pickling working
-@skip # Don't assume dill is available
+@skip(reason="don't want to assume dill is available")
 def test_field_struct_dill():
     '''Simple field struct, see that we can set and read values.'''
     # We use lambdas, so pickle doesn't work. But should be able to

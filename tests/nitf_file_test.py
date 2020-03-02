@@ -6,12 +6,10 @@ from pynitf.nitf_tre_csexrb import *
 from pynitf.nitf_tre_piae import *
 from pynitf.nitf_tre_rpc import *
 from pynitf.nitf_tre_geosde import *
-from pynitf.nitf_des_csatta import *
-from pynitf.nitf_des_cssfab import *
 from pynitf.nitf_image import *
 from pynitf.nitf_tre import *
 from pynitf_test_support import *
-#import pynitf.nitf_field
+import pynitf.nitf_field
 import pynitf.nitf_des
 import subprocess
 import os
@@ -367,7 +365,7 @@ def test_nitf_sample_nitf(nitf_sample_files):
 flist2 = ["ns3321a.nsf",]
 
 # TODO Add support for this
-@skip        
+@skip(reason="don't support NITF streaming yet")        
 def test_nitf_sample_nitf_streaming(nitf_sample_files):
     for fname in flist2:
         f = NitfFile(nitf_sample_files + "/SampleFiles/" + fname)
@@ -386,7 +384,7 @@ def test_nitf_sample_nitf_streaming(nitf_sample_files):
 # p.sort_stats(SortKey.CUMULATIVE).print_stats(10)
 # p.sort_stats(SortKey.TIME).print_stats(10)
 # Interactive version with "python -m pstats prof.dat"
-@skip
+@skip(reason="skip profiling by default")
 def test_profile(isolated_dir):
     f = NitfFile()
     create_image_seg(f)
@@ -398,7 +396,7 @@ def test_profile(isolated_dir):
     cProfile.run('import pynitf; pynitf.NitfFile("basic_nitf.ntf")')
 
 # TODO Come back and rework use of mmap to reduce number of files    
-@skip
+@skip(reason="need to fix too many file error")
 def test_too_many_file(isolated_dir):
     '''Because of how we currently use np.memmap for images, we can
     run into "too many files" error if we have a couple of files open

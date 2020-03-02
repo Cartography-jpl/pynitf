@@ -371,15 +371,21 @@ class FieldData(NitfField):
         raise NotImplementedError()
 
     def __getitem__(self, key):
-        return self.unpack(key, super().__getitem__(key))
+        t = super().__getitem__(key)
+        if(t is not None):
+            return self.unpack(key, t)
+        return None
     
     def __setitem__(self, key, v):
-        super().__setitem__(key, self.pack(key, v))
-
+        if(v is not None):
+            super().__setitem__(key, self.pack(key, v))
+        else:
+            super().__setitem__(key, self.pack(key, None))
+            
 class StringFieldData(FieldData):
     def get_print(self, key):
         t = self[key]
-        if(len(t) == 0):
+        if(t is None or len(t) == 0):
             return "Not used"
         return "%s" % t
 
@@ -394,7 +400,7 @@ class StringFieldData(FieldData):
 class BytesFieldData(FieldData):
     def get_print(self, key):
         t = self[key]
-        if(len(t) == 0):
+        if(t is None or len(t) == 0):
             return "Not used"
         return "Data length %s" % len(t)
 
@@ -409,7 +415,7 @@ class BytesFieldData(FieldData):
 class FloatFieldData(FieldData):
     def get_print(self, key):
         t = self[key]
-        if(len(t) == 0):
+        if(t is None or len(t) == 0):
             return "Not used"
         return "%f" % t
 
@@ -426,7 +432,7 @@ class IntFieldData(FieldData):
         
     def get_print(self, key):
         t = self[key]
-        if(len(t) == 0):
+        if(t is None or len(t) == 0):
             return "Not used"
         return "%d" % t
 

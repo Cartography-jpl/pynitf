@@ -1,6 +1,5 @@
-from .nitf_field_old import (IntFieldDataOld, FieldDataOld, hardcoded_value,
-                             FieldStructDiffOld)
-from .nitf_des import *
+from .nitf_field import IntFieldData, BytesFieldData, FieldStructDiff
+from .nitf_des import NitfDesFieldStruct
 from .nitf_segment_data_handle import NitfSegmentDataHandleSet
 from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
 from .nitf_des_associated_user_subheader import (add_uuid_des_function,
@@ -17,8 +16,7 @@ The NITF DES subheader is described in a separate DRAFT document for the SNIP st
 
 _quat_format = "%+18.15lf"
 
-desc2 =["CSSFAB",
-        ['sensor_type', 'Sensor Type', 1, str],
+desc =[['sensor_type', 'Sensor Type', 1, str],
         ['band_type', 'Spectral Band Category', 1, str],
         ['band_wavelength', 'Reference wavelength', 11, float,
          {'frmt': '%02.8lf'}],
@@ -115,7 +113,7 @@ desc2 =["CSSFAB",
         ["telescope_optics_flag", "Flag Variable Indicating if Additional IO Parameters Set Present Due to Telescope Optics Corrections", 1, int, {"condition" : "f.sensor_type=='F'"}],
         ["num_tele_sets_fa_data", "Number of Sets of Telescope Optics Field Angle Data", 1, int, {"condition" : "f.sensor_type=='F' and f.telescope_optics_flag == 1"}],
         ["n_frames", "Total Number of Frames in Sequence", 4, None,
-         {'field_value_class' : IntFieldDataOld, 'size_not_updated' : True,
+         {'field_value_class' : IntFieldData, 'size_not_updated' : True,
           "condition" : "f.sensor_type=='F' and f.telescope_optics_flag == 1"}],
         [["loop", "f.n_frames if (f.sensor_type=='F' and f.telescope_optics_flag == 1) else 0"],
          ["tele_trans_t0", "Frame to Telescope-Optics Transform Parameter t0", 21, float, {"frmt" : "%+21.14E"}],
@@ -143,31 +141,28 @@ desc2 =["CSSFAB",
          ["radius_of_validity_tele", "Radius from the Principal Point to the Outermost Region where Radial Distortion Coefficients are Valid", 21, float, {"frmt" : "%+21.14E"}],
          ],
         ["reserved_len", "Size of the Reserved Field", 9, int, {"default" : 0}],
-        ["reserved", "Reserved Data Field", "f.reserved_len", None, {'field_value_class' : FieldDataOld}],
+        ["reserved", "Reserved Data Field", "f.reserved_len", None,
+         {'field_value_class' : BytesFieldData}],
 ]
         
+class DesCSSFAB(NitfDesFieldStruct):
+    __doc__ = hlp
+    desc = desc
+    des_tag = "CSSFAB"
+    des_ver = 1
+    uh_class = DesAssociatedUserSubheader
+    def summary(self):
+        res = io.StringIO()
+        print("CSSFAB", file=res)
+        return res.getvalue()
 
-#print (desc2)
 
-(DesCSSFAB, _) = create_nitf_des_structure("DesCSSFAB", desc2, None, hlp=hlp)
-
-DesCSSFAB.uh_class = DesAssociatedUserSubheader
 desid_to_user_subheader_handle.add_des_user_subheader("CSSFAB",
                       DesAssociatedUserSubheader)
-DesCSSFAB.desid = hardcoded_value("CSSFAB")
-DesCSSFAB.desver = hardcoded_value("01")
-
-def _summary(self):
-    res = io.StringIO()
-    print("CSSFAB", file=res)
-    return res.getvalue()
-
-DesCSSFAB.summary = _summary
-
 add_uuid_des_function(DesCSSFAB)    
 NitfSegmentDataHandleSet.add_default_handle(DesCSSFAB)
 
-class CssfabDiff(FieldStructDiffOld):
+class CssfabDiff(FieldStructDiff):
     '''Compare two DesCSSFAB.'''
     def configuration(self, nitf_diff):
         return nitf_diff.config.get("DesCSSFAB", {})
@@ -180,7 +175,9 @@ class CssfabDiff(FieldStructDiffOld):
             return (True, self.compare_obj(h1, h2, nitf_diff))
 
 NitfDiffHandleSet.add_default_handle(CssfabDiff())
+
 # No default configuration
+
 _default_config = {}
 NitfDiffHandleSet.default_config["DesCSSFAB"] = _default_config
 

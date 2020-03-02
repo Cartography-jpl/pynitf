@@ -1,5 +1,4 @@
-from .nitf_field_old import (FieldDataOld, create_nitf_field_structure,
-                             hardcoded_value, FieldStructDiffOld)
+from .nitf_field import FieldStruct, BytesFieldData, FieldStructDiff
 from .nitf_security import NitfSecurity
 from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
 import io
@@ -10,7 +9,8 @@ cryptic, but these are documented in detail in the NITF 2.10 documentation
 
 The NITF DES subheader is described in Table A-8, starting page 112.
 '''
-des_desc = [['de', "Data Extension Subheader Identifier", 2, str],
+desc = [['de', "Data Extension Subheader Identifier", 2, str,
+         {"default" : "DE", "hardcoded_value": True}],
         ['desid', "Unique Data Extension Segment Type Identifier", 25, str],
         ['dsver', "Version of the Data Definition", 2, int],
         ['desclas', "Data Extension Segment Security Classification", 1, str, {'default' : 'U'}],
@@ -32,38 +32,38 @@ des_desc = [['de', "Data Extension Subheader Identifier", 2, str],
         ['desoflw', "", 6, str, {"condition" : "f.desid == 'TRE_OVERFLOW'"}],
         ['desitem', "", 3, int, {"condition" : "f.desid == 'TRE_OVERFLOW'"}],
         ['desshl', "DES User-Defined Subheader Length", 4, int],
-        ['desshf', "", 'f.desshl', None, {'field_value_class' : FieldDataOld}],
+        ['desshf', "", 'f.desshl', None, {'field_value_class' :
+                                          BytesFieldData}],
 ]
-NitfDesSubheader = create_nitf_field_structure("NitfDesSubheader", des_desc, hlp=hlp)
 
-NitfDesSubheader.de_value = hardcoded_value("DE")
+class NitfDesSubheader(FieldStruct):
+    __doc__ = help
+    desc = desc
 
-def summary(self):
-    res = io.StringIO()
-    print("%s %s %s " % (self.de, self.desid, self.dsver), file=res)
-    return res.getvalue()
+    @property
+    def security(self):
+        return NitfSecurity.get_security(self, "f")
 
-NitfDesSubheader.summary = summary
+    @security.setter
+    def security(self, s):
+        s.set_security(self, "f")
+        
+    def summary(self):
+        res = io.StringIO()
+        print("%s %s %s " % (self.de, self.desid, self.dsver), file=res)
+        return res.getvalue()
 
-def _get_security(self):
-    return NitfSecurity.get_security(self, "des")
 
-def _set_security(self, s):
-    s.set_security(self, "des")
+    @property
+    def user_subheader_data(self):
+    # Synonym for desshf so we can have generic handling for user subheader
+        return self.desshf
 
-NitfDesSubheader.security = property(_get_security, _set_security)
+    @user_subheader_data.setter
+    def user_subheader_data(self, v):
+        self.desshf = v
 
-# Synonym for desshf so we can have generic handling for user subheader
-def _get_user_subheader_data(self):
-    return self.desshf
-
-def _set_user_subheader_data(self, v):
-    self.desshf = v
-
-NitfDesSubheader.user_subheader_data = property(_get_user_subheader_data,
-                                                _set_user_subheader_data)    
-
-class DesSubheaderDiff(FieldStructDiffOld):
+class DesSubheaderDiff(FieldStructDiff):
     '''Compare two des subheaders.'''
     def configuration(self, nitf_diff):
         return nitf_diff.config.get("Des Subheader", {})
@@ -82,13 +82,14 @@ class DesSubheaderDiff(FieldStructDiffOld):
 
 NitfDiffHandleSet.add_default_handle(DesSubheaderDiff())
 _default_config = {}
+
 # Ignore all the structural differences about the file. We compare all
 # the individual pieces, so this will get reported as we go through each
 # element. But it is not useful to also report that udhd varies if we are
 # already saying the TREs are different.
+
 _default_config["exclude"] = ['desoflw', 'desitem', 'desshl', 
                               'desshf'] 
- 
 
 NitfDiffHandleSet.default_config["Des Subheader"] = _default_config
 

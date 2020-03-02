@@ -1,5 +1,5 @@
-from .nitf_field_old import FieldDataOld, hardcoded_value, FieldStructDiffOld
-from .nitf_des import *
+from .nitf_field import BytesFieldData, FieldStructDiff
+from .nitf_des import NitfDesFieldStruct
 from .nitf_segment_data_handle import NitfSegmentDataHandleSet
 from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
 from .nitf_des_associated_user_subheader import (add_uuid_des_function,
@@ -16,8 +16,7 @@ The NITF DES subheader is described in a separate DRAFT document for the SNIP st
 
 _eph_format = "%+012.2lf"
 
-desc2 =["CSEPHB",
-        ['qual_flag_eph', 'Ephemeris Data Quality Flag', 1, int],
+desc =[['qual_flag_eph', 'Ephemeris Data Quality Flag', 1, int],
         ['interp_type_eph', 'Interpolation Type', 1, int],
         ['interp_order_eph', 'Order of Lagrange Interpolation Polynomials', 1, int, {'condition': 'f.interp_type_eph==2'}],
         ['ephem_flag', "Ephemeris Source Type", 1, int],
@@ -32,30 +31,27 @@ desc2 =["CSEPHB",
          ["ephem_z", "Z-Coordinate", 12, float, {"frmt": _eph_format}],
         ], #end loop
         ["reserved_len", "Size of the Reserved Field", 9, int],
-        ["reserved", "Reserved Data Field", "f.reserved_len", None, {'field_value_class' : FieldDataOld}]
+        ["reserved", "Reserved Data Field", "f.reserved_len", None, {'field_value_class' : BytesFieldData}]
        ]
 
-#print (desc2)
+class DesCSEPHB(NitfDesFieldStruct):
+    __doc__ = hlp
+    desc = desc
+    des_tag = "CSEPHB"
+    des_ver = 1
+    uh_class = DesAssociatedUserSubheader
+    def summary(self):
+        res = io.StringIO()
+        print("CSEPHB %s:  %d points" % (self.ephem_flag, self.num_ephem),
+              file=res)
+        return res.getvalue()
 
-(DesCSEPHB, _) = create_nitf_des_structure("DesCSEPHB", desc2, None, hlp=hlp)
-
-DesCSEPHB.uh_class = DesAssociatedUserSubheader
 desid_to_user_subheader_handle.add_des_user_subheader("CSEPHB",
                       DesAssociatedUserSubheader)
-DesCSEPHB.desid = hardcoded_value("CSEPHB")
-DesCSEPHB.desver = hardcoded_value("01")
-
-def _summary(self):
-    res = io.StringIO()
-    print("CSEPHB %s:  %d points" % (self.ephem_flag, self.num_ephem), file=res)
-    return res.getvalue()
-
-DesCSEPHB.summary = _summary
-
 add_uuid_des_function(DesCSEPHB)    
 NitfSegmentDataHandleSet.add_default_handle(DesCSEPHB)
 
-class CsephbDiff(FieldStructDiffOld):
+class CsephbDiff(FieldStructDiff):
     '''Compare two DesCSEPHB.'''
     def configuration(self, nitf_diff):
         return nitf_diff.config.get("DesCSEPHB", {})
@@ -68,7 +64,9 @@ class CsephbDiff(FieldStructDiffOld):
             return (True, self.compare_obj(h1, h2, nitf_diff))
 
 NitfDiffHandleSet.add_default_handle(CsephbDiff())
+
 # No default configuration
+
 _default_config = {}
 NitfDiffHandleSet.default_config["DesCSEPHB"] = _default_config
 

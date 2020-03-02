@@ -2,22 +2,16 @@
 # Example of creating a simple nitf file
 #======================================================================
 
-from pynitf.nitf_file import *
-from pynitf.nitf_image import *
-from pynitf.nitf_tre_csde import *
-from pynitf.nitf_tre_csepha import *
-from pynitf.nitf_tre_piae import *
-from pynitf.nitf_tre_rpc import *
-from pynitf.nitf_tre_geosde import *
-from pynitf.nitf_tre_histoa import *
-from pynitf.nitf_tre_bandsb import *
-from pynitf.nitf_tre_engrda import *
-from pynitf.nitf_des import *
-from pynitf.nitf_text import *
-from pynitf.nitf_des_csatta import *
-from pynitf.nitf_des_csattb import *
-from pynitf.nitf_des_csephb import *
-from pynitf.nitf_des_ext_def_content import *
+from pynitf.nitf_file import NitfFile
+from pynitf.nitf_image import NitfImageWriteNumpy, NitfImageWriteDataOnDemand
+from pynitf.nitf_tre_csde import TreUSE00A
+from pynitf.nitf_tre_histoa import TreHISTOA
+from pynitf.nitf_tre_bandsb import TreBANDSB
+from pynitf.nitf_tre_engrda import TreENGRDA
+from pynitf.nitf_text import NitfTextStr
+from pynitf.nitf_des_csattb import DesCSATTB
+from pynitf.nitf_des_csephb import DesCSEPHB
+from pynitf.nitf_des_ext_def_content import DesEXT_h5
 from pynitf_test_support import *
 import copy
 import json

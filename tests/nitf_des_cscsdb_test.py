@@ -1,7 +1,7 @@
 from pynitf.nitf_file import *
 from pynitf.nitf_des_cscsdb import *
 from pynitf_test_support import *
-#import pynitf.nitf_field
+import pynitf.nitf_field
 
 #pynitf.nitf_field.DEBUG = True
 #pynitf.nitf_des.DEBUG = True
