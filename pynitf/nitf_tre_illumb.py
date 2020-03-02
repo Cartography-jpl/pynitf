@@ -1,4 +1,4 @@
-from .nitf_field import *
+from .nitf_field_old import IntFieldDataOld
 from .nitf_tre import *
 import io
 
@@ -31,7 +31,7 @@ desc = ["ILLUMB",
         ["ellipsoid_code", "Ellipsoid Code", 3, str, {'default' : "WE"}],
         ["vertical_datum_ref", "Vertical Datum Reference", 80, str, {'default' : "Geodetic"}],
         ["vertical_ref_code", "Code (Category) of Vertical Reference", 4, str, {'default' : "GEOD"}],
-        ["existence_mask", "Bit-wise Existence Mask Field", 3, None, {'field_value_class' : IntFieldData, 'size_not_updated' : True}],
+        ["existence_mask", "Bit-wise Existence Mask Field", 3, None, {'field_value_class' : IntFieldDataOld, 'size_not_updated' : True}],
         ["rad_quantity", "Radiometric Quantity", 40, str, {'condition' : "f.existence_mask & 0x800000"}],
         ["radq_unit", "Radiometric Quantity Unit", 40, str, {'condition' : "f.existence_mask & 0x800000"}],
         ["num_illum_sets", "Number of Illumination Conditions", 3, int, {'frmt' : "%03d"}],

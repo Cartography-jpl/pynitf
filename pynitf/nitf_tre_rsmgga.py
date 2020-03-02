@@ -1,7 +1,7 @@
-from .nitf_field import *
+from .nitf_field_old import FieldDataOld
 from .nitf_tre import *
 
-class BaseCoord(FieldData):
+class BaseCoord(FieldDataOld):
     '''The row/column coordinate is a scaled integer. This class handles 
     presenting this as an actual value.'''
     def conv_float(self, t, parent_obj):

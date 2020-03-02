@@ -1,4 +1,4 @@
-from .nitf_field import *
+from .nitf_field_old import FieldDataOld, hardcoded_value, FieldStructDiffOld
 from .nitf_des import *
 from .nitf_segment_data_handle import NitfSegmentDataHandleSet
 from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
@@ -193,7 +193,7 @@ desc2 =["CSCSDB",
         ],
         ["reserved_len", "Length of Reserved Portion", 9, int,
          {"default" : 0}],
-        ["reserved", "Reserved Data Field", "f.reserved_len", None, {'field_value_class' : FieldData}],
+        ["reserved", "Reserved Data Field", "f.reserved_len", None, {'field_value_class' : FieldDataOld}],
 ]        
 
 #print (desc2)
@@ -216,7 +216,7 @@ DesCSCSDB.summary = _summary
 add_uuid_des_function(DesCSCSDB)    
 NitfSegmentDataHandleSet.add_default_handle(DesCSCSDB)
 
-class CsscdbDiff(FieldStructDiff):
+class CsscdbDiff(FieldStructDiffOld):
     '''Compare two DesCSCSDB.'''
     def configuration(self, nitf_diff):
         return nitf_diff.config.get("DesCSCSDB", {})

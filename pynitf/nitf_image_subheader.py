@@ -1,4 +1,4 @@
-from .nitf_field import *
+from .nitf_field_old import *
 from .nitf_security import NitfSecurity
 from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
 import io
@@ -59,7 +59,7 @@ desc = [['im', "File Part Type", 2, str],
          ['nluts', "Number of LUTS", 1, int],
          ['nelut', "", 5, int, {'condition' : "f.nluts[i1] != 0"}],
          [["loop", "f.nluts[i1]"],
-          ['lutd', "", 'f.nelut[i1]', None, {'field_value_class' : FieldData}]
+          ['lutd', "", 'f.nelut[i1]', None, {'field_value_class' : FieldDataOld}]
          ],
         ],
         ['isync', "Image Sync Code", 1, int],
@@ -75,11 +75,11 @@ desc = [['im', "File Part Type", 2, str],
         ['imag', "Image Magnification", 4, str, {'default' : '1.0'}],
         ['udidl', "User Defined Image Data Length", 5, int],
         ['udofl', "", 3, int, {'condition' : 'f.udidl != 0'}],
-        ['udid', "", 'f.udidl', None, {'field_value_class' : FieldData,
+        ['udid', "", 'f.udidl', None, {'field_value_class' : FieldDataOld,
                                      'size_offset' : 3}],
         ['ixshdl', "Image Extended Subheader Data Length", 5, int],
         ['ixofl', "", 3, int, {'condition' : 'f.ixshdl != 0'}],
-        ['ixshd', "", 'f.ixshdl', None, {'field_value_class' : FieldData,
+        ['ixshd', "", 'f.ixshdl', None, {'field_value_class' : FieldDataOld,
                                    'size_offset' : 3}]
 ]
 
@@ -415,7 +415,7 @@ def _set_security(self, s):
 
 NitfImageSubheader.security = property(_get_security, _set_security)
 
-class ImageSubheaderDiff(FieldStructDiff):
+class ImageSubheaderDiff(FieldStructDiffOld):
     '''Compare two image subheaders.'''
     def configuration(self, nitf_diff):
         return nitf_diff.config.get("Image Subheader", {})

@@ -1,4 +1,4 @@
-from .nitf_field import *
+from .nitf_field_old import StringFieldDataOld
 from .nitf_tre import *
 import io
 
@@ -16,7 +16,7 @@ desc = ["MATESA",
         ["cur_mate_type", "Current File/Segment Mate Type", 16, str],
         ["cur_file_id_len", "Length of CUR FILE ID field", 4, int],
         ["cur_file_id", "ID of the Current File/Segment", "f.cur_file_id_len", None,
-          {'field_value_class' : StringFieldData}],
+          {'field_value_class' : StringFieldDataOld}],
         ["num_groups", "Number of Mate Relationship Types", 4, int],
         [["loop", "f.num_groups"],
          ["relationship", "Mate Relationship", 24, str],
@@ -29,7 +29,7 @@ desc = ["MATESA",
           #TODO: This length doesn't seem to be enforced. Look into it later. It's working
           #TODO: correctly otherwise.
           ["mate_id", "Mate File Identifier","f.mate_id_len[i1, i2]", None,
-          {'field_value_class' : StringFieldData}],
+          {'field_value_class' : StringFieldDataOld}],
          ],
         ],
 ]

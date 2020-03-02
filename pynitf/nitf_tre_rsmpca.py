@@ -1,4 +1,3 @@
-from .nitf_field import *
 from .nitf_tre import *
 
 hlp = '''This is the RSMPCA TRE, the Replacement Senor Model Polynomial

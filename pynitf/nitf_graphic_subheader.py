@@ -1,4 +1,4 @@
-from .nitf_field import *
+from .nitf_field_old import *
 from .nitf_security import NitfSecurity
 from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
 import io
@@ -43,7 +43,7 @@ desc = [['sy', "File Part Type", 2, str],
         ['sres2', "Reserved for Future use", 2, int],
         ['sxshdl', "Graphic Extended Subheader Data Length", 5, int],
         ['sxofl', "", 3, int, {'condition' : 'f.sxshdl != 0'}],
-        ['sxshd', "", 'f.sxshdl', None, {'field_value_class' : FieldData,
+        ['sxshd', "", 'f.sxshdl', None, {'field_value_class' : FieldDataOld,
                                    'size_offset' : 3}]
 ]
 
@@ -67,7 +67,7 @@ def _set_security(self, s):
 
 NitfGraphicSubheader.security = property(_get_security, _set_security)
 
-class GraphicSubheaderDiff(FieldStructDiff):
+class GraphicSubheaderDiff(FieldStructDiffOld):
     '''Compare two graphic subheaders.'''
     def configuration(self, nitf_diff):
         return nitf_diff.config.get("Graphic Subheader", {})

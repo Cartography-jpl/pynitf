@@ -1,4 +1,4 @@
-from .nitf_field import *
+from .nitf_field_old import hardcoded_value
 from .nitf_tre import *
 import io
 

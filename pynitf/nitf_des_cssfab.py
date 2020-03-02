@@ -1,4 +1,5 @@
-from .nitf_field import *
+from .nitf_field_old import (IntFieldDataOld, FieldDataOld, hardcoded_value,
+                             FieldStructDiffOld)
 from .nitf_des import *
 from .nitf_segment_data_handle import NitfSegmentDataHandleSet
 from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
@@ -114,7 +115,7 @@ desc2 =["CSSFAB",
         ["telescope_optics_flag", "Flag Variable Indicating if Additional IO Parameters Set Present Due to Telescope Optics Corrections", 1, int, {"condition" : "f.sensor_type=='F'"}],
         ["num_tele_sets_fa_data", "Number of Sets of Telescope Optics Field Angle Data", 1, int, {"condition" : "f.sensor_type=='F' and f.telescope_optics_flag == 1"}],
         ["n_frames", "Total Number of Frames in Sequence", 4, None,
-         {'field_value_class' : IntFieldData, 'size_not_updated' : True,
+         {'field_value_class' : IntFieldDataOld, 'size_not_updated' : True,
           "condition" : "f.sensor_type=='F' and f.telescope_optics_flag == 1"}],
         [["loop", "f.n_frames if (f.sensor_type=='F' and f.telescope_optics_flag == 1) else 0"],
          ["tele_trans_t0", "Frame to Telescope-Optics Transform Parameter t0", 21, float, {"frmt" : "%+21.14E"}],
@@ -142,7 +143,7 @@ desc2 =["CSSFAB",
          ["radius_of_validity_tele", "Radius from the Principal Point to the Outermost Region where Radial Distortion Coefficients are Valid", 21, float, {"frmt" : "%+21.14E"}],
          ],
         ["reserved_len", "Size of the Reserved Field", 9, int, {"default" : 0}],
-        ["reserved", "Reserved Data Field", "f.reserved_len", None, {'field_value_class' : FieldData}],
+        ["reserved", "Reserved Data Field", "f.reserved_len", None, {'field_value_class' : FieldDataOld}],
 ]
         
 
@@ -166,7 +167,7 @@ DesCSSFAB.summary = _summary
 add_uuid_des_function(DesCSSFAB)    
 NitfSegmentDataHandleSet.add_default_handle(DesCSSFAB)
 
-class CssfabDiff(FieldStructDiff):
+class CssfabDiff(FieldStructDiffOld):
     '''Compare two DesCSSFAB.'''
     def configuration(self, nitf_diff):
         return nitf_diff.config.get("DesCSSFAB", {})

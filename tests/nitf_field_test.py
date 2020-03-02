@@ -1,5 +1,4 @@
 from pynitf.nitf_field import *
-from pynitf.nitf_field_new import *
 from pynitf.nitf_file_diff import NitfDiff
 from pynitf.nitf_diff_handle import AlwaysTrueHandle, NitfDiffHandle
 from pynitf_test_support import *
@@ -16,7 +15,7 @@ def nitf_diff_field_struct(print_logging):
     objects'''
     d = NitfDiff()
     d.handle_set.clear()
-    d.handle_set.add_handle(FieldStructNewDiff(), priority_order = 1)
+    d.handle_set.add_handle(FieldStructDiff(), priority_order = 1)
     d.handle_set.add_handle(AlwaysTrueHandle(), priority_order = 0)
     with d.diff_context("Field Structure"):
         yield d
@@ -190,24 +189,24 @@ def test_nitf_field_optional_char():
     assert f2.get_raw_bytes(()) == b"----"
 
 def test_string_field_data():
-    f = StringFieldDataNew(None, "foo", 12, None, None,
-                           {"field_value_class" : StringFieldDataNew,
+    f = StringFieldData(None, "foo", 12, None, None,
+                           {"field_value_class" : StringFieldData,
                             "size_not_updated" : True})
     f[()] = "blahblahblah"
     assert f[()] == "blahblahblah"
     assert f.bytes() == b"blahblahblah"
 
 def test_float_field_data():
-    f = FloatFieldDataNew(None, "foo", 4, None, None,
-                          {"field_value_class" : FloatFieldDataNew,
+    f = FloatFieldData(None, "foo", 4, None, None,
+                          {"field_value_class" : FloatFieldData,
                            "size_not_updated" : True})
     f[()] = 1.23
     assert f[()] == pytest.approx(1.23)
     assert struct.unpack(">f", f.bytes())[0] == pytest.approx(1.23)
     fh = io.BytesIO()
     f.write_to_file(fh,())
-    f2 = FloatFieldDataNew(None, "foo", 4, None, None,
-                          {"field_value_class" : FloatFieldDataNew,
+    f2 = FloatFieldData(None, "foo", 4, None, None,
+                          {"field_value_class" : FloatFieldData,
                            "size_not_updated" : True})
     fh2 = io.BytesIO(fh.getvalue())
     f2.read_from_file(fh2,False,())
@@ -216,16 +215,16 @@ def test_float_field_data():
 def test_int_field_data():
     for sgn in (True, False):
         for sz in (1, 2, 3, 4, 8):
-            f = IntFieldDataNew(None, "foo", sz, None, None,
-                                {"field_value_class" : IntFieldDataNew,
+            f = IntFieldData(None, "foo", sz, None, None,
+                                {"field_value_class" : IntFieldData,
                                  "size_not_updated" : True,
                                  "signed" : sgn})
             f[()] = 123
             assert f[()] == 123
             fh = io.BytesIO()
             f.write_to_file(fh,())
-            f2 = IntFieldDataNew(None, "foo", sz, None, None,
-                                 {"field_value_class" : IntFieldDataNew,
+            f2 = IntFieldData(None, "foo", sz, None, None,
+                                 {"field_value_class" : IntFieldData,
                                   "size_not_updated" : True,
                                   "signed" : sgn})
             fh2 = io.BytesIO(fh.getvalue())
@@ -245,12 +244,12 @@ def test_field_struct_dill():
     import dill
     desc = [["fhdr", "", 4, str,  {"default" : "NITF"}],
             ["clevel", "", 2, int ],]
-    t = FieldStructNew(desc)
+    t = FieldStruct(desc)
     p = dill.dumps(t)
     t2 = dill.loads(p)
     
 def test_field_struct_conditional():
-    class TestFieldStruct(FieldStructNew):
+    class TestFieldStruct(FieldStruct):
         desc = [["fhdr", "", 4, str, {"default" : "NITF"}],
                 ["udhdl", "", 5, int],
                 ["udhofl", "", 3, int, {"condition" : "f.udhdl != 0"}],
@@ -279,7 +278,7 @@ def test_field_struct_conditional():
 def test_field_struct_basic(nitf_diff_field_struct):
     '''Basic test, just set and read values.'''
     d = nitf_diff_field_struct # Shorter name
-    class TestFieldStruct(FieldStructNew):
+    class TestFieldStruct(FieldStruct):
         desc = [["fhdr", "", 4, str,  {"default" : "NITF"}],
                 ["clevel", "", 2, int ],]
     t = TestFieldStruct()
@@ -311,7 +310,7 @@ clevel: 2
 def test_loop(nitf_diff_field_struct):
     '''Test where we have a looping structure'''
     d = nitf_diff_field_struct # Shorter name
-    class TestFieldStruct(FieldStructNew):
+    class TestFieldStruct(FieldStruct):
         desc = [["fhdr", "", 4, str, {"default" : "NITF"}],
                 ["numi", "", 3, int],
                 [["loop", "f.numi"],
@@ -361,7 +360,7 @@ Loop - f.numi
 
 def test_nested_loop(nitf_diff_field_struct):
     d = nitf_diff_field_struct # Shorter name
-    class TestFieldStruct(FieldStructNew):
+    class TestFieldStruct(FieldStruct):
         desc = [["fhdr", "", 4, str, {"default" : "NITF"}],
                 ["numi", "", 3, int],
                 [["loop", "f.numi"],
@@ -415,7 +414,7 @@ def test_nested_loop2(nitf_diff_field_struct):
     # The "mark1" through "mark3" make it easier to look at the write out
     # of the TRE and make sure things are going into the correct spot, and
     # that we are reading this correctly.
-    class TestFieldStruct(FieldStructNew):
+    class TestFieldStruct(FieldStruct):
         desc = [["fhdr", "", 4, str, {"default" : "NITF"}],
                 ["numi", "", 3, int],
                 [["loop", "f.numi"],
@@ -559,7 +558,7 @@ def test_nested_loop3(nitf_diff_field_struct):
     # The "mark1" through "mark3" make it easier to look at the write out
     # of the TRE and make sure things are going into the correct spot, and
     # that we are reading this correctly.
-    class TestFieldStruct(FieldStructNew):
+    class TestFieldStruct(FieldStruct):
         desc = [["fhdr", "", 4, str, {"default" : "NITF"}],
                 ["numi", "", 3, int],
                 [["loop", "f.numi"],
@@ -731,7 +730,7 @@ Loop - f.numi
     
 def test_conditional(nitf_diff_field_struct):
     d = nitf_diff_field_struct # Shorter name
-    class TestFieldStruct(FieldStructNew):
+    class TestFieldStruct(FieldStruct):
         desc = [["fhdr", "", 4, str, {"default" : "NITF"}],
                 ["udhdl", "", 5, int],
                 ["udhofl", "", 3, int, {"condition" : "f.udhdl != 0"}],
@@ -768,7 +767,7 @@ def test_loop_conditional(nitf_diff_field_struct):
     d = nitf_diff_field_struct # Shorter name
     # udhdl doesn't really loop in a nitf file header, but we'll pretend it
     # does to test a looping conditional
-    class TestFieldStruct(FieldStructNew):
+    class TestFieldStruct(FieldStruct):
         desc = [["fhdr", "", 4, str, {"default" : "NITF"}],
                 ["numi", "", 3, int],
                 [["loop", "f.numi"],

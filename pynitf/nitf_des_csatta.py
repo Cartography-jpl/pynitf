@@ -1,4 +1,4 @@
-from .nitf_field import *
+from .nitf_field_old import (hardcoded_value, FieldStructDiffOld)
 from .nitf_des import *
 from .nitf_segment_data_handle import NitfSegmentDataHandleSet
 from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
@@ -45,7 +45,7 @@ DesCSATTA.summary = summary
 
 NitfSegmentDataHandleSet.add_default_handle(DesCSATTA)
 
-class CsattaDiff(FieldStructDiff):
+class CsattaDiff(FieldStructDiffOld):
     '''Compare two DesCSATTA.'''
     def configuration(self, nitf_diff):
         return nitf_diff.config.get("DesCSATTA", {})

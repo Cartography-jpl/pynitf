@@ -1,4 +1,3 @@
-from .nitf_field import *
 from .nitf_tre import *
 
 hlp = '''This is the RSMIDA TRE, Replacement Sensor Model Identification. 

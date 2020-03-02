@@ -1,4 +1,4 @@
-from .nitf_field import *
+from .nitf_field_old import *
 from .nitf_security import NitfSecurity
 from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
 import io
@@ -29,7 +29,7 @@ res_desc = [['re', "Reserve Extension Subheader Identifier", 2, str],
         ['resrdt', "RES Security Source Date", 8, str],
         ['rectln', "RES Security Control Number", 15, str],
         ['resshl', "RES User-Defined Subheader Length", 4, int],
-        ['resshf', "", 'f.desshl', None, {'field_value_class' : FieldData}],
+        ['resshf', "", 'f.desshl', None, {'field_value_class' : FieldDataOld}],
 ]
 NitfResSubheader = create_nitf_field_structure("NitfResSubheader", res_desc, hlp=hlp)
 
@@ -50,7 +50,7 @@ def _set_security(self, s):
 
 NitfResSubheader.security = property(_get_security, _set_security)
 
-class ResSubheaderDiff(FieldStructDiff):
+class ResSubheaderDiff(FieldStructDiffOld):
     '''Compare two res subheaders.'''
     def configuration(self, nitf_diff):
         return nitf_diff.config.get("Res Subheader", {})

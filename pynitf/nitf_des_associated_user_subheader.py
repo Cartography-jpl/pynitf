@@ -1,5 +1,4 @@
-from .nitf_field import (create_nitf_field_structure,
-                         FieldData, FieldStructDiff)
+from .nitf_field import FieldStruct, StringFieldData, FieldStructDiff
 from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
 import uuid
 import time
@@ -18,10 +17,12 @@ desc = [['id', 'Assigned UUID for the DES', 36, str],
         [['loop', 'f.num_assoc_elem'],
          ['assoc_elem_id', 'UUID of the nth Associated Element', 36, str]],
         ['reservedsubh_len', 'Length of the Reserved Subheader Fields', 4, int],
-        ['reservedsubh', 'Reserved for Future Additions to the DES User-Defined Subheader', 'f.reservedsubh_len', None, {'field_value_class' : FieldData}]
+        ['reservedsubh', 'Reserved for Future Additions to the DES User-Defined Subheader', 'f.reservedsubh_len', None, {'field_value_class' : StringFieldData}]
        ]
 
-DesAssociatedUserSubheader = create_nitf_field_structure("DesAssociatedUserSubheader", desc, hlp=hlp)
+class DesAssociatedUserSubheader(FieldStruct):
+    __doc__=hlp
+    desc=desc
 
 # Some support routines for working with the user header.
 

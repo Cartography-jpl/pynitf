@@ -1,4 +1,4 @@
-from .nitf_field import *
+from .nitf_field_old import IntFieldDataOld
 from .nitf_tre import *
 from struct import *
 import io
@@ -22,13 +22,13 @@ desc = ["MTIMSA",
         ["nominal_frame_rate", "Nominal Frame Rate", 13, float],
         ["reference_frame_num", "Absolute Frame Number", 9, int],
         ["base_timestamp", "Base Timestamp", 24, str],
-        ["dt_multiplier", "Frame Delta Time", 8, None, {'field_value_class' : IntFieldData, 'size_not_updated' : True, 'signed' : False}],
-        ["dt_size", "Size of DT Values (bytes)", 1, None, {'field_value_class' : IntFieldData, 'size_not_updated' : True, 'signed' : False}],
-        ["number_frames", "Number of Frames", 4, None, {'field_value_class' : IntFieldData, 'size_not_updated' : True, 'signed' : False}],
-        ["number_dt", "Number of DELTA_TIME Values", 4, None, {'field_value_class' : IntFieldData, 'size_not_updated' : True, 'signed' : False}],
+        ["dt_multiplier", "Frame Delta Time", 8, None, {'field_value_class' : IntFieldDataOld, 'size_not_updated' : True, 'signed' : False}],
+        ["dt_size", "Size of DT Values (bytes)", 1, None, {'field_value_class' : IntFieldDataOld, 'size_not_updated' : True, 'signed' : False}],
+        ["number_frames", "Number of Frames", 4, None, {'field_value_class' : IntFieldDataOld, 'size_not_updated' : True, 'signed' : False}],
+        ["number_dt", "Number of DELTA_TIME Values", 4, None, {'field_value_class' : IntFieldDataOld, 'size_not_updated' : True, 'signed' : False}],
         [["loop", "f.number_dt"],
          ["dt", "Number of Delta Time Units", "f.dt_size", None,
-          {'field_value_class' : IntFieldData, 'size_not_updated' : True, 'signed' : False}],
+          {'field_value_class' : IntFieldDataOld, 'size_not_updated' : True, 'signed' : False}],
         ],
 ]
 

@@ -1,4 +1,5 @@
-from .nitf_field import *
+from .nitf_field_old import (FieldDataOld, create_nitf_field_structure,
+                             hardcoded_value, FieldStructDiffOld)
 from .nitf_security import NitfSecurity
 from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
 import io
@@ -31,7 +32,7 @@ des_desc = [['de', "Data Extension Subheader Identifier", 2, str],
         ['desoflw', "", 6, str, {"condition" : "f.desid == 'TRE_OVERFLOW'"}],
         ['desitem', "", 3, int, {"condition" : "f.desid == 'TRE_OVERFLOW'"}],
         ['desshl', "DES User-Defined Subheader Length", 4, int],
-        ['desshf', "", 'f.desshl', None, {'field_value_class' : FieldData}],
+        ['desshf', "", 'f.desshl', None, {'field_value_class' : FieldDataOld}],
 ]
 NitfDesSubheader = create_nitf_field_structure("NitfDesSubheader", des_desc, hlp=hlp)
 
@@ -62,7 +63,7 @@ def _set_user_subheader_data(self, v):
 NitfDesSubheader.user_subheader_data = property(_get_user_subheader_data,
                                                 _set_user_subheader_data)    
 
-class DesSubheaderDiff(FieldStructDiff):
+class DesSubheaderDiff(FieldStructDiffOld):
     '''Compare two des subheaders.'''
     def configuration(self, nitf_diff):
         return nitf_diff.config.get("Des Subheader", {})

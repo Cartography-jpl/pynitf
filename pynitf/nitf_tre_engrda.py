@@ -1,10 +1,10 @@
-from .nitf_field import *
+from .nitf_field_old import FieldDataOld, StringFieldDataOld
 from .nitf_tre import *
 import io
 from collections.abc import MutableMapping
 import numpy as np
 
-class ENGRDAFieldData(FieldData):
+class ENGRDAFieldData(FieldDataOld):
     def get_print(self, parent_obj,key):
         t = self.get(parent_obj,key)
         if (t is None):
@@ -47,7 +47,7 @@ desc = ["ENGRDA",
         [["loop", "f.recnt"],
          ["engln", "Engineering Data Label Length", 2, int],
          ["englbl", "Engineering Data Label", "f.engln[i1]", None,
-          {'field_value_class' : StringFieldData}],
+          {'field_value_class' : StringFieldDataOld}],
          ["engmtxc", "Engineering Matrix Data Column Count", 4, int],
          ["engmtxr", "Engineering Matrix Data Row Count", 4, int],
          ["engtyp", "Value Type of Engineering Data Element", 1, str],

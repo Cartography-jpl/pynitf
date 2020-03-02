@@ -1,4 +1,4 @@
-from .nitf_field import *
+from .nitf_field_old import IntFieldDataOld, FieldDataOld
 from .nitf_tre import *
 from .nitf_diff_handle import NitfDiffHandleSet
 import time
@@ -50,23 +50,23 @@ desc = ["CSEXRB",
          {'condition': 'f.sensor_type=="F" and f.time_stamp_loc==0'}],
          ["dt_multiplier", "Delta Time Duration", 8, None,
          {'condition': 'f.sensor_type=="F" and f.time_stamp_loc==0',
-          'field_value_class' : IntFieldData, 'size_not_updated' : True,
+          'field_value_class' : IntFieldDataOld, 'size_not_updated' : True,
           'signed' : False}],
         ["dt_size", "Byte Size of the Delta Time Values", 1, None,
          {'condition': 'f.sensor_type=="F" and f.time_stamp_loc==0',
-          'field_value_class' : IntFieldData, 'size_not_updated' : True,
+          'field_value_class' : IntFieldDataOld, 'size_not_updated' : True,
           'signed' : False}],
         ["number_frames", "Byte Size of the Delta Time Values", 4, None,
          {'condition': 'f.sensor_type=="F" and f.time_stamp_loc==0',
-          'field_value_class' : IntFieldData, 'size_not_updated' : True,
+          'field_value_class' : IntFieldDataOld, 'size_not_updated' : True,
           'signed' : False}],
         ["number_dt", "Number of Delta Time Values", 4, None,
          {'condition': 'f.sensor_type=="F" and f.time_stamp_loc==0',
-          'field_value_class' : IntFieldData, 'size_not_updated' : True,
+          'field_value_class' : IntFieldDataOld, 'size_not_updated' : True,
           'signed': False}],
         [["loop", "f.number_dt if(f.sensor_type=='F' and f.time_stamp_loc==0) else 0"],
          ["dt", "Delta Time Values", "f.dt_size", None,
-          { 'field_value_class' : IntFieldData, 'size_not_updated' : True,
+          { 'field_value_class' : IntFieldDataOld, 'size_not_updated' : True,
             'signed' : False}],
         ],
         ["max_gsd", "Maximum Mean Ground Sample Distance (GSD)",
@@ -119,7 +119,7 @@ desc = ["CSEXRB",
         ["ue_time_flag", "Time Un-Modeled Error Flag", 1, int,
          {"optional" : True}],
         ["reserved_len", "Size of the Reserved Field", 5, int],
-        ["reserved", "Reserved Data Field", "f.reserved_len", None, {'field_value_class' : FieldData}],
+        ["reserved", "Reserved Data Field", "f.reserved_len", None, {'field_value_class' : FieldDataOld}],
 ]
 
 TreCSEXRB = create_nitf_tre_structure("TreCSEXRB",desc,hlp=hlp)

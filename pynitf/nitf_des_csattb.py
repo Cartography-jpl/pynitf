@@ -1,4 +1,4 @@
-from .nitf_field import *
+from .nitf_field_old import FieldDataOld, hardcoded_value, FieldStructDiffOld
 from .nitf_des import *
 from .nitf_segment_data_handle import NitfSegmentDataHandleSet
 from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
@@ -33,7 +33,7 @@ desc2 =["CSATTB",
          ["q4", "Quaternion Q4 of Attitude Reference Point", 18, float, {"frmt": _quat_format}],
         ], #end loop
         ["reserved_len", "Size of the Reserved Field", 9, int],
-        ["reserved", "Reserved Data Field", "f.reserved_len", None, {'field_value_class' : FieldData}]
+        ["reserved", "Reserved Data Field", "f.reserved_len", None, {'field_value_class' : FieldDataOld}]
        ]
 
 (DesCSATTB, _) = create_nitf_des_structure("DesCSATTB", desc2, None, hlp=hlp)
@@ -54,7 +54,7 @@ DesCSATTB.summary = _summary
 add_uuid_des_function(DesCSATTB)    
 NitfSegmentDataHandleSet.add_default_handle(DesCSATTB)
 
-class CsattbDiff(FieldStructDiff):
+class CsattbDiff(FieldStructDiffOld):
     '''Compare two DesCSATTB.'''
     def configuration(self, nitf_diff):
         return nitf_diff.config.get("DesCSATTB", {})

@@ -72,6 +72,7 @@ def test_nitf_diff_eq(isolated_dir):
     #assert nitf_file_diff("basic_nitf.ntf", "basic2_nitf.ntf", include=['image.iid1'])
 
 
+@skip    
 def test_nitf_diff_neq_des(isolated_dir):
     '''This create an end to end NITF file, this was at least initially the
     same as basic_nitf_example.py but as a unit test.'''

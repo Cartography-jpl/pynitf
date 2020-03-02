@@ -1,4 +1,4 @@
-from .nitf_field import *
+from .nitf_field_old import *
 from .nitf_security import NitfSecurity
 from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
 
@@ -64,11 +64,11 @@ desc = [['fhdr', "File Profile Name", 4, str],
          ['lre', "", 7, int]],
         ['udhdl', "", 5, int],
         ["udhofl", "", 3, int, {"condition" : "f.udhdl != 0"}],
-        ['udhd', "", 'f.udhdl', None, {'field_value_class' : FieldData,
+        ['udhd', "", 'f.udhdl', None, {'field_value_class' : FieldDataOld,
                                      'size_offset' : 3}],
         ['xhdl', "", 5, int],
         ["xhdlofl", "", 3, int, {"condition" : "f.xhdl != 0"}],
-        ['xhd', "", 'f.xhdl', None, {'field_value_class' : FieldData,
+        ['xhd', "", 'f.xhdl', None, {'field_value_class' : FieldDataOld,
                                      'size_offset' : 3}],
         ]
 
@@ -94,7 +94,7 @@ def summary(self):
 
 NitfFileHeader.summary = summary
 
-class FileHeaderDiff(FieldStructDiff):
+class FileHeaderDiff(FieldStructDiffOld):
     '''Compare two file headers.'''
     def configuration(self, nitf_diff):
         return nitf_diff.config.get("File Header", {})

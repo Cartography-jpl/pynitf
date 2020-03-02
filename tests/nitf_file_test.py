@@ -11,7 +11,7 @@ from pynitf.nitf_des_cssfab import *
 from pynitf.nitf_image import *
 from pynitf.nitf_tre import *
 from pynitf_test_support import *
-import pynitf.nitf_field
+#import pynitf.nitf_field
 import pynitf.nitf_des
 import subprocess
 import os

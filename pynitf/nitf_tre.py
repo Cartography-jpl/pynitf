@@ -7,8 +7,8 @@
 # To do this, cute and paste the table into *Word*, and then cut and paste
 # from word to Excel. For some reason, you can't go directly to Excel. You
 # can then cut and paste from excel to emacs
-from .nitf_field import (_FieldStruct, _FieldLoopStruct,
-                         FieldStructDiff,
+from .nitf_field_old import (_FieldStruct, _FieldLoopStruct,
+                         FieldStructDiffOld,
                          _create_nitf_field_structure)
 from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
 import copy
@@ -339,7 +339,7 @@ def add_find_tre_function(cls):
     cls.find_exactly_one_tre = _find_exactly_one_tre
 
 logger = logging.getLogger('nitf_diff')
-class TreDiff(FieldStructDiff):
+class TreDiff(FieldStructDiffOld):
     '''Compare two TREs.'''
     def configuration(self, nitf_diff):
         return self._config
@@ -358,7 +358,7 @@ class TreDiff(FieldStructDiff):
 NitfDiffHandleSet.add_default_handle(TreDiff())
 NitfDiffHandleSet.default_config["TRE"] = {}
         
-class TreUnknownDiff(FieldStructDiff):
+class TreUnknownDiff(FieldStructDiffOld):
     '''Compare two unknown TREs.'''
     def handle_diff(self, h1, h2, nitf_diff):
         if(not isinstance(h1, TreUnknown) or

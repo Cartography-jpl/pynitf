@@ -7,9 +7,9 @@
 # To do this, cut and paste the table into *Word*, and then cut and paste
 # from word to Excel. For some reason, you can't go directly to Excel. You
 # can then cut and paste from excel to emacs
-from .nitf_field import (FieldData, _FieldStruct, _FieldLoopStruct, 
-                         _create_nitf_field_structure,
-                         create_nitf_field_structure)
+from .nitf_field_old import (_FieldStruct, _FieldLoopStruct, 
+                             _create_nitf_field_structure,
+                             create_nitf_field_structure)
 from .nitf_segment_data_handle import (NitfDes,
                                        NitfSegmentDataHandleSet)
 from .nitf_diff_handle import (NitfDiffHandle, NitfDiffHandleSet,

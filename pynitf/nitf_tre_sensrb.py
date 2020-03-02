@@ -1,4 +1,4 @@
-from .nitf_field import *
+from .nitf_field_old import FieldDataOld
 from .nitf_tre import *
 import io
 
@@ -242,7 +242,7 @@ desc = ["SENSRB",
          ["parameter_count", "Parameter Value Count", 4, int],
          [["loop", "f.parameter_count[i1]"],
           ["parameter_value", "Parameter value", "f.parameter_size[i1]", None,
-           {'field_value_class' : FieldData, 'size_not_updated' : True}]
+           {'field_value_class' : FieldDataOld, 'size_not_updated' : True}]
          ],
         ],
 ]

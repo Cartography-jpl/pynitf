@@ -1,4 +1,5 @@
-from .nitf_field import *
+from .nitf_field_old import (StringFieldDataOld, create_nitf_field_structure,
+                             FieldStructDiffOld)
 from .nitf_des import *
 from .nitf_segment_data_handle import (NitfDes,
                                        NitfSegmentDataHandleSet)
@@ -26,7 +27,7 @@ hlp = '''This is NITF EXT_DEF_CONTENT DES. This is a new DES defined in NSGPDD-A
 
 desc =[['content_headers_len', 'Length in bytes of the CONTENT_HEADERS field', 4, int],
         ['content_headers', 'Metadata describing the embedded content', 'f.content_headers_len', None,
-          {'field_value_class' : StringFieldData}]]
+          {'field_value_class' : StringFieldDataOld}]]
 
 DesEXT_DEF_CONTENT_UH = create_nitf_field_structure("DesEXT_DEF_CONTENT_UH",
        desc, hlp = "This is the user defined subheader for DesEXT_DEF_CONTENT")
@@ -101,7 +102,7 @@ class DesExtContentHeader(DesEXT_DEF_CONTENT_UH):
         return fh.getvalue()
     
 
-class DesExtContentHeaderDiff(FieldStructDiff):
+class DesExtContentHeaderDiff(FieldStructDiffOld):
     '''Compare two user headers.'''
     def configuration(self, nitf_diff):
         return nitf_diff.config.get("DesExtContentHeader", {})

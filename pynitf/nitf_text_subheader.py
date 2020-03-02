@@ -1,4 +1,4 @@
-from .nitf_field import *
+from .nitf_field_old import *
 from .nitf_security import NitfSecurity
 from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
 import io
@@ -40,7 +40,7 @@ desc = [['te', "", 2, str],
         ['txtfmt', "", 3, str],
         ['txshdl', "", 5, int],
         ['txsofl', "", 3, int, {'condition' : 'f.txshdl != 0'}],
-        ['txshd', "", 'f.txshdl', None, {'field_value_class' : FieldData,
+        ['txshd', "", 'f.txshdl', None, {'field_value_class' : FieldDataOld,
                                    'size_offset' : 3}],
         ]
 
@@ -63,7 +63,7 @@ def _set_security(self, s):
 
 NitfTextSubheader.security = property(_get_security, _set_security)
 
-class TextSubheaderDiff(FieldStructDiff):
+class TextSubheaderDiff(FieldStructDiffOld):
     '''Compare two text subheaders.'''
     def configuration(self, nitf_diff):
         return nitf_diff.config.get("Text Subheader", {})

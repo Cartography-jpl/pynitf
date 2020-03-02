@@ -1,4 +1,4 @@
-from .nitf_field import *
+from .nitf_field_old import StringFieldDataOld, hardcoded_value
 from .nitf_tre import *
 import io
 
@@ -17,7 +17,7 @@ desc = ["MICIDA",
          ["cameras_id", "Camera UUID", 36, str],
          ["core_id_length", "MIIS Core Identifier Length", 3, int],
          ["camera_core_id", "MIIS Core Identifier", "f.core_id_length[i1]", None,
-          {'field_value_class' : StringFieldData}],
+          {'field_value_class' : StringFieldDataOld}],
         ],
 ]
 

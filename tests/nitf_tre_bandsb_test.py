@@ -4,14 +4,6 @@ from pynitf_test_support import *
 import io
 from struct import *
 
-def test_float_to_fixed_width():
-    print(float_to_fixed_width(evil_float1, 7))
-    print(len(float_to_fixed_width(evil_float1, 7)))
-    print(float_to_fixed_width(evil_float2, 7))
-    print(len(float_to_fixed_width(evil_float2, 7)))
-    print(float_to_fixed_width(evil_float3, 7, maximum_precision=True))
-    print(len(float_to_fixed_width(evil_float3, 7, maximum_precision=True)))
-
 def test_tre_bandsb_basic():
 
     t = TreBANDSB()
