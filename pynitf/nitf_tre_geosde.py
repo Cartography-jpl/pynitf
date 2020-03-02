@@ -1,4 +1,4 @@
-from .nitf_tre import *
+from .nitf_tre import Tre, tre_tag_to_cls
 
 hlp = '''This is the MAPLO TRE, Local Cartographic Coordinate System
 
@@ -15,14 +15,19 @@ in a separate document "The Digital Geographic Information Exchange Standard
 
 MAPLO is documented at table D1-7 starting on page D1-15
 '''
-desc = ["MAPLOB",
-        ["uniloa", "Length units", 3, str, {"default" : "M"}],
+desc = [["uniloa", "Length units", 3, str, {"default" : "M"}],
         ["lod", "Easting interval", 5, int],
         ["lad", "Northing interval", 5, int],
         ["lso", "Easting of Reference Origin", 15, float, {"frmt" : "%+015.1lf"}],
         ["pso", "Northing of Reference Origin", 15, float, {"frmt" : "%+015.1lf"}]
         ]
-TreMAPLO = create_nitf_tre_structure("TreMAPLO", desc, hlp=hlp)
+
+class TreMAPLOB(Tre):
+    __doc__ = hlp
+    desc = desc
+    tre_tag = "MAPLOB"
+
+tre_tag_to_cls.add_cls(TreMAPLOB)
 
 hlp = '''This is the GEOPS TRE, Local Cartographic Coordinate System
 
@@ -39,8 +44,7 @@ in a separate document "The Digital Geographic Information Exchange Standard
 
 GEOPS is documented at table D1-3 starting on page D1-11
 '''
-desc = ["GEOPSB",
-        ["typ", "Coordinate System Type", 3, str, {"default" : "MAP"}],
+desc = [["typ", "Coordinate System Type", 3, str, {"default" : "MAP"}],
         ["uni", "Coordinate Units", 3, str, {"default" : "M"}],
         ["dag", "Geodetic Datum Name", 80, str, {"default": "World Geodetic System 1984"}],
         ["dcd", "Geodetic Datum Code", 4, str, {"default" : "WGE"}],
@@ -55,7 +59,13 @@ desc = ["GEOPSB",
         ["grn", "Grid Description", 80, str],
         ["xna", "Grid Zone number", 4, int]
 ]
-TreGEOPS = create_nitf_tre_structure("TreGEOPS", desc, hlp=hlp)
+
+class TreGEOPSB(Tre):
+    __doc__ = hlp
+    desc = desc
+    tre_tag = "GEOPSB"
+
+tre_tag_to_cls.add_cls(TreGEOPSB)    
 
 hlp = '''This is the PRJPS TRE, Local Cartographic Coordinate System
 
@@ -72,8 +82,7 @@ in a separate document "The Digital Geographic Information Exchange Standard
 
 PRJPS is documented at table D1-4 starting on page D1-13
 '''
-desc = ["PRJPSB",
-        ["prn", "Projection Name", 80, str],
+desc = [["prn", "Projection Name", 80, str],
         ["pco", "Projection Code", 2, str, {"default" : "TC"}],
         ["numprj", "Number of Projection Parameters", 1, int],
         [["loop", "f.numprj"],
@@ -81,7 +90,12 @@ desc = ["PRJPSB",
         ["xor", "Projection False X (Easting) Origin", 15, int],
         ["yor", "Projection False Y (Easting) Origin", 15, int]
 ]
-TrePRJPS = create_nitf_tre_structure("TrePRJPS", desc, hlp=hlp)
 
+class TrePRJPSB(Tre):
+    __doc__ = hlp
+    desc = desc
+    tre_tag = "PRJPSB"
+
+tre_tag_to_cls.add_cls(TrePRJPSB)    
         
-__all__ = [ "TreMAPLO", "TreGEOPS", "TrePRJPS" ]
+__all__ = [ "TreMAPLOB", "TreGEOPSB", "TrePRJPSB" ]

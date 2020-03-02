@@ -1,4 +1,4 @@
-from .nitf_tre import *
+from .nitf_tre import Tre, tre_tag_to_cls
 
 hlp = '''This is the CSCRNA TRE, blah. 
 
@@ -16,8 +16,7 @@ _lat_frmt = '%+09.5f'
 _long_frmt = '%+010.5f'
 _ht_frmt = '%+08.1f'
 
-desc = ["CSCRNA",
-        ["predict_corners", "predicted corners flag", 1, str],
+desc = [["predict_corners", "predicted corners flag", 1, str],
         ["ulcnr_lat", "lat UL", 9, float, {'frmt': _lat_frmt}],
         ["ulcnr_long", "long UL", 10, float, {'frmt': _long_frmt}],
         ["ulcnr_ht", "height UL", 8, float, {'frmt': _ht_frmt}],
@@ -32,5 +31,13 @@ desc = ["CSCRNA",
         ["llcnr_ht", "height LL", 8, float, {'frmt': _ht_frmt}],
 ]
 
-TreCSCRNA = create_nitf_tre_structure("TreCSCRNA",desc,hlp=hlp)
+
+class TreCSCRNA(Tre):
+    __doc__ = hlp
+    desc = desc
+    tre_tag = "CSCRNA"
+
+tre_tag_to_cls.add_cls(TreCSCRNA)
+
+__all__ = [ "TreCSCRNA", ]
 

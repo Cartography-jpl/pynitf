@@ -1,5 +1,5 @@
-from .nitf_field_old import IntFieldDataOld, FieldDataOld
-from .nitf_tre import *
+from .nitf_field import IntFieldData, BytesFieldData
+from .nitf_tre import Tre, tre_tag_to_cls
 from .nitf_diff_handle import NitfDiffHandleSet
 import time
 import uuid
@@ -19,9 +19,7 @@ _pt_format = "%+012.2lf"
 _tm_format = "%+016.9lf"
 _gsd_format = "%12.1lf"
 
-desc = ["CSEXRB",
-
-        ["image_uuid", "UUID Assigned to Current Image Plane", 36, str],
+desc = [["image_uuid", "UUID Assigned to Current Image Plane", 36, str],
         ["num_assoc_des", "Number of Associated DES", 3, int],
         [["loop", "f.num_assoc_des"],
          ["assoc_des_id", "UUID of DES Associated with this Image", 36, str],
@@ -50,23 +48,23 @@ desc = ["CSEXRB",
          {'condition': 'f.sensor_type=="F" and f.time_stamp_loc==0'}],
          ["dt_multiplier", "Delta Time Duration", 8, None,
          {'condition': 'f.sensor_type=="F" and f.time_stamp_loc==0',
-          'field_value_class' : IntFieldDataOld, 'size_not_updated' : True,
+          'field_value_class' : IntFieldData, 'size_not_updated' : True,
           'signed' : False}],
         ["dt_size", "Byte Size of the Delta Time Values", 1, None,
          {'condition': 'f.sensor_type=="F" and f.time_stamp_loc==0',
-          'field_value_class' : IntFieldDataOld, 'size_not_updated' : True,
+          'field_value_class' : IntFieldData, 'size_not_updated' : True,
           'signed' : False}],
         ["number_frames", "Byte Size of the Delta Time Values", 4, None,
          {'condition': 'f.sensor_type=="F" and f.time_stamp_loc==0',
-          'field_value_class' : IntFieldDataOld, 'size_not_updated' : True,
+          'field_value_class' : IntFieldData, 'size_not_updated' : True,
           'signed' : False}],
         ["number_dt", "Number of Delta Time Values", 4, None,
          {'condition': 'f.sensor_type=="F" and f.time_stamp_loc==0',
-          'field_value_class' : IntFieldDataOld, 'size_not_updated' : True,
+          'field_value_class' : IntFieldData, 'size_not_updated' : True,
           'signed': False}],
         [["loop", "f.number_dt if(f.sensor_type=='F' and f.time_stamp_loc==0) else 0"],
          ["dt", "Delta Time Values", "f.dt_size", None,
-          { 'field_value_class' : IntFieldDataOld, 'size_not_updated' : True,
+          { 'field_value_class' : IntFieldData, 'size_not_updated' : True,
             'signed' : False}],
         ],
         ["max_gsd", "Maximum Mean Ground Sample Distance (GSD)",
@@ -119,63 +117,60 @@ desc = ["CSEXRB",
         ["ue_time_flag", "Time Un-Modeled Error Flag", 1, int,
          {"optional" : True}],
         ["reserved_len", "Size of the Reserved Field", 5, int],
-        ["reserved", "Reserved Data Field", "f.reserved_len", None, {'field_value_class' : FieldDataOld}],
+        ["reserved", "Reserved Data Field", "f.reserved_len", None, {'field_value_class' : BytesFieldData}],
 ]
 
-TreCSEXRB = create_nitf_tre_structure("TreCSEXRB",desc,hlp=hlp)
+class TreCSEXRB(Tre):
+    __doc__ = hlp
+    desc = desc
+    tre_tag = "CSEXRB"
+    def assoc_elem(self, f):
+        '''Find the associated elements in the given NitfFile f. Right now it
+        is not clear if we should treat missing associated elements as an
+        error or not. So right now we just return a "None" where we don't have
+        an associated element'''
+        # Put results in a hash. This lets us sort everything at the end so
+        # this is in the same order as assoc_elem_id. Not sure if order matters,
+        # but for now we'll preserve this
+        res = {}
+        asid = list(self.assoc_des_id)
+        for dseg in f.des_segment:
+            if(hasattr(dseg.des, "id")):
+                if(dseg.des.id in asid):
+                    res[dseg.des.id] = dseg.des
+        r = [ res.get(id) for id in asid]
+        return r
 
-def _assoc_elem(self, f):
-    '''Find the associated elements in the given NitfFile f. Right now it
-    is not clear if we should treat missing associated elements as an
-    error or not. So right now we just return a "None" where we don't have
-    an associated element'''
-    # Put results in a hash. This lets us sort everything at the end so
-    # this is in the same order as assoc_elem_id. Not sure if order matters,
-    # but for now we'll preserve this
-    res = {}
-    asid = list(self.assoc_des_id)
-    for dseg in f.des_segment:
-        if(hasattr(dseg.des, "id")):
-            if(dseg.des.id in asid):
-                res[dseg.des.id] = dseg.des
-    r = [ res.get(id) for id in asid]
-    return r
+    def generate_uuid_if_needed(self):
+        '''Generate a unique UUID if we don't already have one.'''
+        if(self.image_uuid == ""):
+            self.image_uuid = str(uuid.uuid1())
+            # Sleep is just a simple way to avoid calling uuid1 too close in
+            # time. Since time is one of the components in generating the uuid,
+            # if we call too close in time we get the same uuid.
+            time.sleep(0.01)
 
-def _generate_uuid_if_needed(self):
-    '''Generate a unique UUID if we don't already have one.'''
-    if(self.image_uuid == ""):
-        self.image_uuid = str(uuid.uuid1())
-        # Sleep is just a simple way to avoid calling uuid1 too close in
-        # time. Since time is one of the components in generating the uuid,
-        # if we call too close in time we get the same uuid.
-        time.sleep(0.01)
+    def add_assoc_elem_id(self, id):
+        '''Add a associated element. For convenience, we allow this to be added
+        multiple times, it only gets written to the TRE once
+        '''
+        if id in list(self.assoc_des_id):
+            return
+        self.num_assoc_des += 1
+        self.assoc_des_id[self.num_assoc_des - 1] = id
 
-def _add_assoc_elem_id(self, id):
-    '''Add a associated element. For convenience, we allow this to be added
-    multiple times, it only gets written to the TRE once
-    '''
-    if id in list(self.assoc_des_id):
-        return
-    self.num_assoc_des += 1
-    self.assoc_des_id[self.num_assoc_des - 1] = id
+    def add_assoc_elem(self, f):
+        if(hasattr(f, "id")):
+            if(hasattr(f, "generate_uuid_if_needed")):
+                f.generate_uuid_if_needed()
+            self.add_assoc_elem_id(f.id)
+        else:
+            raise RuntimeError("Don't know how to add the associated element")
 
-def _add_assoc_elem(self, f):
-    if(hasattr(f, "id")):
-        if(hasattr(f, "generate_uuid_if_needed")):
-            f.generate_uuid_if_needed()
-        self.add_assoc_elem_id(f.id)
-    else:
-        raise RuntimeError("Don't know how to add the associated element")
-
-def _id(self):
-    return self.image_uuid
+    @property
+    def id(self):
+        return self.image_uuid
     
-TreCSEXRB.assoc_elem = _assoc_elem
-TreCSEXRB.generate_uuid_if_needed = _generate_uuid_if_needed
-TreCSEXRB.add_assoc_elem_id = _add_assoc_elem_id
-TreCSEXRB.add_assoc_elem = _add_assoc_elem
-TreCSEXRB.id = property(_id)
-
 _default_config = {}
 
 # UUID change each time they are generated, so don't include in
@@ -184,4 +179,6 @@ _default_config["exclude"] = ['image_uuid', 'assoc_des_id']
 
 NitfDiffHandleSet.default_config["TRE"]["CSEXRB"] = _default_config
 
-__all__ = [ "TreCSEXRB" ]
+tre_tag_to_cls.add_cls(TreCSEXRB)    
+
+__all__ = [ "TreCSEXRB", ]

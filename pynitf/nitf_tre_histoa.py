@@ -1,4 +1,4 @@
-from .nitf_tre import *
+from .nitf_tre import Tre, tre_tag_to_cls
 import io
 
 hlp = '''This is the HISTOA TRE, History version A.
@@ -12,8 +12,7 @@ where in the document a particular TRE is defined.
 
 HISTOA is documented at L-10.
 '''
-desc = ["HISTOA",
-        ["systype", "System Type", 20, str],
+desc = [["systype", "System Type", 20, str],
         ["pc", "Prior Compression", 12, str],
         ["pe", "Prior Enhancements", 4, str],
         ["remap_flag", "System Specific Remap", 1, str],
@@ -54,16 +53,18 @@ desc = ["HISTOA",
         ], # End nevents loop
 ]
 
-TreHISTOA = create_nitf_tre_structure("TreHISTOA",desc,hlp=hlp)
+class TreHISTOA(Tre):
+    __doc__ = hlp
+    desc = desc
+    tre_tag = "HISTOA"
+    def summary(self):
+        res = io.StringIO()
+        print("HISTOA: %d events:" % (self.nevents), file=res)
+        for i in range(self.nevents):
+            for j in range(self.nipcom[i]):
+                print("%d.%d: %s" % (i, j, self.ipcom[i, j]), file=res)
+        return res.getvalue()
 
-def _summary(self):
-    res = io.StringIO()
-    print("HISTOA: %d events:" % (self.nevents), file=res)
-    for i in range(self.nevents):
-        for j in range(self.nipcom[i]):
-            print("%d.%d: %s" % (i, j, self.ipcom[i, j]), file=res)
-    return res.getvalue()
-
-TreHISTOA.summary = _summary
-
+tre_tag_to_cls.add_cls(TreHISTOA)    
+    
 __all__ = [ "TreHISTOA" ]

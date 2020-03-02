@@ -1,5 +1,5 @@
-from .nitf_field_old import FieldDataOld
-from .nitf_tre import *
+from .nitf_field import BytesFieldData
+from .nitf_tre import Tre, tre_tag_to_cls
 import io
 
 hlp = '''This is the SENSRB TRE, Sensor parameters.
@@ -26,8 +26,7 @@ _10a_format = _10b_format = _10c_format = "%09.2lf"
 # different. This second set is the time stamp
 _ts_9a_format = _ts_9b_format = _ts_9c_format = _ts_9d_format = "%010.5f"
 
-desc = ["SENSRB",
-        #1. General Data
+desc = [#1. General Data
         ["general_data", "General Data", 1, str, {"default" : "N"}],
         ["sensor", "Sensor Name", 25, str, {'condition' : "f.general_data == 'Y'"}],
         ["sensor_uri", "Sensor URI", 32, str, {'condition' : "f.general_data == 'Y'", 'optional': True, 'optional_char' : '-', 'default' : None}],
@@ -242,22 +241,27 @@ desc = ["SENSRB",
          ["parameter_count", "Parameter Value Count", 4, int],
          [["loop", "f.parameter_count[i1]"],
           ["parameter_value", "Parameter value", "f.parameter_size[i1]", None,
-           {'field_value_class' : FieldDataOld, 'size_not_updated' : True}]
+           {'field_value_class' : BytesFieldData, 'size_not_updated' : True}]
          ],
         ],
 ]
 
-TreSENSRB = create_nitf_tre_structure("TreSENSRB",desc,hlp=hlp)
+class TreSENSRB(Tre):
+    __doc__ = hlp
+    desc = desc
+    tre_tag = "SENSRB"
+    def summary(self):
+        res = io.StringIO()
+        print("SENSRB Flags 1:%s 2:%s 3:%s 4:%s ... 7:%s 8:%s 9:%s 10:%s 11:%d 12:%d 13:%d 14:%d 15:%d " %
+              (self.general_data, self.sensor_array_data,
+               self.sensor_calibration_data, self.image_formation_data,
+               self.attitude_euler_angles, self.attitude_unit_vectors,
+               self.attitude_quaternion, self.sensor_velocity_data,
+               self.point_set_data, self.time_stamped_data_sets,
+               self.pixel_referenced_data_sets, self.uncertainty_data,
+               self.additional_parameter_data), file=res)
+        return res.getvalue()
 
-def _summary(self):
-    res = io.StringIO()
-    print("SENSRB Flags 1:%s 2:%s 3:%s 4:%s ... 7:%s 8:%s 9:%s 10:%s 11:%d 12:%d 13:%d 14:%d 15:%d " % (self.general_data, \
-            self.sensor_array_data, self.sensor_calibration_data, self.image_formation_data, \
-            self.attitude_euler_angles, self.attitude_unit_vectors, self.attitude_quaternion, \
-            self.sensor_velocity_data, self.point_set_data, self.time_stamped_data_sets,\
-            self.pixel_referenced_data_sets, self.uncertainty_data, self.additional_parameter_data), file=res)
-    return res.getvalue()
-
-TreSENSRB.summary = _summary
+tre_tag_to_cls.add_cls(TreSENSRB)    
 
 __all__ = [ "TreSENSRB" ]

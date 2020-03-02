@@ -1,4 +1,4 @@
-from .nitf_tre import *
+from .nitf_tre import Tre, tre_tag_to_cls
 
 hlp = '''This is the CSDIDA TRE. 
 
@@ -10,8 +10,7 @@ There is a table in the main body on page vii that gives the a pointer for
 where in the document a particular TRE is defined.
 '''
 
-desc = ["CSDIDA",
-        ["day", "Day of Dataset Collection", 2, int],
+desc = [["day", "Day of Dataset Collection", 2, int],
         ["month", "Month of Dataset Collection", 3, str],
         ["year", "Year of Dataset Collection", 4, int],
         ["platform_code", "Platform Identification", 2, str],
@@ -30,6 +29,10 @@ desc = ["CSDIDA",
         ["software_version_number", "Software version used", 10, str],
 ]
 
-TreCSDIDA = create_nitf_tre_structure("TreCSDIDA",desc,hlp=hlp)
+class TreCSDIDA(Tre):
+    __doc__ = hlp
+    desc = desc
+    tre_tag = "CSDIDA"
 
-__all__ = [ "TreCSDIDA" ]
+tre_tag_to_cls.add_cls(TreCSDIDA)    
+__all__ = [ "TreCSDIDA", ]

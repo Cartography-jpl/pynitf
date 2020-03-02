@@ -415,7 +415,7 @@ class BytesFieldData(FieldData):
 class FloatFieldData(FieldData):
     def get_print(self, key):
         t = self[key]
-        if(t is None or len(t) == 0):
+        if(t is None):
             return "Not used"
         return "%f" % t
 
@@ -432,7 +432,7 @@ class IntFieldData(FieldData):
         
     def get_print(self, key):
         t = self[key]
-        if(t is None or len(t) == 0):
+        if(t is None):
             return "Not used"
         return "%d" % t
 

@@ -10,12 +10,13 @@
 from .nitf_field_old import (_FieldStruct, _FieldLoopStruct,
                          FieldStructDiffOld,
                          _create_nitf_field_structure)
+from .nitf_field import FieldStruct, FieldStructDiff
 from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
 import copy
 import io
 import logging
 
-class Tre(_FieldStruct):
+class TreOld(_FieldStruct):
     '''Add a little extra structure unique to Tres'''
     def cetag_value(self):
         return self.tre_tag
@@ -79,7 +80,58 @@ class Tre(_FieldStruct):
         res = io.StringIO()
         print("TRE - %s" % self.tre_tag, file=res)
 
-class TreObjectImplementation(Tre):
+class Tre(FieldStruct):
+    '''Add a little extra structure unique to Tres'''
+    def cetag_value(self):
+        return self.tre_tag
+    def cel_value(self):
+        return len(self.tre_bytes())
+    def tre_bytes(self):
+        '''All of the TRE expect for the front two cetag and cel fields'''
+        fh = io.BytesIO()
+        super().write_to_file(fh)
+        return fh.getvalue()
+    def read_from_tre_bytes(self, bt, nitf_literal = False):
+        fh = io.BytesIO(bt)
+        super().read_from_file(fh, nitf_literal)
+    def read_from_file(self, fh, nitf_literal = False):
+        tag = fh.read(6).rstrip().decode("utf-8")
+        if(tag != self.tre_tag):
+            raise RuntimeError("Expected TRE %s but got %s" % (self.tre_tag, tag))
+        cel = int(fh.read(5))
+        st = fh.tell()
+        super().read_from_file(fh, nitf_literal)
+        sz = fh.tell() - st
+        if(sz != cel):
+            raise RuntimeError("TRE length was expected to be %d but was actually %d" % (cel, sz))
+    def write_to_file(self, fh):
+        fh.write("{:6s}".format(self.cetag_value()).encode("utf-8"))
+        t = self.tre_bytes()
+        v = len(t)
+        if(v > 99999):
+            raise RuntimeError("TRE string is too long at size %d" % v)
+        fh.write("{:0>5d}".format(v).encode("utf-8"))
+        fh.write(t)
+    def str_hook(self, file):
+        '''Convenient to have a place to add stuff in __str__ for derived
+        classes. This gets called after the TRE name is written, but before
+        any fields. Default is to do nothing, but derived classes can 
+        override this if desired.'''
+        pass
+    def __str__(self):
+        '''Text description of structure, e.g., something you can print
+        out.'''
+        res = io.StringIO()
+        print("TRE - %s" % self.tre_tag, file=res)
+        self.str_hook(res)
+        print(super().__str__(), file=res)
+        return res.getvalue()
+
+    def summary(self):
+        res = io.StringIO()
+        print("TRE - %s" % self.tre_tag, file=res)
+        
+class TreObjectImplementation(TreOld):
     '''Modifications where the class of type tre_implementation_class in
     the attribute tre_implementation_field handles most of the TRE conversion
     (see for example TreRSMPCA).'''
@@ -117,6 +169,7 @@ class TreUnknown(Tre):
     '''The is a general class to handle TREs that we don't have another 
     handler for. It just reports the tre string.'''
     def __init__(self, tre_tag):
+        super.__init__(description = [])
         self.tre_tag = tre_tag
         self.tre_bytes = b''
     def cetag_value(self):
@@ -144,14 +197,26 @@ class TreUnknown(Tre):
     def __eq__(self, other):
         return self.tre_tag == other.tre_tag and self.tre_bytes == other.tre_bytes
 
-_tre_class = {}
+class TreTagToCls(object):
+    '''Simple class to map a TRE tag name to the TRE class we have for
+    handling it'''
+    def __init__(self):
+        self.tre_to_cls = {}
 
-def tre_object(tre_name):
-    '''Return a TRE object that can be used to read or write the given tre
-    name, or a TreUnknown if we don't have that registered.'''
-    if(tre_name in _tre_class):
-        return _tre_class[tre_name]()
-    return TreUnknown(tre_name)
+    def tre_object(self, tre_name):
+        '''Return a TRE object that can be used to read or write the given tre
+        name, or a TreUnknown if we don't have that registered.'''
+        if(tre_name in self.tre_to_cls):
+            return self.tre_to_cls[tre_name]()
+        return TreUnknown(tre_name)
+
+    def add_cls(self, cls):
+        t = cls.tre_tag
+        if(isinstance(t, str)):
+            t = t.encode("utf-8")
+        self.tre_to_cls[t] = cls
+
+tre_tag_to_cls = TreTagToCls()        
 
 def read_tre(header, des_list, field_list = []):
     '''This reads a TRE for a particular type of header (e.g., NitfFileHeader,
@@ -242,7 +307,7 @@ def read_tre_data(data):
             raise RuntimeError("Not enough data to get TRE name.")
         try:
             fh.seek(st)
-            t = tre_object(tre_name)
+            t = tre_tag_to_cls.tre_object(tre_name)
             t.read_from_file(fh)
             res.append(t)
         except Exception as e:
@@ -297,7 +362,7 @@ def create_nitf_tre_structure(name, description, hlp = None,
         res.tre_implementation_class = tre_implementation_class
         res.tre_implementation_field = tre_implementation_field
     else:
-        res = type(name, (Tre,), t.process(desc))
+        res = type(name, (TreOld,), t.process(desc))
     res.tre_tag = tre_tag
     # Stash description, to make available if we want to later override a TRE
     # (see geocal_nitf_rsm.py in geocal for an example)
@@ -310,7 +375,7 @@ def create_nitf_tre_structure(name, description, hlp = None,
             res.__doc__ = hlp
         except AttributeError:
             pass
-    _tre_class[tre_tag.encode("utf-8")] = res
+    tre_tag_to_cls.add_cls(res)
     return res
 
 def _find_tre(self, tre_tag):
@@ -339,7 +404,23 @@ def add_find_tre_function(cls):
     cls.find_exactly_one_tre = _find_exactly_one_tre
 
 logger = logging.getLogger('nitf_diff')
-class TreDiff(FieldStructDiffOld):
+class TreDiffOld(FieldStructDiffOld):
+    '''Compare two TREs.'''
+    def configuration(self, nitf_diff):
+        return self._config
+    def handle_diff(self, h1, h2, nitf_diff):
+        if(not isinstance(h1, TreOld) or
+           not isinstance(h2, TreOld)):
+            return (False, None)
+        if(h1.tre_tag != h2.tre_tag):
+            logger.difference("TREs tags don't match. TRE 1 '%s' and TRE 2 '%s'",
+                              h1.tre_tag, h2.tre_tag)
+            return (True, False)
+        self._config = nitf_diff.config.get("TRE", {}).get(h1.tre_tag, {})
+        with nitf_diff.diff_context("TRE '%s'" % h1.tre_tag, add_text = True):
+            return (True, self.compare_obj(h1, h2, nitf_diff))
+
+class TreDiff(FieldStructDiff):
     '''Compare two TREs.'''
     def configuration(self, nitf_diff):
         return self._config
@@ -354,11 +435,12 @@ class TreDiff(FieldStructDiffOld):
         self._config = nitf_diff.config.get("TRE", {}).get(h1.tre_tag, {})
         with nitf_diff.diff_context("TRE '%s'" % h1.tre_tag, add_text = True):
             return (True, self.compare_obj(h1, h2, nitf_diff))
-
+        
+NitfDiffHandleSet.add_default_handle(TreDiffOld())
 NitfDiffHandleSet.add_default_handle(TreDiff())
 NitfDiffHandleSet.default_config["TRE"] = {}
         
-class TreUnknownDiff(FieldStructDiffOld):
+class TreUnknownDiff(FieldStructDiff):
     '''Compare two unknown TREs.'''
     def handle_diff(self, h1, h2, nitf_diff):
         if(not isinstance(h1, TreUnknown) or
@@ -378,9 +460,9 @@ class TreUnknownDiff(FieldStructDiffOld):
 # Look for TreUnknown first, before handling the generic TRE case    
 NitfDiffHandleSet.add_default_handle(TreUnknownDiff(), priority_order = 1)
     
-__all__ = [ "Tre", "TreObjectImplementation", "TreUnknown",
+__all__ = [ "TreOld", "TreObjectImplementation", "TreUnknown",
             "TreDiff",
-            "tre_object",
+            "tre_tag_to_cls",
             "read_tre", "prepare_tre_write", "read_tre_data",
             "create_nitf_tre_structure", "add_find_tre_function"]
 

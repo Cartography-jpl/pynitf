@@ -10,7 +10,7 @@ def test_tre_matesa_basic():
     t.cur_source = "Some file"
     t.cur_mate_type = "Some type"
     t.cur_file_id_len = 8
-    t.cur_file_id = b"abcdefgh"
+    t.cur_file_id = "abcdefgh"
 
     # Set some values
     t.num_groups = 2
@@ -46,7 +46,7 @@ def test_tre_matesa_basic():
     assert t2.cur_source == "Some file"
     assert t2.cur_mate_type == "Some type"
     assert t2.cur_file_id_len == 8
-    assert t2.cur_file_id == b"abcdefgh"
+    assert t2.cur_file_id == "abcdefgh"
 
     assert t2.num_groups == 2
 
@@ -54,15 +54,15 @@ def test_tre_matesa_basic():
     assert t2.num_mates[0] == 1
     assert t2.source[0, 0] == "S1"
     assert t2.mate_type[0, 0] == "T1"
-    assert t2.mate_id[0, 0] == b"I1"
+    assert t2.mate_id[0, 0] == "I1"
 
     assert t2.relationship[1] == "R1"
     assert t2.num_mates[1] == 2
     assert t2.source[1, 0] == "S1"
     assert t2.mate_type[1, 0] == "T1"
-    assert t2.mate_id[1, 0] == b"I1"
+    assert t2.mate_id[1, 0] == "I1"
     assert t2.source[1, 1] == "S2"
     assert t2.mate_type[1, 1] == "T2"
-    assert t2.mate_id[1, 1] == b"I23"
+    assert t2.mate_id[1, 1] == "I23"
 
     print (t2.summary())

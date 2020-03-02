@@ -187,7 +187,7 @@ def _add_or_update(self, key, data, units):
 TreENGRDA.add_or_update = _add_or_update
 
 # Give a dict like interface to a ENGRDA
-TreENGRDA.__bases__ = (Tre,MutableMapping)
+TreENGRDA.__bases__ = (TreOld,MutableMapping)
 
 def _len(self):
     return self.recnt

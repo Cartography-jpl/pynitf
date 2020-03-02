@@ -1,4 +1,4 @@
-from .nitf_tre import *
+from .nitf_tre import Tre, tre_tag_to_cls
 import io
 
 hlp = '''This is the STDIDC TRE, Standard ID
@@ -14,8 +14,7 @@ STDIDC is documented at D-8.
 
 NOTE that "pass" is a python keyword. Therefore, the 3rd field is called "pass_"
 '''
-desc = ["STDIDC",
-        ["acquisition_date", "Acquisition Date", 14, str],
+desc = [["acquisition_date", "Acquisition Date", 14, str],
         ["mission", "Mission", 14, str],
         ["pass_", "Pass", 2, str],
         ["op_num", "Op number", 3, int],
@@ -35,16 +34,19 @@ desc = ["STDIDC",
 	[None, None, 8, None]
 ]
 
-TreSTDIDC = create_nitf_tre_structure("TreSTDIDC", desc, hlp=hlp)
+class TreSTDIDC(Tre):
+    __doc__ = hlp
+    desc = desc
+    tre_tag = "STDIDC"
+    def summary(self):
+        res = io.StringIO()
+        print("STDIDC: %s, %s, %s, %d" %
+              (self.acquisition_date, self.mission, self.pass_, self.op_num),
+              file=res)
+        return res.getvalue()
 
-def _summary(self):
-    res = io.StringIO()
-    print("STDIDC: %s, %s, %s, %d" \
-                  % (self.acquisition_date, self.mission, self.pass_, self.op_num), file=res)
-    return res.getvalue()
-
-TreSTDIDC.summary = _summary
-
+tre_tag_to_cls.add_cls(TreSTDIDC)    
+    
 hlp = '''This is the USE00A TRE, Exploitation Usability TRE. 
 
 The field names can be pretty cryptic, but are documented in detail in 
@@ -56,8 +58,7 @@ where in the document a particular TRE is defined.
 
 USE00A is documented at D-11.
 '''
-desc = ["USE00A",
-        ["angle_to_north", "Angle to North", 3, int],
+desc = [["angle_to_north", "Angle to North", 3, int],
         ["mean_gsd", "Mean GSD", 5, float, {"frmt" : "%05.1lf"}],
         [None, None, 1, str],
         ["dynamic_range", "Dynamic Range", 5, int, {"optional" : True}],
@@ -85,14 +86,15 @@ desc = ["USE00A",
         ["sun_az", "Sun Azimuth", 5, float, {"frmt" : "%05.1lf"}],
 ]
 
-TreUSE00A = create_nitf_tre_structure("TreUSE00A",desc,hlp=hlp)
+class TreUSE00A(Tre):
+    __doc__ = hlp
+    desc = desc
+    tre_tag = "USE00A"
+    def summary(self):
+        res = io.StringIO()
+        print("USE00A", file=res)
+        return res.getvalue()
 
-def _summary(self):
-    res = io.StringIO()
-    print("USE00A", file=res)
-    return res.getvalue()
-
-TreUSE00A.summary = _summary
-
+tre_tag_to_cls.add_cls(TreUSE00A)    
 
 __all__ = ["TreSTDIDC", "TreUSE00A"]

@@ -1,4 +1,4 @@
-from .nitf_tre import *
+from .nitf_tre import Tre, tre_tag_to_cls
 
 hlp = '''This is the ILLUMA TRE, Illumination for Spectral Products. 
 
@@ -14,8 +14,7 @@ The SNIP documentation is currently not available to the public.
 !!! by the NTB, we can implement the final version.
 '''
 
-desc = ["ILLUMA",
-        ["sol_az", "Sun Azimuth Angle", 5, float, {'frmt': '%05.1f', 'optional': True, 'optional_char' : '-'}],
+desc = [["sol_az", "Sun Azimuth Angle", 5, float, {'frmt': '%05.1f', 'optional': True, 'optional_char' : '-'}],
         ["sol_el", "Sun Elevation Angle", 5, float, {'frmt': '%+04.1f', 'optional': True, 'optional_char' : '-'}],
         ["com_sol_il", "Computed Solar Illumination", 5, float, {'frmt': '%05.1f', 'optional': True, 'optional_char' : '-'}],
         ["lun_el", "Lunar Elevation Angle", 5, float, {'frmt': '%05.1f', 'optional': True, 'optional_char' : '-'}],
@@ -28,5 +27,13 @@ desc = ["ILLUMA",
         ["art_ill_max", "Maximum Artificial Illumination", 5, float, {'frmt': '%05.1f', 'optional': True, 'optional_char' : '-'}],
 ]
 
-#TreILLUMA = create_nitf_tre_structure("TreILLUMA",desc,hlp=hlp)
+class TreILLUMA(Tre):
+    __doc__ = hlp
+    desc = desc
+    tre_tag = "ILLUMA"
+
+#tre_tag_to_cls.add_cls(TreILLUMA)    
+
+__all__ = [ ]
+
 

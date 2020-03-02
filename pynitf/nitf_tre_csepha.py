@@ -1,4 +1,4 @@
-from .nitf_tre import *
+from .nitf_tre import Tre, tre_tag_to_cls
 import io
 
 hlp = '''This is the CSEPHA TRE, Ephemeris Data. 
@@ -12,8 +12,7 @@ where in the document a particular TRE is defined.
 
 CSEPHA is documented in section 3.4.
 '''
-desc = ["CSEPHA",
-        ["ephem_flag", "ephemeris flag", 12, str],
+desc = [["ephem_flag", "ephemeris flag", 12, str],
         ["dt_ephem", "time b/w eph vectors", 5, float, {"frmt" : "%03.1lf"}],
         ["date_ephem", "day of first eph vector", 8, int],
         ["t0_ephem", "UTC of first eph vector", 13, str],
@@ -25,13 +24,16 @@ desc = ["CSEPHA",
         ], #end loop
 ]
 
-TreCSEPHA = create_nitf_tre_structure("TreCSEPHA",desc,hlp=hlp)
+class TreCSEPHA(Tre):
+    __doc__ = hlp
+    desc = desc
+    tre_tag = "CSEPHA"
+    def summary(self):
+        res = io.StringIO()
+        print("CSEPHA: %s %d ephemeris vectors" %
+              (self.ephem_flag, self.num_ephem), file=res)
+        return res.getvalue()
 
-def _summary(self):
-    res = io.StringIO()
-    print("CSEPHA: %s %d ephemeris vectors" % (self.ephem_flag, self.num_ephem), file=res)
-    return res.getvalue()
+tre_tag_to_cls.add_cls(TreCSEPHA)
 
-TreCSEPHA.summary = _summary
-
-__all__ = [ "TreCSEPHA" ]
+__all__ = [ "TreCSEPHA", ]
