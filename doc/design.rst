@@ -220,10 +220,10 @@ The design for this is shown in :numref:`field_struct`.
 
    class FieldStruct {
       {static} desc
-      +__init__(description=None)
       +field
-      +field_list
-      +items(arra_as_list=True)
+      +pseudo_outer_loop
+      +init(description=None)
+      +items(array_as_list=True)
       +read_from_file(fh, nitf_literal=False)
       +write_to_file(fh)
       +update_field(fh, field_name, value, key=())
@@ -244,15 +244,6 @@ The design for this is shown in :numref:`field_struct`.
    end note
    note right of FieldStruct::field
       Map field name to NitfField
-      Focus is on accessing
-      content
-   end note
-   note left of FieldStruct::field_list
-      List of fields, along with
-      looping structure and reserved
-      fields w/o field names.
-      Focus is on layout of data in
-      a NITF file.
    end note
 
    class NitfField {
@@ -268,10 +259,18 @@ The design for this is shown in :numref:`field_struct`.
      +optional_char
      +hardcoded_value
      +value_dict
+     +_check_or_set_size
+     +has_loop
+     +dim_size
+     +shape(key)
+     {static} is_shape_equal(fld1, fld2)
+     +to_list()
+     +values()
+     +items()
      +size(key)
-     get_print(key)
-     check_condition(key)
-     get_raw_bytes(key)
+     +get_print(key)
+     +check_condition(key)
+     +get_raw_bytes(key)
      bytes(key)
      read_from_file(key, fh, nitf_literal=False)
      write_to_file(key, fh)
@@ -305,10 +304,53 @@ The design for this is shown in :numref:`field_struct`.
    class FloatFieldData
 
    class IntFieldData
+
+   class NitfLoop {
+      +init(fs, parent_loop, desc, field)
+      +shape(key)
+      +dim_size
+      +check_index(key)
+      +key_subloop(lead)
+      +keys()
+      +write_to_file(fh)
+      +read_from_file(fh, nitf_literal=False)
+      +to_list(fld)
+      {static} is_shape_equal(loop1, loop2)
+      +print_to_fh(fh)
+   }
+   note top
+     This handles a NITF looping
+     structure.
+
+      Because it is convenient, we
+      have a "null" pseudo loop as
+      the outer loop.  This just
+      allows us to treat the outer
+      fields not in a loop the same
+      way we treat the loops.  This
+      is indicated by having
+      parent_list None.
+
+      The keys of the pseudo loop are
+      just the list [(),]
+   end note
    
    FieldStruct o-- "many" NitfField
+   FieldStruct o-- NitfLoop
+   NitfLoop o-- "many" NitfField
    NitfField <|-- FieldData
    FieldData <|-- StringFieldData
    FieldData <|-- FloatFieldData
    FieldData <|-- IntFieldData
+
+A note on the design, we use to have lots of code that had conditions like
+"if in loop then do x, if not then do y".  To avoid special code like that,
+we changed the design so all fields are *always* in a NitfLoop. We introduced
+a pseudo outer loop of dimension size 0 that we place all the fields that
+aren't in a proper loop. This is really an implementation detail, from outside
+the internal parts of the code the decision is invisible. But I wanted to
+make sure to note this, since it might be slightly confusing the first time
+you look into the internal code. The pseudo outer loop has keys of exactly
+length 1: [(),]. Since we access our scalar field from a NitfField as
+fld[()] this usage is consistent.
 
