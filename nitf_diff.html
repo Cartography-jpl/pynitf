@@ -14,6 +14,7 @@
     <script type="text/javascript" src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Pynitf Reference" href="nitf_file_ref.html" />
     <link rel="prev" title="NITF File" href="nitf_file.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -22,9 +23,55 @@
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head><body>
-  
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">pynitf</a></h1>
 
-    <div class="document">
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="design.html">Software Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nitf_file.html">NITF File</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">NITF File Differences</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#nitfdiffhandle">NitfDiffHandle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#nitf-difference-logging">Nitf difference logging</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#fieldstructdiff">FieldStructDiff</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="nitf_file_ref.html">Pynitf Reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="nitf_file.html" title="previous chapter">NITF File</a></li>
+      <li>Next: <a href="nitf_file_ref.html" title="next chapter">Pynitf Reference</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
       <div class="documentwrapper">
         <div class="bodywrapper">
           
@@ -44,7 +91,7 @@ date time (fdt) will generally change from one run to the next.</p>
 for identical, 1 for different), along with log information describing
 what if any differences there are.</p>
 <p>We use the same pluggable set of handles like we do for NitfDesHandleSet etc.
-The design is shown in <a class="reference internal" href="#nitf-diff"><span class="std std-numref">Fig. 10</span></a>.</p>
+The design is shown in <a class="reference internal" href="#nitf-diff"><span class="std std-numref">Fig. 11</span></a>.</p>
 <div class="figure align-default" id="id1">
 <span id="nitf-diff"></span><p class="plantuml">
 <img src="_images/plantuml-56a1f2305f37591ee1151af35bbd0159d25032e8.png" alt="class NitfDiff {
@@ -98,7 +145,7 @@ PriorityHandleSet &lt;|-- NitfDiffHandleSet
 NitfDiff *-- NitfDiffHandleSet : Has a handle_set
 NitfDiffHandleSet *-- &quot;many&quot; NitfDiffHandle"/>
 </p>
-<p class="caption"><span class="caption-number">Fig. 10 </span><span class="caption-text">nitf_diff</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-number">Fig. 11 </span><span class="caption-text">nitf_diff</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
 </div>
 <p>Most of the time there is a known set of handles and configuration parameters,
 with a user adding or modifying a few. So we have both the default handles
@@ -278,61 +325,8 @@ the difference found at the logging level of DIFFERENCE_DETAIL.</p>
           
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<h1 class="logo"><a href="index.html">pynitf</a></h1>
-
-
-
-
-
-
-
-
-<h3>Navigation</h3>
-<p class="caption"><span class="caption-text">Contents:</span></p>
-<ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="design.html">Software Design</a></li>
-<li class="toctree-l1"><a class="reference internal" href="nitf_file.html">NITF File</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">NITF File Differences</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#nitfdiffhandle">NitfDiffHandle</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#nitf-difference-logging">Nitf difference logging</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#fieldstructdiff">FieldStructDiff</a></li>
-</ul>
-</li>
-</ul>
-
-<div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="nitf_file.html" title="previous chapter">NITF File</a></li>
-  </ul></li>
-</ul>
-</div>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-
-
-
-
-
-
-
-
-        </div>
-      </div>
-      <div class="clearer"></div>
-    </div>
+    <div class="clearer"></div>
+  </div>
     <div class="footer">
       &copy;2020, Mike Smyth, Philip Yoon, Walt Bunch.
       

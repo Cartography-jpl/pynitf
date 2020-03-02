@@ -23,9 +23,57 @@
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head><body>
-  
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">pynitf</a></h1>
 
-    <div class="document">
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="design.html">Software Design</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">NITF File</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#nitffile-handles-and-hooks">NitfFile Handles and Hooks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#nitfsegmenthookset">NitfSegmentHookSet</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#nitfsegmentusersubheaderhandleset">NitfSegmentUserSubheaderHandleSet</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#nitfsegmentdatahandleset">NitfSegmentDataHandleSet</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#nitffile-convenience-functions">NitfFile convenience functions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="nitf_diff.html">NITF File Differences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nitf_file_ref.html">Pynitf Reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="design.html" title="previous chapter">Software Design</a></li>
+      <li>Next: <a href="nitf_diff.html" title="next chapter">NITF File Differences</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
       <div class="documentwrapper">
         <div class="bodywrapper">
           
@@ -34,23 +82,26 @@
             
   <div class="section" id="nitf-file">
 <h1>NITF File<a class="headerlink" href="#nitf-file" title="Permalink to this headline">¶</a></h1>
+<p>This section describes the overall software design. You can
+also <a class="reference internal" href="nitf_file_ref.html#nitf-file-ref-section"><span class="std std-ref">NitfFile</span></a> for descriptions of the class member
+functions.</p>
 <p>We want to be able to read an write NITF files.</p>
-<p>The NitfFile class structure is shown in <a class="reference internal" href="#id1"><span class="std std-numref">Fig. 4</span></a>.</p>
+<p>The NitfFile class structure is shown in <a class="reference internal" href="#id1"><span class="std std-numref">Fig. 5</span></a>.</p>
 <div class="figure align-default" id="id2">
 <span id="id1"></span><p class="plantuml">
-<img src="_images/plantuml-8cda26949bad78fa10a09846bc3c682903521640.png" alt="class NitfFile {
-   NitfFile(file_name=None,\n         security = security_unclassified,\n         use_raw=False)
-   read(file_name, use_raw=False)
-   write(file_name)
-   NitfFileHeader file_header
-   file_name
-   NitfImageSegment image_segment[]
-   NitfGraphicSegment graphic_segment[]
-   NitfTextSegment text_segment[]
-   NitfDesSegment des_segment[]
-   NitfResSegment res_segment[]
-   Tre tre_list[]
-   security
+<img src="_images/plantuml-6747aaec2601fdd50b8503a37c16b4915058852a.png" alt="class NitfFile {
+   +NitfFile(file_name=None,\n         security = security_unclassified)
+   +read(file_name)
+   +write(file_name)
+   +NitfFileHeader file_header
+   +file_name
+   +NitfImageSegment image_segment[]
+   +NitfGraphicSegment graphic_segment[]
+   +NitfTextSegment text_segment[]
+   +NitfDesSegment des_segment[]
+   +NitfResSegment res_segment[]
+   +Tre tre_list[]
+   +security
 }
 note top
    The NITF file class, used for reading
@@ -58,17 +109,27 @@ note top
 end note
 
 abstract class NitfSegment {
-   +NitfFile nitf_file
-   +subheader
-   +user_subheader
+   {static} sh_class
+   {static} _update_file_header_field
+   {static} _type_support_tre
+   {static} _tre_field_list
+   {property} nitf_file
+   {property} subheader
+   {property} user_subheader
+   {property} security
+   +summary()
+   +read_from_file(fh, seg_index=None)
+   +write_to_file(fh, seg_index)
    +Tre tre_list[]
    +data
+   +header_size
+   +data_size
 }
 note top
    Base class of NITF segments.
 
    Note not all segment types can have
-   user_header or TREs. Just to prevent needing
+   user_subheaders or TREs. Just to prevent needing
    special handling for each segment type, we
    include this in all segment types but set to
    None (for user_subheader) or an empty list (for
@@ -77,23 +138,25 @@ note top
 end note
 
 class NitfImageSegment {
-   +Tre tre_list[]
+   {property} image
+   {property} idlvl
+   {property} iid1
 }
 
 class NitfGraphicSegment {
-   +Tre tre_list[]
+   {property} graphic
 }
 
 class NitfTextSegment {
-   +Tre tre_list[]
+   {property} text
 }
 
 class NitfDesSegment {
-    +user_subheader
+   {property} des
 }
 
 class NitfResSegment {
-    +user_subheader
+   {property} res
 }
 
 class Tre
@@ -113,7 +176,7 @@ NitfImageSegment o-- &quot;many&quot; Tre
 NitfTextSegment o-- &quot;many&quot; Tre
 NitfGraphicSegment o-- &quot;many&quot; Tre"/>
 </p>
-<p class="caption"><span class="caption-number">Fig. 4 </span><span class="caption-text">NitfFile class structure</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-number">Fig. 5 </span><span class="caption-text">NitfFile class structure</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
 </div>
 <p>Note that only NitfFile, NitfImageSegment, NitfTextSegment and
 NitfGraphicSegment can have TREs. NitfResSegment and NitfDesSegment can not.
@@ -123,13 +186,13 @@ in a user_subheader are determined by the desid or resid type identifier.</p>
 <div class="section" id="nitffile-handles-and-hooks">
 <h2>NitfFile Handles and Hooks<a class="headerlink" href="#nitffile-handles-and-hooks" title="Permalink to this headline">¶</a></h2>
 <p>In addition to the NitfSegment, NitfFile contains several handle and hooks,
-shown in <a class="reference internal" href="#nitf-file-hook"><span class="std std-numref">Fig. 5</span></a>.</p>
+shown in <a class="reference internal" href="#nitf-file-hook"><span class="std std-numref">Fig. 6</span></a>.</p>
 <div class="figure align-default" id="id3">
 <span id="nitf-file-hook"></span><p class="plantuml">
-<img src="_images/plantuml-0b1f0f02467f0492887db777cefae59ad42c3cff.png" alt="class NitfFile {
-   NitfSegmentHookSet segment_hook_set
-   NitfSegmentUserSubheaderHandleSet user_subheader_handle_set
-   NitfSegmentDataHandleSet data_handle_set
+<img src="_images/plantuml-0c488f427d5620cfca8c024978cd686ce1f5f61b.png" alt="class NitfFile {
+   +NitfSegmentHookSet segment_hook_set
+   +NitfSegmentUserSubheaderHandleSet user_subheader_handle_set
+   +NitfSegmentDataHandleSet data_handle_set
 }
 
 class NitfSegmentHookSet {
@@ -147,8 +210,7 @@ note top
 end note
 
 class NitfSegmentUserSubheaderHandleSet {
-   +DesUserSubheaderHandleSet des_set
-   +ResUserSubheaderHandleSet res_set
+   +user_subheader_cls(seg)
 }
 note bottom
    Handle reading and writing User
@@ -156,11 +218,7 @@ note bottom
 end note
 
 class NitfSegmentDataHandleSet {
-  +NitfImageHandleSet image_handle_set
-  +NitfDesHandleSet des_handle_set
-  +NitfTextHandleSet text_handle_set
-  +NitfGraphicHandleSet graphic_handle_set
-  +NitfResHandleSet res_handle_set
+  +read_from_file(seg, fh, seg_index=None)
 }
 note top
    Handle reading and writing the
@@ -171,7 +229,7 @@ NitfFile o--  NitfSegmentHookSet
 NitfFile o--  NitfSegmentUserSubheaderHandleSet
 NitfFile o--  NitfSegmentDataHandleSet"/>
 </p>
-<p class="caption"><span class="caption-number">Fig. 5 </span><span class="caption-text">NitfFile class Handles and Hooks</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-number">Fig. 6 </span><span class="caption-text">NitfFile class Handles and Hooks</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
 </div>
 </div>
 <div class="section" id="nitfsegmenthookset">
@@ -212,15 +270,16 @@ May 2, 2008</p></td>
 </tr>
 </tbody>
 </table>
-<p>See <a class="reference internal" href="#nitf-segment-hook"><span class="std std-numref">Fig. 6</span></a>.</p>
+<p>See <a class="reference internal" href="#nitf-segment-hook"><span class="std std-numref">Fig. 7</span></a>.</p>
 <div class="figure align-default" id="id5">
 <span id="nitf-segment-hook"></span><p class="plantuml">
-<img src="_images/plantuml-98dd74fbef8411f73681e776c41498e607dfcd49.png" alt="class NitfFile {
-   NitfSegmentHookSet segment_hook_set
+<img src="_images/plantuml-5f9d509a3f855682f0f47db713f46f94ede96b03.png" alt="class NitfFile {
+   +NitfSegmentHookSet segment_hook_set
 }
 
 class NitfSegmentHookSet {
    +after_init_hook(seg, nitf_file)
+   +after_append_hook(seg, nitf_file)
    +before_write_hook(seg, nitf_file)
    +after_read_hook(seg, nitf_file)
    +before_str_hook(seg, nitf_file, fh)
@@ -238,11 +297,12 @@ end note
 
 class NitfSegmentHook {
    +after_init_hook(seg, nitf_file)
+   +after_append_hook(seg, nitf_file)
    +before_write_hook(seg, nitf_file)
    +after_read_hook(seg, nitf_file)
    +before_str_hook(seg, nitf_file, fh)
    +before_str_tre_hook(seg, tre, nitf_file, fh)
-   +remove_for_raw_print()
+   +remove_for_report_raw()
 }
 note bottom
    Hook object to extend handling of
@@ -252,7 +312,7 @@ end note
 NitfFile o--  NitfSegmentHookSet
 NitfSegmentHookSet o-- &quot;many&quot; NitfSegmentHook"/>
 </p>
-<p class="caption"><span class="caption-number">Fig. 6 </span><span class="caption-text">NitfSegmentHookSet</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-number">Fig. 7 </span><span class="caption-text">NitfSegmentHookSet</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
 </div>
 <p>We call all the NitfSegmentHook objects at several points in the processing:</p>
 <ul class="simple">
@@ -275,191 +335,159 @@ if the normal TRE printing should be done instead.</p></li>
 level objects printed. However, there may be instances where we want the “raw”
 data (e.g., nitfinfofull reporting raw TRE data). NitfSegmentHookSet will
 skip calling before_str_hook and before_tre_str_hook if
-“remove_for_raw_print” is True for the NitfSegmentHook.</p>
+“remove_for_report_raw” is True for the NitfSegmentHook.</p>
 </div>
 <div class="section" id="nitfsegmentusersubheaderhandleset">
 <h2>NitfSegmentUserSubheaderHandleSet<a class="headerlink" href="#nitfsegmentusersubheaderhandleset" title="Permalink to this headline">¶</a></h2>
 <p>The NitfSegmentUserSubheaderHandleSet is used to handle reading and writing
 the user subheaders found in the NitfDesSegment and NitfResSegment. This
-contains a PriorityHandleSet (see <a class="reference internal" href="design.html#priority-handle-set-section"><span class="std std-ref">Priority Handle Set</span></a>) for
-handling each of these segment types. See <a class="reference internal" href="#nitf-user-subheader-handle"><span class="std std-numref">Fig. 7</span></a>.</p>
+is a <a class="reference internal" href="design.html#priority-handle-set-section"><span class="std std-ref">Priority Handle Set</span></a> for
+handling each of these segment types. The handle returns the user subheader
+class type, which is then used by NitfSegment for reading and writing the
+user subheader. See <a class="reference internal" href="#nitf-user-subheader-handle"><span class="std std-numref">Fig. 8</span></a>.</p>
 <div class="figure align-default" id="id6">
 <span id="nitf-user-subheader-handle"></span><p class="plantuml">
-<img src="_images/plantuml-e419b6f8dba76c9a653e02cd72ec80151d9cb614.png" alt="class NitfFile {
-   NitfSegmentHookSet segment_hook_set
-   NitfSegmentUserSubheaderHandleSet user_subheader_handle_set
-   NitfSegmentDataHandleSet data_handle_set
+<img src="_images/plantuml-ee41ea76599fa7b38d763aae72565a680f67f663.png" alt="class NitfFile {
+   +NitfSegmentUserSubheaderHandleSet user_subheader_handle_set
 }
-
-class NitfSegmentHookSet {
-   +add_hook(h)
-   +discard_hook(h)
-   {static} add_default_hook(cls, h)
-   {static} discard_default_hook(cls, h)
-   {static} default_hook_set()
-   }
-note top
-  Hook objects to extend the handling
-  of various attributes of a segments
-  (e.g., add higher level classes Rpc
-  or RSM).
-end note
-
-class NitfSegmentHook
 
 class NitfSegmentUserSubheaderHandleSet {
-   +DesUserSubheaderHandleSet des_set
-   +ResUserSubheaderHandleSet res_set
+   +user_subheader_cls(seg)
 }
 note bottom
-   Handle reading and writing User
-   Subheaders for various segments.
+  Return the Class to use for
+  the user subheader for the
+  given segment (or None for
+  no user subheader)
 end note
 
-class PriorityHandleSet
-
-class DesUserSubheaderHandleSet
-
-class ResUserSubheaderHandleSet
-
-class NitfSegmentDataHandleSet {
-  +NitfImageHandleSet image_handle_set
-  +NitfDesHandleSet des_handle_set
-  +NitfTextHandleSet text_handle_set
-  +NitfGraphicHandleSet graphic_handle_set
-  +NitfResHandleSet res_handle_set
+abstract class PriorityHandleSet {
+   +add_handle(h, priority_order=0)
+   +discard_handle(h)
+   {static} add_default_handle(cls, h, priority_order=0)
+   {static} discard_default_handle(cls, h, priority_order=0)
+   {static} default_handle_set()
+   +handle(*args, **keywords)
 }
-note top
-   Handle reading and writing the
-   data in a segment (e.g, a image)
+
+abstract class UserSubheaderHandle {
+   {static} seg_class
+   +user_subheader_cls(seg)
+}
+
+class DesIdToUSHHandle {
+   +add_des_user_subheader(desid, des_user_subheader_cls)
+}
+note bottom
+   Often we just need the DES ID to
+   map to the class for the DES User Subheader.
+   This class is a simple dict going from
+   the id to the class that handles the
+   user subheader.
 end note
 
-class NitfImageHandleSet
-class NitfDesHandleSet
-class NitfTextHandleSet
-class NitfGraphicHandleSet
-class NitfResHandleSet
+class ResIdToUSHHandle {
+   +add_res_user_subheader(resid, res_user_subheader_cls)
+}
 
-NitfFile o--  NitfSegmentHookSet
 NitfFile o--  NitfSegmentUserSubheaderHandleSet
-NitfFile o--  NitfSegmentDataHandleSet
-NitfSegmentHookSet o-- &quot;many&quot; NitfSegmentHook
-NitfSegmentUserSubheaderHandleSet o-- &quot;many&quot; DesUserSubheaderHandleSet
-NitfSegmentUserSubheaderHandleSet o-- &quot;many&quot; ResUserSubheaderHandleSet
-NitfSegmentDataHandleSet o-- &quot;many&quot; NitfImageHandleSet
-NitfSegmentDataHandleSet o-- &quot;many&quot; NitfDesHandleSet
-NitfSegmentDataHandleSet o-- &quot;many&quot; NitfTextHandleSet
-NitfSegmentDataHandleSet o-- &quot;many&quot; NitfGraphicHandleSet
-NitfSegmentDataHandleSet o-- &quot;many&quot; NitfResHandleSet
-NitfSegmentUserSubheaderHandleSet -[hidden]- PriorityHandleSet
-NitfSegmentDataHandleSet -[hidden]- PriorityHandleSet
-DesUserSubheaderHandleSet -[hidden]- NitfImageHandleSet
-DesUserSubheaderHandleSet -[hidden]- NitfDesHandleSet
-DesUserSubheaderHandleSet -[hidden]- NitfTextHandleSet
-DesUserSubheaderHandleSet -[hidden]- NitfGraphicHandleSet
-DesUserSubheaderHandleSet -[hidden]- NitfResHandleSet
-PriorityHandleSet &lt;|-- DesUserSubheaderHandleSet
-PriorityHandleSet &lt;|-- ResUserSubheaderHandleSet
-PriorityHandleSet &lt;|-- NitfImageHandleSet
-PriorityHandleSet &lt;|-- NitfDesHandleSet
-PriorityHandleSet &lt;|-- NitfTextHandleSet
-PriorityHandleSet &lt;|-- NitfGraphicHandleSet
-PriorityHandleSet &lt;|-- NitfResHandleSet"/>
+NitfSegmentUserSubheaderHandleSet o-- &quot;many&quot; UserSubheaderHandle
+UserSubheaderHandle &lt;|-- DesIdToUSHHandle
+UserSubheaderHandle &lt;|-- ResIdToUSHHandle
+PriorityHandleSet &lt;|-- NitfSegmentUserSubheaderHandleSet"/>
 </p>
-<p class="caption"><span class="caption-number">Fig. 7 </span><span class="caption-text">NitfSegmentUserSubheaderHandleSet</span><a class="headerlink" href="#id6" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-number">Fig. 8 </span><span class="caption-text">NitfSegmentUserSubheaderHandleSet</span><a class="headerlink" href="#id6" title="Permalink to this image">¶</a></p>
 </div>
 </div>
 <div class="section" id="nitfsegmentdatahandleset">
 <h2>NitfSegmentDataHandleSet<a class="headerlink" href="#nitfsegmentdatahandleset" title="Permalink to this headline">¶</a></h2>
 <p>The NitfSegmentDataHandleSet is used to handle reading and writing
 the data field of each of the NitfSegment types. This
-contains a PriorityHandleSet (see <a class="reference internal" href="design.html#priority-handle-set-section"><span class="std std-ref">Priority Handle Set</span></a>) for
-handling
-each of these segment types. See <a class="reference internal" href="#nitf-data-handle"><span class="std std-numref">Fig. 8</span></a>.</p>
+is a <a class="reference internal" href="design.html#priority-handle-set-section"><span class="std std-ref">Priority Handle Set</span></a> for
+handling each of these segment types. See <a class="reference internal" href="#nitf-data-handle"><span class="std std-numref">Fig. 9</span></a>.</p>
 <div class="figure align-default" id="id7">
 <span id="nitf-data-handle"></span><p class="plantuml">
-<img src="_images/plantuml-e419b6f8dba76c9a653e02cd72ec80151d9cb614.png" alt="class NitfFile {
-   NitfSegmentHookSet segment_hook_set
-   NitfSegmentUserSubheaderHandleSet user_subheader_handle_set
-   NitfSegmentDataHandleSet data_handle_set
+<img src="_images/plantuml-97461f0d179c2a3a09ffc33f9ba3ebbdefe218c7.png" alt="class NitfFile {
+   +NitfSegmentDataHandleSet data_handle_set
 }
-
-class NitfSegmentHookSet {
-   +add_hook(h)
-   +discard_hook(h)
-   {static} add_default_hook(cls, h)
-   {static} discard_default_hook(cls, h)
-   {static} default_hook_set()
-   }
-note top
-  Hook objects to extend the handling
-  of various attributes of a segments
-  (e.g., add higher level classes Rpc
-  or RSM).
-end note
-
-class NitfSegmentHook
-
-class NitfSegmentUserSubheaderHandleSet {
-   +DesUserSubheaderHandleSet des_set
-   +ResUserSubheaderHandleSet res_set
-}
-note bottom
-   Handle reading and writing User
-   Subheaders for various segments.
-end note
-
-class PriorityHandleSet
-
-class DesUserSubheaderHandleSet
-
-class ResUserSubheaderHandleSet
 
 class NitfSegmentDataHandleSet {
-  +NitfImageHandleSet image_handle_set
-  +NitfDesHandleSet des_handle_set
-  +NitfTextHandleSet text_handle_set
-  +NitfGraphicHandleSet graphic_handle_set
-  +NitfResHandleSet res_handle_set
+  +read_from_file(seg, fh, seg_index=None)
+  +handle_h(cls, seg, fh, seg_index)
 }
 note top
-   Handle reading and writing the
-   data in a segment (e.g, a image)
+   Handle reading the data in
+   a segment (e.g, a image)
 end note
 
-class NitfImageHandleSet
-class NitfDesHandleSet
-class NitfTextHandleSet
-class NitfGraphicHandleSet
-class NitfResHandleSet
+abstract class PriorityHandleSet {
+   +add_handle(h, priority_order=0)
+   +discard_handle(h)
+   {static} add_default_handle(cls, h, priority_order=0)
+   {static} discard_default_handle(cls, h, priority_order=0)
+   {static} default_handle_set()
+   +handle(*args, **keywords)
+}
 
-NitfFile o--  NitfSegmentHookSet
-NitfFile o--  NitfSegmentUserSubheaderHandleSet
+abstract class NitfData {
+   {static} seg_class
+   {static} sh_class
+   {static} uh_class
+   {property} subheader
+   {property} user_subheader
+   {property} user_subheader_size
+   +__init__(seg=None)
+   {abstract} read_from_file(fh, seg_index = None)
+   {abstract} write_to_file(fh):
+   {property} security
+}
+note left
+   Handle reading and writing
+   the data in a segment (e.g,
+   a image). read_from_file should
+   return True if this class can
+   handle the type, and False
+   otherwise.
+end note
+
+abstract class NitfImage {
+   {property} shape
+   {property} dtype
+   {property} idlvl
+   {property} iid1
+}
+abstract class NitfDes
+abstract class NitfText
+abstract class NitfGraphic
+abstract class NitfRes
+
+class NitfDataPlaceHolder {
+   +read_from_file(fh, seg_index = None)
+   +write_to_file(fh):
+}
+note top
+  Implementation that doesn't actually
+  read data, instead it skips it.
+  Useful as a final place holder of none
+  of our other NitfData classes can
+  handle a particular segment.
+end note
+
 NitfFile o--  NitfSegmentDataHandleSet
-NitfSegmentHookSet o-- &quot;many&quot; NitfSegmentHook
-NitfSegmentUserSubheaderHandleSet o-- &quot;many&quot; DesUserSubheaderHandleSet
-NitfSegmentUserSubheaderHandleSet o-- &quot;many&quot; ResUserSubheaderHandleSet
-NitfSegmentDataHandleSet o-- &quot;many&quot; NitfImageHandleSet
-NitfSegmentDataHandleSet o-- &quot;many&quot; NitfDesHandleSet
-NitfSegmentDataHandleSet o-- &quot;many&quot; NitfTextHandleSet
-NitfSegmentDataHandleSet o-- &quot;many&quot; NitfGraphicHandleSet
-NitfSegmentDataHandleSet o-- &quot;many&quot; NitfResHandleSet
-NitfSegmentUserSubheaderHandleSet -[hidden]- PriorityHandleSet
-NitfSegmentDataHandleSet -[hidden]- PriorityHandleSet
-DesUserSubheaderHandleSet -[hidden]- NitfImageHandleSet
-DesUserSubheaderHandleSet -[hidden]- NitfDesHandleSet
-DesUserSubheaderHandleSet -[hidden]- NitfTextHandleSet
-DesUserSubheaderHandleSet -[hidden]- NitfGraphicHandleSet
-DesUserSubheaderHandleSet -[hidden]- NitfResHandleSet
-PriorityHandleSet &lt;|-- DesUserSubheaderHandleSet
-PriorityHandleSet &lt;|-- ResUserSubheaderHandleSet
-PriorityHandleSet &lt;|-- NitfImageHandleSet
-PriorityHandleSet &lt;|-- NitfDesHandleSet
-PriorityHandleSet &lt;|-- NitfTextHandleSet
-PriorityHandleSet &lt;|-- NitfGraphicHandleSet
-PriorityHandleSet &lt;|-- NitfResHandleSet"/>
+NitfSegmentDataHandleSet o-- &quot;many&quot; NitfData
+PriorityHandleSet &lt;|-- NitfSegmentDataHandleSet
+NitfData &lt;|-- NitfImage
+NitfData &lt;|-- NitfDes
+NitfData &lt;|-- NitfText
+NitfData &lt;|-- NitfGraphic
+NitfData &lt;|-- NitfRes
+NitfData &lt;|-- NitfDataPlaceHolder
+NitfImage -[hidden]down- NitfDes
+NitfImage -[hidden]down- NitfText
+NitfImage -[hidden]down- NitfGraphic
+NitfImage -[hidden]down- NitfRes"/>
 </p>
-<p class="caption"><span class="caption-number">Fig. 8 </span><span class="caption-text">NitfSegmentDataHandleSet</span><a class="headerlink" href="#id7" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-number">Fig. 9 </span><span class="caption-text">NitfSegmentDataHandleSet</span><a class="headerlink" href="#id7" title="Permalink to this image">¶</a></p>
 </div>
 </div>
 <div class="section" id="nitffile-convenience-functions">
@@ -467,16 +495,66 @@ PriorityHandleSet &lt;|-- NitfResHandleSet"/>
 <p>While the individual lists can be filters/searched using normal python
 functions, there are a set of things done frequently enough that it is
 useful to add convenience functions to do them. These are shown in
-in <a class="reference internal" href="#nitf-file-convenience"><span class="std std-numref">Fig. 9</span></a>.</p>
+in <a class="reference internal" href="#nitf-file-convenience"><span class="std std-numref">Fig. 10</span></a>.</p>
 <div class="figure align-default" id="id8">
 <span id="nitf-file-convenience"></span><p class="plantuml">
-<img src="_images/plantuml-1d0ee82387e73292dc0e7b8d8a73b2779b460676.png" alt="class NitfFile {
-   iseg_by_idlv(idlvl)
-   iseg_by_iid1(iid1)
-   iseg_by_iid1_single(iid1)
-}"/>
+<img src="_images/plantuml-eb372a4953e565e591e728137402c82ff55f5fff.png" alt="class NitfFile {
+   +engrda
+   +find_tre(tre_tag)
+   +find_one_tre(tre_tag)
+   +find_exactly_one_tre(tre_tag)
+   +iseg_by_idlv(idlvl)
+   +iseg_by_iid1(iid1)
+   +iseg_by_iid1_single(iid1)
+}
+
+note left of NitfFile::engrda
+   ENGRDA data returned as a
+   dict like interface (e.g.,
+   f.engrda[&quot;My_sensor 1&quot;][&quot;TEMP1&quot;])
+
+   Both reading and setting values
+   supported
+end note
+note right of NitfFile::find_tre
+   Return list of TREs of the
+   given tag. Possibly empty
+end note
+note right of NitfFile::find_one_tre
+   Find at most one TRE of the
+   given tag. Return None if not
+   found, error if multiple found
+end note
+note right of NitfFile::find_exactly_one_tre
+   Like find_one_tre, but not finding
+   TRE is treated as an error.
+end note
+
+class NitfImageSegment {
+   +engrda
+   +find_tre(tre_tag)
+   +find_one_tre(tre_tag)
+   +find_exactly_one_tre(tre_tag)
+}
+
+class NitfTextSegment {
+   +engrda
+   +find_tre(tre_tag)
+   +find_one_tre(tre_tag)
+   +find_exactly_one_tre(tre_tag)
+}
+
+class NitfGraphicSegment {
+   +engrda
+   +find_tre(tre_tag)
+   +find_one_tre(tre_tag)
+   +find_exactly_one_tre(tre_tag)
+}
+NitfFile o-- &quot;many&quot; NitfImageSegment
+NitfFile o-- &quot;many&quot; NitfGraphicSegment
+NitfFile o-- &quot;many&quot; NitfTextSegment"/>
 </p>
-<p class="caption"><span class="caption-number">Fig. 9 </span><span class="caption-text">NitfFile Convenience Functions</span><a class="headerlink" href="#id8" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-number">Fig. 10 </span><span class="caption-text">NitfFile Convenience Functions</span><a class="headerlink" href="#id8" title="Permalink to this image">¶</a></p>
 </div>
 </div>
 </div>
@@ -486,64 +564,8 @@ in <a class="reference internal" href="#nitf-file-convenience"><span class="std 
           
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<h1 class="logo"><a href="index.html">pynitf</a></h1>
-
-
-
-
-
-
-
-
-<h3>Navigation</h3>
-<p class="caption"><span class="caption-text">Contents:</span></p>
-<ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="design.html">Software Design</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">NITF File</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#nitffile-handles-and-hooks">NitfFile Handles and Hooks</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#nitfsegmenthookset">NitfSegmentHookSet</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#nitfsegmentusersubheaderhandleset">NitfSegmentUserSubheaderHandleSet</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#nitfsegmentdatahandleset">NitfSegmentDataHandleSet</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#nitffile-convenience-functions">NitfFile convenience functions</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="nitf_diff.html">NITF File Differences</a></li>
-</ul>
-
-<div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="design.html" title="previous chapter">Software Design</a></li>
-      <li>Next: <a href="nitf_diff.html" title="next chapter">NITF File Differences</a></li>
-  </ul></li>
-</ul>
-</div>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-
-
-
-
-
-
-
-
-        </div>
-      </div>
-      <div class="clearer"></div>
-    </div>
+    <div class="clearer"></div>
+  </div>
     <div class="footer">
       &copy;2020, Mike Smyth, Philip Yoon, Walt Bunch.
       
