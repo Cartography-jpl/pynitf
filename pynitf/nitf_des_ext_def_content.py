@@ -10,6 +10,7 @@ import shutil
 import tempfile
 import numpy as np
 import warnings
+import subprocess
 
 # DesEXT_h5 depends on h5py being available. Ok if it isn't, we just can't
 # use this particular class.
@@ -180,6 +181,18 @@ class DesEXT_h5(DesEXT_DEF_CONTENT):
             self.attach_file(file)
         self.temp_dir = temp_dir
         self._h5py_fh = None
+
+    def __str__(self):
+        res = io.StringIO()
+        self.str_hook(res)
+        if(self.user_subheader):
+            print("User-Defined Subheader: ", file=res)
+            print(self.user_subheader, file=res)
+        if self.h5py_fh is not None:
+            h5lsoutput = subprocess.getoutput("h5ls -r %s" % self.h5py_fh.filename)
+            print("HDF5 content", file=res)
+            print(h5lsoutput, file=res)
+        return res.getvalue()
 
     def attach_file(self, file):
         '''Attach a HDF 5 file to write out.'''
