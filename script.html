@@ -4,26 +4,23 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Search &#8212; pynitf 1.00 documentation</title>
+    <title>Top level scripts &#8212; pynitf 1.00 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/language_data.js"></script>
-    <script type="text/javascript" src="_static/searchtools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="#" />
-  <script type="text/javascript" src="searchindex.js" defer></script>
-  
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Pynitf Reference" href="nitf_file_ref.html" />
+    <link rel="prev" title="NITF File Differences" href="nitf_diff.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
-
 
   </head><body>
   <div class="document">
@@ -41,13 +38,13 @@
 
 <h3>Navigation</h3>
 <p class="caption"><span class="caption-text">Contents:</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="design_principle.html">Design principles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="design.html">Software Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="nitf_file.html">NITF File</a></li>
 <li class="toctree-l1"><a class="reference internal" href="nitf_diff.html">NITF File Differences</a></li>
-<li class="toctree-l1"><a class="reference internal" href="script.html">Top level scripts</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Top level scripts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="nitf_file_ref.html">Pynitf Reference</a></li>
 </ul>
 
@@ -55,9 +52,21 @@
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="nitf_diff.html" title="previous chapter">NITF File Differences</a></li>
+      <li>Next: <a href="nitf_file_ref.html" title="next chapter">Pynitf Reference</a></li>
   </ul></li>
 </ul>
 </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="documentwrapper">
@@ -66,29 +75,28 @@
 
           <div class="body" role="main">
             
-  <h1 id="search-documentation">Search</h1>
-  <div id="fallback" class="admonition warning">
-  <script type="text/javascript">$('#fallback').hide();</script>
-  <p>
-    Please activate JavaScript to enable the search
-    functionality.
-  </p>
-  </div>
-  <p>
-    From here you can search these documents. Enter your search
-    words into the box below and click "search". Note that the search
-    function will automatically search for all of the words. Pages
-    containing fewer words won't appear in the result list.
-  </p>
-  <form action="" method="get">
-    <input type="text" name="q" aria-labelledby="search-documentation" value="" />
-    <input type="submit" value="search" />
-    <span id="search-progress" style="padding-left: 10px"></span>
-  </form>
-  
-  <div id="search-results">
-  
-  </div>
+  <div class="section" id="top-level-scripts">
+<h1>Top level scripts<a class="headerlink" href="#top-level-scripts" title="Permalink to this headline">¶</a></h1>
+<p>We have the following top level scripts:</p>
+<ul class="simple">
+<li><p><strong>explore_nitf</strong> - This is a utility application that lets the user
+explore a NITF file interactively on the console.</p></li>
+<li><p><strong>nitf_diff</strong> - This compares two nitf files, and determines if
+they are the same are not. It is an outer script for running the code
+described in <a class="reference internal" href="nitf_diff.html#nitf-diff-section"><span class="std std-ref">NITF Diff</span></a></p></li>
+<li><p><strong>nitf_info</strong> - Print out information about a NITF file.</p></li>
+</ul>
+<p>In addition, we have some scripts in the “extra” directory. These are not
+installed, but has code that might be useful as a sample or support utility.
+This has:</p>
+<ul class="simple">
+<li><p><strong>generate_3d_nitf.py</strong> - Sample code for generating a 3d image
+(i.e., multiple bands)</p></li>
+<li><p><strong>generate_sample_nitf.py</strong> - Sample code for generating a full nitf file</p></li>
+<li><p><strong>nitro_to_python.py</strong> - Utility script to import nitro source code</p></li>
+</ul>
+</div>
+
 
           </div>
           
@@ -103,6 +111,9 @@
       Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
+      |
+      <a href="_sources/script.rst.txt"
+          rel="nofollow">Page source</a>
     </div>
 
     

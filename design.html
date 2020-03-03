@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Software Design &#8212; pynitf 0.62 documentation</title>
+    <title>Software Design &#8212; pynitf 1.00 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -15,7 +15,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="NITF File" href="nitf_file.html" />
-    <link rel="prev" title="Introduction" href="introduction.html" />
+    <link rel="prev" title="Design principles" href="design_principle.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -40,13 +40,16 @@
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="design_principle.html">Design principles</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Software Design</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#priority-handle-set">Priority Handle Set</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#fieldstruct">FieldStruct</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#printing-objects">Printing objects</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="nitf_file.html">NITF File</a></li>
 <li class="toctree-l1"><a class="reference internal" href="nitf_diff.html">NITF File Differences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="script.html">Top level scripts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="nitf_file_ref.html">Pynitf Reference</a></li>
 </ul>
 
@@ -54,7 +57,7 @@
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="introduction.html" title="previous chapter">Introduction</a></li>
+      <li>Previous: <a href="design_principle.html" title="previous chapter">Design principles</a></li>
       <li>Next: <a href="nitf_file.html" title="next chapter">NITF File</a></li>
   </ul></li>
 </ul>
@@ -98,7 +101,7 @@ items.</p></li>
 priority in an arbitrary order</p></li>
 <li><p>We want to have a default list of handlers, that can then be modified.</p></li>
 </ul>
-<p>The design for this is shown in <a class="reference internal" href="#id1"><span class="std std-numref">Fig. 2</span></a>.</p>
+<p>The design for this is shown in <a class="reference internal" href="#id1"><span class="std std-numref">Fig. 1</span></a>.</p>
 <div class="figure align-default" id="id2">
 <span id="id1"></span><p class="plantuml">
 <img src="_images/plantuml-77cf57394915f4590f35b53c2e586ba5748f0ad8.png" alt="abstract class PriorityHandleSet {
@@ -137,14 +140,14 @@ end note
 PriorityHandleSet &lt;|-- NitfDesHandleSet
 PriorityHandleSet &lt;|-- NitfImageHandleSet"/>
 </p>
-<p class="caption"><span class="caption-number">Fig. 2 </span><span class="caption-text">Priority Handle Set</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-number">Fig. 1 </span><span class="caption-text">Priority Handle Set</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
 </div>
 <p>The PriorityHandleSet has members for adding and removing “Handles”. A handle
 is purposely vague, it is any object that the derived class wants to be.
 And in some cases the object is actually a class - so for example
 NitfImageHandleSet uses handles that are classes derived from NitfImage.</p>
 <p>The function handle forwards work to the function handle_h, as shown in
-<a class="reference internal" href="#handle-sequence"><span class="std std-numref">Fig. 3</span></a></p>
+<a class="reference internal" href="#handle-sequence"><span class="std std-numref">Fig. 2</span></a></p>
 <div class="figure align-default" id="id3">
 <span id="handle-sequence"></span><p class="plantuml">
 <img src="_images/plantuml-46cce3e4485123cb612c728e6bd43f19ab59c8b9.png" alt="caller -&gt; &quot;handler_set:DerivedFromPriorityHandleSet&quot; as hset: 1 handle(*args, **keywords)
@@ -161,7 +164,7 @@ loop h:HandleObjects
     end note
 end"/>
 </p>
-<p class="caption"><span class="caption-number">Fig. 3 </span><span class="caption-text">handler_set:DerivedFromPriorityHandleSet sequence diagram</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-number">Fig. 2 </span><span class="caption-text">handler_set:DerivedFromPriorityHandleSet sequence diagram</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
 </div>
 </div>
 <div class="section" id="fieldstruct">
@@ -195,36 +198,36 @@ lots of reserved fields).  The type might be something like ‘int’,
 type.</p>
 <p>The optional parameters are:</p>
 <dl class="simple">
-<dt>frmt</dt><dd><p>A format string or function</p>
+<dt><strong>frmt</strong></dt><dd><p>A format string or function</p>
 </dd>
-<dt>default</dt><dd><p>The default value to use when writing. If not specified, the
+<dt><strong>default</strong></dt><dd><p>The default value to use when writing. If not specified, the
 default is all spaces for a str and 0 for a number type.</p>
 </dd>
-<dt>hardcoded_value</dt><dd><p>If True, do not allow the value to be modified. It
+<dt><strong>hardcoded_value</strong></dt><dd><p>If True, do not allow the value to be modified. It
 is set to the default value, and trying to change it gives
 an error.</p>
 </dd>
-<dt>condition</dt><dd><p>An expression used to determine if the field is included
+<dt><strong>condition</strong></dt><dd><p>An expression used to determine if the field is included
 or not.</p>
 </dd>
-<dt>optional</dt><dd><p>If true, a field is optional. Note that this is different than
+<dt><strong>optional</strong></dt><dd><p>If true, a field is optional. Note that this is different than
 conditional - with conditional the bytes for the field might
 or might not be present. With optional, they are always present
 but might be all spaces which indicates the value is not there.
 If optional is present, we translate all spaces in the NITF
 file to and from the python “None” object</p>
 </dd>
-<dt>optional_char</dt><dd><p>There are some TREs that use “—–” instead of ”    ”
+<dt><strong>optional_char</strong></dt><dd><p>There are some TREs that use “—–” instead of ”    ”
 to indicate missing data. No idea why they don’t just use ‘ ‘,
 but if there is a different char you can supply it.</p>
 </dd>
-<dt>field_value_class</dt><dd><p>Most fields can be handled by NitfField
+<dt><strong>field_value_class</strong></dt><dd><p>Most fields can be handled by NitfField
 class. However there are some special cases (e.g., IXSHD used
 for image segment level TREs). If we need to change this,
 we can supply the class to use here. This class should derive
 from FieldData (or supply the same interface).</p>
 </dd>
-<dt>size_offset</dt><dd><p>In some cases, the ‘size’ is really the size of the
+<dt><strong>size_offset</strong></dt><dd><p>In some cases, the ‘size’ is really the size of the
 data plus something else. For example, in the image
 header the size of the TRE includes both the TRE and an
 additional field indicating if we have overflow. You can
@@ -232,9 +235,9 @@ supply ‘size_offset’ option to specify an offset that
 should be applied to the size. The offset is subtracted from
 ‘size’ to give the actual size of this field.</p>
 </dd>
-<dt>size_not_updated</dt><dd><p>See below</p>
+<dt><strong>size_not_updated</strong></dt><dd><p>See below</p>
 </dd>
-<dt>signed</dt><dd><p>Used by IntFieldData to determine if data is signed or
+<dt><strong>signed</strong></dt><dd><p>Used by IntFieldData to determine if data is signed or
 unsigned. Default is False, or unsigned.</p>
 </dd>
 </dl>
@@ -273,10 +276,10 @@ isn’t the same size, and might be missing for some indices (e.g.,
 a conditional isn’t met). It isn’t really clear what a slice means
 when some of the data might not be there, or when different indices
 have different dimensions.</p>
-<p>The design for this is shown in <a class="reference internal" href="#field-struct"><span class="std std-numref">Fig. 4</span></a>.</p>
+<p>The design for this is shown in <a class="reference internal" href="#field-struct"><span class="std std-numref">Fig. 3</span></a>.</p>
 <div class="figure align-default" id="id4">
 <span id="field-struct"></span><p class="plantuml">
-<img src="_images/plantuml-72cb4cf1505376c1dd452192fec733a675e6ee3b.png" alt="class FieldStruct {
+<img src="_images/plantuml-e56de61af0a5850c4ed07973be3d34e5b390d435.png" alt="class FieldStruct {
    {static} desc
    +field
    +pseudo_outer_loop
@@ -357,6 +360,8 @@ note left
    different get_print function.
 end note
 
+class BytesFieldData
+
 class StringFieldData
 
 class FloatFieldData
@@ -397,11 +402,12 @@ FieldStruct o-- &quot;many&quot; NitfField
 FieldStruct o-- NitfLoop
 NitfLoop o-- &quot;many&quot; NitfField
 NitfField &lt;|-- FieldData
+FieldData &lt;|-- BytesFieldData
 FieldData &lt;|-- StringFieldData
 FieldData &lt;|-- FloatFieldData
 FieldData &lt;|-- IntFieldData"/>
 </p>
-<p class="caption"><span class="caption-number">Fig. 4 </span><span class="caption-text">FieldStruct</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-number">Fig. 3 </span><span class="caption-text">FieldStruct</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
 </div>
 <p>A note on the design, we use to have lots of code that had conditions like
 “if in loop then do x, if not then do y”.  To avoid special code like that,
@@ -410,9 +416,42 @@ a pseudo outer loop of dimension size 0 that we place all the fields that
 aren’t in a proper loop. This is really an implementation detail, from outside
 the internal parts of the code the decision is invisible. But I wanted to
 make sure to note this, since it might be slightly confusing the first time
-you look into the internal code. The pseudo outer loop has keys of exactly
+you look into the internal code. The pseudo outer loop has keys() of exactly
 length 1: [(),]. Since we access our scalar field from a NitfField as
 fld[()] this usage is consistent.</p>
+</div>
+<div class="section" id="printing-objects">
+<h2>Printing objects<a class="headerlink" href="#printing-objects" title="Permalink to this headline">¶</a></h2>
+<p>The various objects that describe a NitfFile can be printed to give a
+description of the file. We have two ways of printing:</p>
+<ol class="arabic simple">
+<li><p>The standard __str__ method is supplied. This gives a human readable
+description of the objects, and tries to be fairly complete. This is
+what get printed out by default using the “nitfinfo” program.</p></li>
+<li><p>We also provide a much more concise “summary” function. This gives
+a few line summary of all the pieces. This is useful to get an overall
+summary of a file w/o worrying about details. This is what is printed
+by “nitfinfo –summary”</p></li>
+</ol>
+<p>As an example, printing a USE00A TRE gives:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">TRE</span> <span class="o">-</span> <span class="n">USE00A</span>
+<span class="n">angle_to_north</span><span class="p">:</span> <span class="mi">270</span>
+<span class="n">mean_gsd</span>      <span class="p">:</span> <span class="mf">19.9</span>
+<span class="n">dynamic_range</span> <span class="p">:</span> <span class="mi">2046</span>
+<span class="n">obl_ang</span>       <span class="p">:</span> <span class="mf">6.48</span>
+<span class="n">roll_ang</span>      <span class="p">:</span> <span class="o">-</span><span class="mf">5.98</span>
+<span class="n">n_ref</span>         <span class="p">:</span> <span class="mi">0</span>
+<span class="n">rev_num</span>       <span class="p">:</span> <span class="mi">24180</span>
+<span class="n">n_seg</span>         <span class="p">:</span> <span class="mi">1</span>
+<span class="n">max_lp_seg</span>    <span class="p">:</span> <span class="mi">33432</span>
+<span class="n">sun_el</span>        <span class="p">:</span> <span class="mf">33.1</span>
+<span class="n">sun_az</span>        <span class="p">:</span> <span class="mf">160.1</span>
+</pre></div>
+</div>
+<p>While printing a summary of USE00A gives:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">TRE</span> <span class="o">-</span> <span class="n">USE00A</span>
+</pre></div>
+</div>
 </div>
 </div>
 
@@ -424,7 +463,7 @@ fld[()] this usage is consistent.</p>
     <div class="clearer"></div>
   </div>
     <div class="footer">
-      &copy;2020, Mike Smyth, Philip Yoon, Walt Bunch.
+      &copy;Copyright 2020, by the California Institute of Technology.
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.1</a>

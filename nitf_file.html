@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>NITF File &#8212; pynitf 0.62 documentation</title>
+    <title>NITF File &#8212; pynitf 1.00 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -40,6 +40,7 @@
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="design_principle.html">Design principles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="design.html">Software Design</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">NITF File</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#nitffile-handles-and-hooks">NitfFile Handles and Hooks</a></li>
@@ -50,6 +51,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="nitf_diff.html">NITF File Differences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="script.html">Top level scripts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="nitf_file_ref.html">Pynitf Reference</a></li>
 </ul>
 
@@ -86,7 +88,7 @@
 also <a class="reference internal" href="nitf_file_ref.html#nitf-file-ref-section"><span class="std std-ref">NitfFile</span></a> for descriptions of the class member
 functions.</p>
 <p>We want to be able to read an write NITF files.</p>
-<p>The NitfFile class structure is shown in <a class="reference internal" href="#id1"><span class="std std-numref">Fig. 5</span></a>.</p>
+<p>The NitfFile class structure is shown in <a class="reference internal" href="#id1"><span class="std std-numref">Fig. 4</span></a>.</p>
 <div class="figure align-default" id="id2">
 <span id="id1"></span><p class="plantuml">
 <img src="_images/plantuml-6747aaec2601fdd50b8503a37c16b4915058852a.png" alt="class NitfFile {
@@ -176,7 +178,7 @@ NitfImageSegment o-- &quot;many&quot; Tre
 NitfTextSegment o-- &quot;many&quot; Tre
 NitfGraphicSegment o-- &quot;many&quot; Tre"/>
 </p>
-<p class="caption"><span class="caption-number">Fig. 5 </span><span class="caption-text">NitfFile class structure</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-number">Fig. 4 </span><span class="caption-text">NitfFile class structure</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
 </div>
 <p>Note that only NitfFile, NitfImageSegment, NitfTextSegment and
 NitfGraphicSegment can have TREs. NitfResSegment and NitfDesSegment can not.
@@ -186,7 +188,7 @@ in a user_subheader are determined by the desid or resid type identifier.</p>
 <div class="section" id="nitffile-handles-and-hooks">
 <h2>NitfFile Handles and Hooks<a class="headerlink" href="#nitffile-handles-and-hooks" title="Permalink to this headline">¶</a></h2>
 <p>In addition to the NitfSegment, NitfFile contains several handle and hooks,
-shown in <a class="reference internal" href="#nitf-file-hook"><span class="std std-numref">Fig. 6</span></a>.</p>
+shown in <a class="reference internal" href="#nitf-file-hook"><span class="std std-numref">Fig. 5</span></a>.</p>
 <div class="figure align-default" id="id3">
 <span id="nitf-file-hook"></span><p class="plantuml">
 <img src="_images/plantuml-0c488f427d5620cfca8c024978cd686ce1f5f61b.png" alt="class NitfFile {
@@ -229,7 +231,7 @@ NitfFile o--  NitfSegmentHookSet
 NitfFile o--  NitfSegmentUserSubheaderHandleSet
 NitfFile o--  NitfSegmentDataHandleSet"/>
 </p>
-<p class="caption"><span class="caption-number">Fig. 6 </span><span class="caption-text">NitfFile class Handles and Hooks</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-number">Fig. 5 </span><span class="caption-text">NitfFile class Handles and Hooks</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
 </div>
 </div>
 <div class="section" id="nitfsegmenthookset">
@@ -270,7 +272,7 @@ May 2, 2008</p></td>
 </tr>
 </tbody>
 </table>
-<p>See <a class="reference internal" href="#nitf-segment-hook"><span class="std std-numref">Fig. 7</span></a>.</p>
+<p>See <a class="reference internal" href="#nitf-segment-hook"><span class="std std-numref">Fig. 6</span></a>.</p>
 <div class="figure align-default" id="id5">
 <span id="nitf-segment-hook"></span><p class="plantuml">
 <img src="_images/plantuml-5f9d509a3f855682f0f47db713f46f94ede96b03.png" alt="class NitfFile {
@@ -312,7 +314,7 @@ end note
 NitfFile o--  NitfSegmentHookSet
 NitfSegmentHookSet o-- &quot;many&quot; NitfSegmentHook"/>
 </p>
-<p class="caption"><span class="caption-number">Fig. 7 </span><span class="caption-text">NitfSegmentHookSet</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-number">Fig. 6 </span><span class="caption-text">NitfSegmentHookSet</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
 </div>
 <p>We call all the NitfSegmentHook objects at several points in the processing:</p>
 <ul class="simple">
@@ -344,7 +346,7 @@ the user subheaders found in the NitfDesSegment and NitfResSegment. This
 is a <a class="reference internal" href="design.html#priority-handle-set-section"><span class="std std-ref">Priority Handle Set</span></a> for
 handling each of these segment types. The handle returns the user subheader
 class type, which is then used by NitfSegment for reading and writing the
-user subheader. See <a class="reference internal" href="#nitf-user-subheader-handle"><span class="std std-numref">Fig. 8</span></a>.</p>
+user subheader. See <a class="reference internal" href="#nitf-user-subheader-handle"><span class="std std-numref">Fig. 7</span></a>.</p>
 <div class="figure align-default" id="id6">
 <span id="nitf-user-subheader-handle"></span><p class="plantuml">
 <img src="_images/plantuml-ee41ea76599fa7b38d763aae72565a680f67f663.png" alt="class NitfFile {
@@ -396,7 +398,7 @@ UserSubheaderHandle &lt;|-- DesIdToUSHHandle
 UserSubheaderHandle &lt;|-- ResIdToUSHHandle
 PriorityHandleSet &lt;|-- NitfSegmentUserSubheaderHandleSet"/>
 </p>
-<p class="caption"><span class="caption-number">Fig. 8 </span><span class="caption-text">NitfSegmentUserSubheaderHandleSet</span><a class="headerlink" href="#id6" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-number">Fig. 7 </span><span class="caption-text">NitfSegmentUserSubheaderHandleSet</span><a class="headerlink" href="#id6" title="Permalink to this image">¶</a></p>
 </div>
 </div>
 <div class="section" id="nitfsegmentdatahandleset">
@@ -404,7 +406,7 @@ PriorityHandleSet &lt;|-- NitfSegmentUserSubheaderHandleSet"/>
 <p>The NitfSegmentDataHandleSet is used to handle reading and writing
 the data field of each of the NitfSegment types. This
 is a <a class="reference internal" href="design.html#priority-handle-set-section"><span class="std std-ref">Priority Handle Set</span></a> for
-handling each of these segment types. See <a class="reference internal" href="#nitf-data-handle"><span class="std std-numref">Fig. 9</span></a>.</p>
+handling each of these segment types. See <a class="reference internal" href="#nitf-data-handle"><span class="std std-numref">Fig. 8</span></a>.</p>
 <div class="figure align-default" id="id7">
 <span id="nitf-data-handle"></span><p class="plantuml">
 <img src="_images/plantuml-97461f0d179c2a3a09ffc33f9ba3ebbdefe218c7.png" alt="class NitfFile {
@@ -487,7 +489,7 @@ NitfImage -[hidden]down- NitfText
 NitfImage -[hidden]down- NitfGraphic
 NitfImage -[hidden]down- NitfRes"/>
 </p>
-<p class="caption"><span class="caption-number">Fig. 9 </span><span class="caption-text">NitfSegmentDataHandleSet</span><a class="headerlink" href="#id7" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-number">Fig. 8 </span><span class="caption-text">NitfSegmentDataHandleSet</span><a class="headerlink" href="#id7" title="Permalink to this image">¶</a></p>
 </div>
 </div>
 <div class="section" id="nitffile-convenience-functions">
@@ -495,7 +497,7 @@ NitfImage -[hidden]down- NitfRes"/>
 <p>While the individual lists can be filters/searched using normal python
 functions, there are a set of things done frequently enough that it is
 useful to add convenience functions to do them. These are shown in
-in <a class="reference internal" href="#nitf-file-convenience"><span class="std std-numref">Fig. 10</span></a>.</p>
+in <a class="reference internal" href="#nitf-file-convenience"><span class="std std-numref">Fig. 9</span></a>.</p>
 <div class="figure align-default" id="id8">
 <span id="nitf-file-convenience"></span><p class="plantuml">
 <img src="_images/plantuml-eb372a4953e565e591e728137402c82ff55f5fff.png" alt="class NitfFile {
@@ -554,7 +556,7 @@ NitfFile o-- &quot;many&quot; NitfImageSegment
 NitfFile o-- &quot;many&quot; NitfGraphicSegment
 NitfFile o-- &quot;many&quot; NitfTextSegment"/>
 </p>
-<p class="caption"><span class="caption-number">Fig. 10 </span><span class="caption-text">NitfFile Convenience Functions</span><a class="headerlink" href="#id8" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-number">Fig. 9 </span><span class="caption-text">NitfFile Convenience Functions</span><a class="headerlink" href="#id8" title="Permalink to this image">¶</a></p>
 </div>
 </div>
 </div>
@@ -567,7 +569,7 @@ NitfFile o-- &quot;many&quot; NitfTextSegment"/>
     <div class="clearer"></div>
   </div>
     <div class="footer">
-      &copy;2020, Mike Smyth, Philip Yoon, Walt Bunch.
+      &copy;Copyright 2020, by the California Institute of Technology.
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.1</a>

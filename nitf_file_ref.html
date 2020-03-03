@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Pynitf Reference &#8212; pynitf 0.62 documentation</title>
+    <title>Pynitf Reference &#8212; pynitf 1.00 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -14,7 +14,7 @@
     <script type="text/javascript" src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="prev" title="NITF File Differences" href="nitf_diff.html" />
+    <link rel="prev" title="Top level scripts" href="script.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -39,9 +39,11 @@
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="design_principle.html">Design principles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="design.html">Software Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="nitf_file.html">NITF File</a></li>
 <li class="toctree-l1"><a class="reference internal" href="nitf_diff.html">NITF File Differences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="script.html">Top level scripts</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Pynitf Reference</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#nitffile">NitfFile</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#nitfsegmenthookset">NitfSegmentHookSet</a></li>
@@ -66,7 +68,7 @@
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="nitf_diff.html" title="previous chapter">NITF File Differences</a></li>
+      <li>Previous: <a href="script.html" title="previous chapter">Top level scripts</a></li>
   </ul></li>
 </ul>
 </div>
@@ -558,7 +560,7 @@ make sure we aren’t exceeding the size supported by desshl</p>
 <dl class="attribute">
 <dt id="pynitf.NitfImage.sh_class">
 <code class="sig-name descname">sh_class</code><a class="headerlink" href="#pynitf.NitfImage.sh_class" title="Permalink to this definition">¶</a></dt>
-<dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">pynitf.nitf_field.NitfImageSubheader</span></code></p>
+<dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">pynitf.nitf_image_subheader.NitfImageSubheader</span></code></p>
 </dd></dl>
 
 <dl class="method">
@@ -585,7 +587,7 @@ make sure we aren’t exceeding the size supported by desshl</p>
 <dl class="attribute">
 <dt id="pynitf.NitfDes.sh_class">
 <code class="sig-name descname">sh_class</code><a class="headerlink" href="#pynitf.NitfDes.sh_class" title="Permalink to this definition">¶</a></dt>
-<dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">pynitf.nitf_field.NitfDesSubheader</span></code></p>
+<dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">pynitf.nitf_des_subheader.NitfDesSubheader</span></code></p>
 </dd></dl>
 
 </dd></dl>
@@ -606,7 +608,7 @@ make sure we aren’t exceeding the size supported by desshl</p>
 <dl class="attribute">
 <dt id="pynitf.NitfText.sh_class">
 <code class="sig-name descname">sh_class</code><a class="headerlink" href="#pynitf.NitfText.sh_class" title="Permalink to this definition">¶</a></dt>
-<dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">pynitf.nitf_field.NitfTextSubheader</span></code></p>
+<dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">pynitf.nitf_text_subheader.NitfTextSubheader</span></code></p>
 </dd></dl>
 
 </dd></dl>
@@ -627,7 +629,7 @@ make sure we aren’t exceeding the size supported by desshl</p>
 <dl class="attribute">
 <dt id="pynitf.NitfGraphic.sh_class">
 <code class="sig-name descname">sh_class</code><a class="headerlink" href="#pynitf.NitfGraphic.sh_class" title="Permalink to this definition">¶</a></dt>
-<dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">pynitf.nitf_field.NitfGraphicSubheader</span></code></p>
+<dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">pynitf.nitf_graphic_subheader.NitfGraphicSubheader</span></code></p>
 </dd></dl>
 
 </dd></dl>
@@ -670,7 +672,7 @@ a reader that doesn’t support that).</p>
     <div class="clearer"></div>
   </div>
     <div class="footer">
-      &copy;2020, Mike Smyth, Philip Yoon, Walt Bunch.
+      &copy;Copyright 2020, by the California Institute of Technology.
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.1</a>

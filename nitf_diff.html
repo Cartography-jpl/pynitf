@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>NITF File Differences &#8212; pynitf 0.62 documentation</title>
+    <title>NITF File Differences &#8212; pynitf 1.00 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -14,7 +14,7 @@
     <script type="text/javascript" src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Pynitf Reference" href="nitf_file_ref.html" />
+    <link rel="next" title="Top level scripts" href="script.html" />
     <link rel="prev" title="NITF File" href="nitf_file.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -40,14 +40,17 @@
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="design_principle.html">Design principles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="design.html">Software Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="nitf_file.html">NITF File</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">NITF File Differences</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#nitf-diff">NITF Diff</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#nitfdiffhandle">NitfDiffHandle</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#nitf-difference-logging">Nitf difference logging</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#fieldstructdiff">FieldStructDiff</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="script.html">Top level scripts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="nitf_file_ref.html">Pynitf Reference</a></li>
 </ul>
 
@@ -56,7 +59,7 @@
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
       <li>Previous: <a href="nitf_file.html" title="previous chapter">NITF File</a></li>
-      <li>Next: <a href="nitf_file_ref.html" title="next chapter">Pynitf Reference</a></li>
+      <li>Next: <a href="script.html" title="next chapter">Top level scripts</a></li>
   </ul></li>
 </ul>
 </div>
@@ -80,6 +83,8 @@
             
   <div class="section" id="nitf-file-differences">
 <h1>NITF File Differences<a class="headerlink" href="#nitf-file-differences" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="nitf-diff">
+<span id="nitf-diff-section"></span><h2>NITF Diff<a class="headerlink" href="#nitf-diff" title="Permalink to this headline">¶</a></h2>
 <p>We want to be able compare two NITF files to know if they are the “same”.</p>
 <p>What is the “same” really depends on the application. For example, two files
 with images that have a difference of 1e-4 might be different because the data
@@ -91,9 +96,9 @@ date time (fdt) will generally change from one run to the next.</p>
 for identical, 1 for different), along with log information describing
 what if any differences there are.</p>
 <p>We use the same pluggable set of handles like we do for NitfDesHandleSet etc.
-The design is shown in <a class="reference internal" href="#nitf-diff"><span class="std std-numref">Fig. 11</span></a>.</p>
-<div class="figure align-default" id="id1">
-<span id="nitf-diff"></span><p class="plantuml">
+The design is shown in <a class="reference internal" href="#id1"><span class="std std-numref">Fig. 10</span></a>.</p>
+<div class="figure align-default" id="id2">
+<span id="id1"></span><p class="plantuml">
 <img src="_images/plantuml-56a1f2305f37591ee1151af35bbd0159d25032e8.png" alt="class NitfDiff {
    +config
    +handle_set
@@ -145,7 +150,7 @@ PriorityHandleSet &lt;|-- NitfDiffHandleSet
 NitfDiff *-- NitfDiffHandleSet : Has a handle_set
 NitfDiffHandleSet *-- &quot;many&quot; NitfDiffHandle"/>
 </p>
-<p class="caption"><span class="caption-number">Fig. 11 </span><span class="caption-text">nitf_diff</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+<p class="caption"><span class="caption-number">Fig. 10 </span><span class="caption-text">nitf_diff</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
 </div>
 <p>Most of the time there is a known set of handles and configuration parameters,
 with a user adding or modifying a few. So we have both the default handles
@@ -153,11 +158,12 @@ for NitfDiffHandleSet and default configuration. NitfDiff object can then
 have their handle and/or config objects modified to change the behavior for
 a specific comparison. The program nitf_diff (which is a wrapper around
 NitfDiff) can take a JSON file and/or arbitrary python code to change this.</p>
+</div>
 <div class="section" id="nitfdiffhandle">
 <h2>NitfDiffHandle<a class="headerlink" href="#nitfdiffhandle" title="Permalink to this headline">¶</a></h2>
 <p>There are a number of NitfDiffHandle objects defined in pynitf:</p>
-<table class="docutils align-default" id="id2">
-<caption><span class="caption-number">Table 2 </span><span class="caption-text">NitfDiffHandle objects</span><a class="headerlink" href="#id2" title="Permalink to this table">¶</a></caption>
+<table class="docutils align-default" id="id3">
+<caption><span class="caption-number">Table 2 </span><span class="caption-text">NitfDiffHandle objects</span><a class="headerlink" href="#id3" title="Permalink to this table">¶</a></caption>
 <colgroup>
 <col style="width: 31%" />
 <col style="width: 69%" />
@@ -298,17 +304,22 @@ configuration is a dictionary type object that derived class get from
 the nitf_diff object.  This then contains keyword/value pairs for
 controlling things. While derived classes can supply other parameters,
 these are things that can be defined:</p>
-<ul class="simple">
-<li><p><strong>exclude</strong> - List of fields to exclude from comparing</p></li>
-<li><p><strong>exclude_but_warn</strong> - List of field to exclude from comparing, but
-warn if different.</p></li>
-<li><p><strong>include</strong> - If nonempty, only include the given fields</p></li>
-<li><p><strong>eq_fun</strong> - A dictionary going from field name to a function to compare.</p></li>
-<li><p><strong>rel_tol</strong> - A dictionary going from field name to a relative tolerance.
-Only used for fields with float type.</p></li>
-<li><p><strong>abs_tol</strong> - A dictionary going from field name to absolute tolerance.
-Only used for fields with float type.</p></li>
-</ul>
+<dl class="simple">
+<dt><strong>exclude</strong></dt><dd><p>List of fields to exclude from comparing</p>
+</dd>
+<dt><strong>exclude_but_warn</strong></dt><dd><p>List of field to exclude from comparing, but warn if different.</p>
+</dd>
+<dt><strong>include</strong></dt><dd><p>If nonempty, only include the given fields</p>
+</dd>
+<dt><strong>eq_fun</strong></dt><dd><p>A dictionary going from field name to a function to compare.</p>
+</dd>
+<dt><strong>rel_tol</strong></dt><dd><p>A dictionary going from field name to a relative tolerance.
+Only used for fields with float type.</p>
+</dd>
+<dt><strong>abs_tol</strong></dt><dd><p>A dictionary going from field name to absolute tolerance.
+Only used for fields with float type.</p>
+</dd>
+</dl>
 <p>If a function isn’t otherwise defined in eq_fun, we use operator.eq,
 except for floating point numbers. For floating point numbers we use
 math.isclose. The rel_tol and/or abs_tol can be supplied. The default
@@ -328,7 +339,7 @@ the difference found at the logging level of DIFFERENCE_DETAIL.</p>
     <div class="clearer"></div>
   </div>
     <div class="footer">
-      &copy;2020, Mike Smyth, Philip Yoon, Walt Bunch.
+      &copy;Copyright 2020, by the California Institute of Technology.
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.1</a>

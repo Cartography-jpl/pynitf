@@ -1,0 +1,184 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Design principles &#8212; pynitf 1.00 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Software Design" href="design.html" />
+    <link rel="prev" title="Introduction" href="introduction.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">pynitf</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Design principles</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#design-philosophy">Design Philosophy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#on-demand-data">On demand data</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="design.html">Software Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nitf_file.html">NITF File</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nitf_diff.html">NITF File Differences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="script.html">Top level scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nitf_file_ref.html">Pynitf Reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="introduction.html" title="previous chapter">Introduction</a></li>
+      <li>Next: <a href="design.html" title="next chapter">Software Design</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="design-principles">
+<h1>Design principles<a class="headerlink" href="#design-principles" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="design-philosophy">
+<h2>Design Philosophy<a class="headerlink" href="#design-philosophy" title="Permalink to this headline">¶</a></h2>
+<p>The overall design principle’s I had with pynitf:</p>
+<ol class="arabic simple">
+<li><p>Things that are format related should be handled by the library. So
+things like formatting floating point number into specific strings,
+adding padding for being the right length, etc. get handled by the
+library.</p></li>
+<li><p>Things that are related to interpreting the data get handled by the
+library. So for example fields that give the length of a another field
+or the type of another field should be handled by the library. The
+idea is that the stuff needs to be consistent, it is too easy to
+create an invalid file if the end user is mucking with the internals
+(so saying a field is “byte”, but then writing it out as “floats”).</p></li>
+<li><p>Things that are more a single “thing” get read/written as a
+whole. So examples of this are the camera and RSM, which have lots of
+individual fields but are really just one “thing” get read and written
+as “f.rsm” or “f.camera”. I think there classification stuff may fall
+into this category also - there are lots of fields associated with the
+the classification level but this is really just one thing.</p></li>
+<li><p>Some things might get extended downstream. I guess I would think of
+this as added to the library downstream, but really part of the
+library. So things like project specific TREs might be added by the
+user of the library (but the TRE then gets handled by pynitf). The RSM
+and camera sort of fall into this category- these are geocal objects
+so geocal adds the extension to the pyntif library to support these
+types. pyntif has hooks that the user can use for adding stuff.</p></li>
+<li><p>Things that don’t fall into these categories get read/written by
+the downstream users of the library.</p></li>
+</ol>
+<p>The library is continuing to evolve. When there is something that needs to be
+added to the the nitf file, there are  4 categories:</p>
+<ol class="arabic simple">
+<li><p>Stuff that really is just end user values that should be set by the
+user of pynitf. Over time, this should be the bulk of things
+read/written. So we just write project specific code to set these
+values.</p></li>
+<li><p>Stuff that is already handled by pynitf. Nothing needs to be done
+other than knowing that you shouldn’t handle this downstream from the
+library.</p></li>
+<li><p>Stuff that <em>should</em> be handled by pynitf but isn’t currently. This
+should get added by updating pynitf.</p></li>
+<li><p>Stuff that <em>should</em> be handled by pynitf but shouldn’t actually go
+into a general purpose library. So this would be things like project
+specific TREs or objects (e.g., geocal Camera). These should get added
+by putting in extensions to pynitf, but then having them handled by
+pynitf.</p></li>
+</ol>
+</div>
+<div class="section" id="on-demand-data">
+<h2>On demand data<a class="headerlink" href="#on-demand-data" title="Permalink to this headline">¶</a></h2>
+<p>NITF is an old format, with all kinds of limitations. One limitation is that
+we can’t write out data until we are creating the whole file.</p>
+<p>When generating data in a program for HDF, you naturally do a calculation,
+write the results field to HDF, and then continue to the next calculation.</p>
+<p>For NITF on the other hand, we don’t know where to write out an image segment
+until we’ve written everthing before it. This is particularly true for
+compressed images, where we don’t know the size of the previous image until
+it has been generated, compressed, and writen to the NITF file.</p>
+<p>There are a couple of ways to handle this. One is to use lots of intermediate
+files and/or memory. So we generate all our data ahead of time, and then just
+access it when we actually write out the NITF file.</p>
+<p>An alternative is to generate data on demand. Rather than writing to a NITF
+file, we register various call back functions to generate the data when we
+are ready for it. These callbacks then get called as we write out the file.</p>
+<p>See the class NitfImageWriteDataOnDemand, and derived classes for an example
+of supplying the data on demand.</p>
+<p>In addition, it can be useful to create TRE metadata and/or make other
+changes when a NITF element is getting written out or read in. We
+supply a list of “hooks” to be be run, providing a higher level interface.
+See for example geocal_nitf_rsm.py in GeoCal for an example of supplying
+a “rsm” object tied to the multiple RSM TREs.</p>
+<p>The hooks are there as a convenience, there is also nothing wrong with
+directly creating TREs and adding to the various segments directly.</p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;Copyright 2020, by the California Institute of Technology.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/design_principle.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

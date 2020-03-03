@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Introduction &#8212; pynitf 0.62 documentation</title>
+    <title>Introduction &#8212; pynitf 1.00 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -14,7 +14,7 @@
     <script type="text/javascript" src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Software Design" href="design.html" />
+    <link rel="next" title="Design principles" href="design_principle.html" />
     <link rel="prev" title="Welcome to pynitf’s documentation!" href="index.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -40,18 +40,17 @@
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Introduction</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#overall-class-structure">Overall class structure</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#design-philosophy">Design Philosophy</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#on-demand-data">On demand data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#install">Install</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#testing">Testing</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#build-documentation">Build documentation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#creating-package">Creating package</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="design_principle.html">Design principles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="design.html">Software Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="nitf_file.html">NITF File</a></li>
 <li class="toctree-l1"><a class="reference internal" href="nitf_diff.html">NITF File Differences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="script.html">Top level scripts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="nitf_file_ref.html">Pynitf Reference</a></li>
 </ul>
 
@@ -60,7 +59,7 @@
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
       <li>Previous: <a href="index.html" title="previous chapter">Welcome to pynitf’s documentation!</a></li>
-      <li>Next: <a href="design.html" title="next chapter">Software Design</a></li>
+      <li>Next: <a href="design_principle.html" title="next chapter">Design principles</a></li>
   </ul></li>
 </ul>
 </div>
@@ -84,176 +83,38 @@
             
   <div class="section" id="introduction">
 <h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
-<p>Old documentation, should reorganize this</p>
-<div class="section" id="overall-class-structure">
-<h2>Overall class structure<a class="headerlink" href="#overall-class-structure" title="Permalink to this headline">¶</a></h2>
-<p>The current hierarchy is shown in <a class="reference internal" href="#overall-hierarchy"><span class="std std-numref">Fig. 1</span></a>.</p>
-<div class="figure align-default" id="id1">
-<span id="overall-hierarchy"></span><p class="plantuml">
-<img src="_images/plantuml-1f720bbd006d071a55f4a5acfb98e9e63141db70.png" alt="class NitfFile {
-   +write(file_name)
-   +NitfFileHeader file_header
-   +NitfImageSegment image_segment[]
-   +NitfGraphicSegment graphic_segment[]
-   +NitfTextSegment text_segment[]
-   +NitfDesSegment des_segment[]
-   +NitfResSegment res_segment[]
-   +Tre tre_list[]
-}
-note top
-   The NITF file class, used for reading
-   and writing a NITF file
-end note
-
-abstract class NitfSegment {
-   +NitfFile nitf_file
-}
-note top
-   Base class of NITF segments
-end note
-
-class NitfImageSegment {
-   +Tre tre_list[]
-}
-
-class NitfGraphicSegment {
-   +Tre tre_list[]
-}
-
-class NitfTextSegment {
-   +Tre tre_list[]
-}
-
-class NitfDesSegment
-
-class NitfResSegment
-
-class Tre
-
-NitfSegment &lt;|.. NitfImageSegment
-NitfSegment &lt;|.. NitfGraphicSegment
-NitfSegment &lt;|.. NitfTextSegment
-NitfSegment &lt;|.. NitfDesSegment
-NitfSegment &lt;|.. NitfResSegment
-NitfFile o-- &quot;many&quot; NitfImageSegment
-NitfFile o-- &quot;many&quot; NitfGraphicSegment
-NitfFile o-- &quot;many&quot; NitfTextSegment
-NitfFile o-- &quot;many&quot; NitfDesSegment
-NitfFile o-- &quot;many&quot; NitfResSegment
-NitfFile &quot;file level&quot; o-- &quot;many&quot; Tre
-NitfImageSegment o-- &quot;many&quot; Tre
-NitfTextSegment o-- &quot;many&quot; Tre"/>
-</p>
-<p class="caption"><span class="caption-number">Fig. 1 </span><span class="caption-text">Overall class hierarchy</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
-</div>
+<p>This library is used for reading and writing NITF format files.</p>
 <p>The overall NITF file specification is described in <a class="reference external" href="https://gwg.nga.mil/ntb/baseline/docs/2500c/2500C.pdf">MIL-STD-2500C</a>.</p>
 <p>Many of the TREs are described in <a class="reference external" href="https://nsgreg.nga.mil/NSGDOC/files/doc/Document/STDI_0002_1_4.zip">STDI-0002-1_4.0</a>.</p>
 <p>Additional documentation available at <a class="reference external" href="https://www.gwg.nga.mil/ntb/baseline/format.html">Reference Library for NITFS Users</a>.</p>
-</div>
-<div class="section" id="design-philosophy">
-<h2>Design Philosophy<a class="headerlink" href="#design-philosophy" title="Permalink to this headline">¶</a></h2>
-<p>I should mention the overall design principle’s I had with pynitf. Never really articulated this since it sort of grew organically, but what I was thinking was:</p>
-<ol class="arabic simple">
-<li><p>Things that are format related should be handled by the library. So
-things like formatting floating point number into specific strings,
-adding padding for being the right length, etc. get handled by the
-library.</p></li>
-<li><p>Things that are related to interpreting the data get handled by the
-library. So for example fields that give the length of a another field
-or the type of another field should be handled by the library. The
-idea is that the stuff needs to be consistent, it is too easy to
-create an invalid file if the end user is mucking with the internals
-(so saying a field is “byte”, but then writing it out as “floats”).</p></li>
-<li><p>Things that are more a single “thing” get read/written as a
-whole. So examples of this are the camera and RSM, which have lots of
-individual fields but are really just one “thing” get read and written
-as “f.rsm” or “f.camera”. I think there classification stuff may fall
-into this category also - there are lots of fields associated with the
-the classification level but this is really just one thing.</p></li>
-<li><p>Some things might get extended downstream. I guess I would think of
-this as added to the library downstream, but really part of the
-library. So things like project specific TREs might be added by the
-user of the library (but the TRE then gets handled by pynitf). The RSM
-and camera sort of fall into this category- these are geocal objects
-so geocal adds the extension to the pyntif library to support these
-types. pyntif has hooks that the user can use for adding stuff.</p></li>
-<li><p>Things that don’t fall into these categories get read/written by
-the downstream users of the library.</p></li>
-</ol>
-<p>This is complicated a bit in that we don’t really have the pynitf
-library complete yet. So when there is something that needs to be
-added to the the nitf file, there are probably 4 categories:</p>
-<ol class="arabic simple">
-<li><p>Stuff that really is just end user values that should be set by the
-user of pynitf. Over time, this should be the bulk of things
-read/written. So we just write project specific code to set these
-values.</p></li>
-<li><p>Stuff that is already handled by pynitf. Nothing needs to be done
-other than knowing that you shouldn’t handle this downstream from the
-library.</p></li>
-<li><p>Stuff that <em>should</em> be handled by pynitf but isn’t currently. This
-should get added by updating pynitf.</p></li>
-<li><p>Stuff that <em>should</em> be handled by pynitf but shouldn’t actually go
-into a general purpose library. So this would be things like project
-specific TREs or objects (e.g., geocal Camera). These should get added
-by putting in extensions to pynitf, but then having them handled by
-pynitf.</p></li>
-</ol>
-</div>
-<div class="section" id="on-demand-data">
-<h2>On demand data<a class="headerlink" href="#on-demand-data" title="Permalink to this headline">¶</a></h2>
-<p>NITF is an old format, with all kinds of limitations. One limitation is that
-we can’t write out data until we are creating the whole file.</p>
-<p>When generating data in a program for HDF, you naturally do a calculation,
-write the results field to HDF, and then continue to the next calculation.</p>
-<p>For NITF on the other hand, we don’t know where to write out an image segment
-until we’ve written everthing before it. This is particularly true for
-compressed images, where we don’t know the size of the previous image until
-it has been generated, compressed, and writen to the NITF file.</p>
-<p>There are a couple of ways to handle this. One is to use lots of intermediate
-files and/or memory. So we generate all our data ahead of time, and then just
-access it when we actually write out the NITF file.</p>
-<p>An alternative is to generate data on demand. Rather than writing to a NITF
-file, we register various call back functions to generate the data when we
-are ready for it. These callbacks then get called as we write out the file.</p>
-<p>See the class NitfImageWriteDataOnDemand, and derived classes for an example
-of supplying the data on demand.</p>
-<p>In addition, it can be useful to create TRE metadata and/or make other
-changes when a NITF element is getting written out or read in. We
-supply a list of “hooks” to be be run, providing a higher level interface.
-See for example geocal_nitf_rsm.py in GeoCal for an example of supplying
-a “rsm” object tied to the multiple RSM TREs.</p>
-<p>The hooks are there as a convenience, there is also nothing wrong with
-directly creating TREs and adding to the various segments directly.</p>
-</div>
 <div class="section" id="install">
 <h2>Install<a class="headerlink" href="#install" title="Permalink to this headline">¶</a></h2>
 <p>This has standard setup.py. You can install a tar file using pip, or
 run setup tools directly (e.g., python setup.py install).</p>
-<p>As a convenience, there is also a Makefile, you can build with</p>
-<blockquote>
-<div><p>make install</p>
-</div></blockquote>
+<p>As a convenience, there is also a Makefile, you can build with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">install</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="testing">
 <h2>Testing<a class="headerlink" href="#testing" title="Permalink to this headline">¶</a></h2>
-<p>Tests can be run by</p>
-<blockquote>
-<div><p>python setup.py test</p>
-</div></blockquote>
+<p>Tests can be run by:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">test</span>
+</pre></div>
+</div>
 <p>Standard pytest arguments can be passed:</p>
-<blockquote>
-<div><p>python setup.py test –addopts=”-k test_tre_read”</p>
-</div></blockquote>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">test</span> <span class="o">--</span><span class="n">addopts</span><span class="o">=</span><span class="s2">&quot;-k test_tre_read&quot;</span>
+</pre></div>
+</div>
 <p>For development, it can be useful to run just a single file. You can
 do this by:</p>
-<blockquote>
-<div><p>PYTHONPATH=`pwd`:${PYTHONPATH} pytest -s tests/nitf_tre_test.py</p>
-</div></blockquote>
-<p>Like with install, there is a Makefile for convenience</p>
-<blockquote>
-<div><p>make check</p>
-</div></blockquote>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>PYTHONPATH=`pwd`:${PYTHONPATH} pytest -s tests/nitf_tre_test.py
+</pre></div>
+</div>
+<p>Like with install, there is a Makefile for convenience:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">check</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="build-documentation">
 <h2>Build documentation<a class="headerlink" href="#build-documentation" title="Permalink to this headline">¶</a></h2>
@@ -266,28 +127,28 @@ if you are updating it, or want the documentation in another format.</p>
 <li><p>sphinxcontrib-plantuml (see <a class="reference external" href="https://pypi.org/project/sphinxcontrib-plantuml/">sphinxcontrib-plantuml</a>)</p></li>
 <li><p>ghp-import2 (see <a class="reference external" href="https://pypi.org/project/ghp-import2/">ghp-import2</a>)</p></li>
 </ul>
-<p>You can run sphix directly, or use the Makefile</p>
-<blockquote>
-<div><p>make doc-html
-make doc-latex
-make doc-latexpdf</p>
-</div></blockquote>
+<p>You can run sphix directly, or use the Makefile:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">doc</span><span class="o">-</span><span class="n">html</span>
+<span class="n">make</span> <span class="n">doc</span><span class="o">-</span><span class="n">latex</span>
+<span class="n">make</span> <span class="n">doc</span><span class="o">-</span><span class="n">latexpdf</span>
+</pre></div>
+</div>
 <p>Note that if you update the HTML, you will generally want to upload this to
 the github page. This can be done using ghp-import, or with the Makefile:</p>
-<blockquote>
-<div><p>make github-pages</p>
-</div></blockquote>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">github</span><span class="o">-</span><span class="n">pages</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="creating-package">
 <h2>Creating package<a class="headerlink" href="#creating-package" title="Permalink to this headline">¶</a></h2>
 <p>Quick command to create a tar file including version number. First, make sure
 the version number is setup.py is correct. Then do something like:</p>
-<blockquote>
-<div><p>V=`grep version setup.py | sed -r “s/.*’(.*)’.*/1/”`
-git tag -s $V -m “This is my new version”
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>V=`grep __version__ pynitf/version.py | sed -r &#39;s/.*&quot;(.*)&quot;.*/\1/&#39;`
+git tag -s $V -m &quot;This is my new version&quot;
 git push origin $V
-git archive –format=tar –prefix=pyntif-$V/ $V | gzip –best &gt; pynitf-$V.tar.gz</p>
-</div></blockquote>
+git archive --format=tar --prefix=pyntif-$V/ $V | gzip --best &gt; pynitf-$V.tar.gz
+</pre></div>
+</div>
 <p>Note you can also just download the tar.gz file from github after you create
 the tag, if that is easier.</p>
 </div>
@@ -301,7 +162,7 @@ the tag, if that is easier.</p>
     <div class="clearer"></div>
   </div>
     <div class="footer">
-      &copy;2020, Mike Smyth, Philip Yoon, Walt Bunch.
+      &copy;Copyright 2020, by the California Institute of Technology.
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.1</a>

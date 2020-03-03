@@ -131,36 +131,36 @@ type.
 
 The optional parameters are:
 
-frmt
+**frmt**
    A format string or function
-default
+**default**
    The default value to use when writing. If not specified, the
    default is all spaces for a str and 0 for a number type.
-hardcoded_value
+**hardcoded_value**
   If True, do not allow the value to be modified. It
   is set to the default value, and trying to change it gives
   an error.
-condition
+**condition**
   An expression used to determine if the field is included
   or not.
-optional
+**optional**
   If true, a field is optional. Note that this is different than
   conditional - with conditional the bytes for the field might
   or might not be present. With optional, they are always present
   but might be all spaces which indicates the value is not there.
   If optional is present, we translate all spaces in the NITF
   file to and from the python "None" object
-optional_char
+**optional_char**
   There are some TREs that use "-----" instead of "    "
   to indicate missing data. No idea why they don't just use ' ',
   but if there is a different char you can supply it.
-field_value_class
+**field_value_class**
   Most fields can be handled by NitfField
   class. However there are some special cases (e.g., IXSHD used
   for image segment level TREs). If we need to change this,
   we can supply the class to use here. This class should derive
   from FieldData (or supply the same interface).
-size_offset
+**size_offset**
   In some cases, the 'size' is really the size of the
   data plus something else. For example, in the image 
   header the size of the TRE includes both the TRE and an 
@@ -168,9 +168,9 @@ size_offset
   supply 'size_offset' option to specify an offset that 
   should be applied to the size. The offset is subtracted from
   'size' to give the actual size of this field.
-size_not_updated
+**size_not_updated**
   See below
-signed
+**signed**
   Used by IntFieldData to determine if data is signed or
   unsigned. Default is False, or unsigned.
 
@@ -299,6 +299,8 @@ The design for this is shown in :numref:`field_struct`.
       different get_print function.   
    end note
    
+   class BytesFieldData
+
    class StringFieldData
    
    class FloatFieldData
@@ -339,6 +341,7 @@ The design for this is shown in :numref:`field_struct`.
    FieldStruct o-- NitfLoop
    NitfLoop o-- "many" NitfField
    NitfField <|-- FieldData
+   FieldData <|-- BytesFieldData
    FieldData <|-- StringFieldData
    FieldData <|-- FloatFieldData
    FieldData <|-- IntFieldData
@@ -350,7 +353,40 @@ a pseudo outer loop of dimension size 0 that we place all the fields that
 aren't in a proper loop. This is really an implementation detail, from outside
 the internal parts of the code the decision is invisible. But I wanted to
 make sure to note this, since it might be slightly confusing the first time
-you look into the internal code. The pseudo outer loop has keys of exactly
+you look into the internal code. The pseudo outer loop has keys() of exactly
 length 1: [(),]. Since we access our scalar field from a NitfField as
 fld[()] this usage is consistent.
 
+Printing objects
+----------------
+
+The various objects that describe a NitfFile can be printed to give a
+description of the file. We have two ways of printing:
+
+1. The standard __str__ method is supplied. This gives a human readable
+   description of the objects, and tries to be fairly complete. This is
+   what get printed out by default using the "nitfinfo" program.
+2. We also provide a much more concise "summary" function. This gives
+   a few line summary of all the pieces. This is useful to get an overall
+   summary of a file w/o worrying about details. This is what is printed
+   by "nitfinfo --summary"
+
+As an example, printing a USE00A TRE gives::
+
+  TRE - USE00A
+  angle_to_north: 270
+  mean_gsd      : 19.9
+  dynamic_range : 2046
+  obl_ang       : 6.48
+  roll_ang      : -5.98
+  n_ref         : 0
+  rev_num       : 24180
+  n_seg         : 1
+  max_lp_seg    : 33432
+  sun_el        : 33.1
+  sun_az        : 160.1
+
+While printing a summary of USE00A gives::
+
+  TRE - USE00A
+  
