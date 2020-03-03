@@ -17,6 +17,12 @@ import cv2
 import matplotlib.pyplot as plt
 from pynitf import *
 
+rows = 400
+cols = 300
+bands = 500
+
+data = np.zeros((bands,rows,cols), dtype=np.dtype('>i2'))
+
 def write_by_row_p(d, bstart, lstart, sstart):
     #print("sstart", sstart)
     for a in range(d.shape[0]):
@@ -25,19 +31,18 @@ def write_by_row_p(d, bstart, lstart, sstart):
             d[a, b] = a*20+b*30
 
 def write_by_row_p_from_data(d, bstart, lstart, sstart):
-    d[:, :] = data[:, lstart, :]
+    d[:, :] = data[:, lstart, :].transpose()
 
 def create_16bit_image():
     # Write by column
-    img3 = NitfImageWriteDataOnDemand(nrow=400, ncol=300, data_type=np.dtype('>i2'),
-                                      numbands=500, data_callback=write_by_row_p_from_data,
+    img3 = NitfImageWriteDataOnDemand(nrow=rows, ncol=cols, data_type=np.uint16,
+                                      numbands=bands, data_callback=write_by_row_p_from_data,
                                       image_gen_mode=NitfImageWriteDataOnDemand.IMAGE_GEN_MODE_ROW_P)
 
-    #TODO: Make sure that the blocking is correct
     ih = img3.image_subheader
     ih.nbpr = 1
-    ih.nbpc = 300
-    ih.nppbh = 400
+    ih.nbpc = rows
+    ih.nppbh = cols
     ih.nppbv = 1
     ih.imode = "P"
     ih.iid1 = '16bit img'
@@ -47,14 +52,14 @@ def create_16bit_image():
 
 def create_float_image():
     # 32bit float image w large pixel values
-    img3 = NitfImageWriteDataOnDemand(nrow=400, ncol=300, data_type=np.dtype('>f'),
-                                      numbands=500, data_callback=write_by_row_p,
+    img3 = NitfImageWriteDataOnDemand(nrow=rows, ncol=cols, data_type=np.float32,
+                                      numbands=bands, data_callback=write_by_row_p_from_data,
                                       image_gen_mode=NitfImageWriteDataOnDemand.IMAGE_GEN_MODE_ROW_P)
     ih = img3.image_subheader
-    ih.nbpr = 300
-    ih.nbpc = 1
-    ih.nppbh = 1
-    ih.nppbv = 400
+    ih.nbpr = 1
+    ih.nbpc = rows
+    ih.nppbh = cols
+    ih.nppbv = 1
     ih.imode = "P"
     ih.iid1 = 'float img'
     segment = NitfImageSegment(img3)
@@ -64,41 +69,37 @@ def create_float_image():
 
 if __name__ ==  "__main__":
 
-    bands = 500
-    rows = 400
-    cols = 300
-
     nitf_1 = 'sample_3d_nitf.ntf'
 
     f = NitfFile()
 
-    data = np.zeros((cols,rows,bands), dtype=np.dtype('>i2'))
-
     font = cv2.FONT_HERSHEY_SIMPLEX
-    org = (150, 30)
     fontScale = 0.5
-    color = (255, 0, 0)
+    color = (255, 255, 255)
     thickness = 2
 
     #Write bands
+    org = (100, 200)
     for b in range(bands):
         #print(data[:, :, b].shape)
-        data2 = np.zeros((cols, rows), dtype=np.dtype('>i2'))
-        data[:,:,b] = cv2.putText(data2, 'Band #'+str(b), org, font,
+        data2 = np.zeros((rows, cols), dtype=np.uint16)
+        data[b,:,:] = cv2.putText(data2, 'Band #'+str(b), org, font,
                         fontScale, color, thickness, cv2.LINE_AA)
 
     # Write rows
+    org = (100, 30)
     for r in range(rows):
         # print(data[:, :, b].shape)
-        data2 = data[:,r,:]
+        data2 = data[:,r,:].copy()
         data[:, r, :] = cv2.putText(data2, 'Row #' + str(r), org, font,
                         fontScale, color, thickness, cv2.LINE_AA)
 
-    # Write rows
+    # Write cols
+    org = (300, 300)
     for c in range(cols):
-        # print(data[:, :, b].shape)
-        data2 = data[c, :, :]
-        data[c, :, :] = cv2.putText(data2, 'Col #' + str(c), org, font,
+        #print(data[:, :, c].shape)
+        data3 = data[:, :, c].copy()
+        data[:, :, c] = cv2.putText(data3, 'Col #' + str(c), org, font,
                         fontScale, color, thickness, cv2.LINE_AA)
 
     # Displaying the image
