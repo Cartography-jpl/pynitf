@@ -252,7 +252,7 @@ class TreSENSRB(Tre):
     tre_tag = "SENSRB"
     def summary(self):
         res = io.StringIO()
-        print("SENSRB Flags 1:%s 2:%s 3:%s 4:%s ... 7:%s 8:%s 9:%s 10:%s 11:%d 12:%d 13:%d 14:%d 15:%d " %
+        print("TRE - SENSRB Flags 1:%s 2:%s 3:%s 4:%s ... 7:%s 8:%s 9:%s 10:%s 11:%d 12:%d 13:%d 14:%d 15:%d " %
               (self.general_data, self.sensor_array_data,
                self.sensor_calibration_data, self.image_formation_data,
                self.attitude_euler_angles, self.attitude_unit_vectors,

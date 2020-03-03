@@ -18,7 +18,7 @@
 # -- Project information -----------------------------------------------------
 
 project = 'pynitf'
-copyright = '2020, Mike Smyth, Philip Yoon, Walt Bunch'
+copyright = 'Copyright 2020, by the California Institute of Technology'
 author = 'Mike Smyth, Philip Yoon, Walt Bunch'
 
 exec(open("../pynitf/version.py").read())

@@ -59,10 +59,7 @@ class TreHISTOA(Tre):
     tre_tag = "HISTOA"
     def summary(self):
         res = io.StringIO()
-        print("HISTOA: %d events:" % (self.nevents), file=res)
-        for i in range(self.nevents):
-            for j in range(self.nipcom[i]):
-                print("%d.%d: %s" % (i, j, self.ipcom[i, j]), file=res)
+        print("TRE - HISTOA: %d events" % (self.nevents), file=res)
         return res.getvalue()
 
 tre_tag_to_cls.add_cls(TreHISTOA)    

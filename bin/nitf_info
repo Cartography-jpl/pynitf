@@ -3,16 +3,15 @@ import pynitf
 import subprocess
 import os
 import sys
+import warnings
 
-version="June 6, 2019"
+version="March 3, 2020"
 usage="""Usage: 
-  nitfinfofull [options] <input_file>
-  nitfinfofull -h | --help
-  nitfinfofull -v | --version
+  nitf_info [options] <input_file>
+  nitf_info -h | --help
+  nitf_info -v | --version
 
-Print out full information about a NITF file.
-
-This program is equivalent to running nitfinfo --full in geocal
+Print out information about a NITF file.
 
 Options:
   -h --help         
@@ -31,6 +30,11 @@ Options:
   --summary
        Write out a summary, rather than detailed information.
 
+  --tre-warning-as-error
+       Normally we warn about any error parsing a TRE and then continue
+       treating that as a TreUnknown. With this option we instead treat this
+       as an error.
+
   -v --version      
        Print program version
 
@@ -41,7 +45,16 @@ args = pynitf.docopt_simple.docopt_simple(usage, version=version)
 if "NITF_PLUGIN" in os.environ:
     for m in os.environ["NITF_PLUGIN"].split(":"):
         exec("import %s" % m)
-        
+
+if(args.tre_warning_as_error):
+    warnings.filterwarnings("error", category=pynitf.TreWarning)
+else:
+    # The MATESA TRE changed between v 0.1 and 1.0 of the SNIP. The RIP
+    # data uses the old format. We can't do anything about this, so just
+    # ignore warning messages about this TRE. 
+    warnings.filterwarnings("ignore", "Trouble reading TRE MATESA",
+                            category=pynitf.TreWarning)
+    
 if(args.debug):
     pynitf.nitf_field.DEBUG = True
     pynitf.nitf_des.DEBUG = True

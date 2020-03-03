@@ -265,7 +265,7 @@ def test_copy_ikonos(nitf_sample_ikonos):
     assert original_output == copy_output
 
 def test_copy_rip(nitf_sample_rip):
-    '''Test copying a ikonos NITF file. It creates a copy of the file and
+    '''Test copying a RIP NITF file. It creates a copy of the file and
     then reads it back and compares the str() result to that of the
     original file
     '''

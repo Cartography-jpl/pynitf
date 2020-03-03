@@ -43,7 +43,7 @@ class TrePIXMTA(Tre):
     tre_tag = "PIXMTA"
     def summary(self):
         res = io.StringIO()
-        print("PIXMTA %s Associated ISs, %d Metrics" %
+        print("TRE - PIXMTA %s Associated ISs, %d Metrics" %
               (self.numais, self.nummetrics), file=res)
         return res.getvalue()
 

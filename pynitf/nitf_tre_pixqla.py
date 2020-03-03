@@ -30,7 +30,7 @@ class TrePIXQLA(Tre):
     tre_tag = "PIXQLA"
     def summary(self):
         res = io.StringIO()
-        print("PIXQLA %s Associated ISs, %d Quality Conditions" %
+        print("TRE - PIXQLA %s Associated ISs, %d Quality Conditions" %
               (self.numais, self.npixqual), file=res)
         return res.getvalue()
 

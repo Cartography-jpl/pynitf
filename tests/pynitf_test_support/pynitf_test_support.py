@@ -8,6 +8,7 @@ from pynitf.nitf_file import (NitfImageSegment, NitfTextSegment,
 from pynitf.nitf_text import NitfTextStr
 from pynitf.nitf_des_csattb import DesCSATTB
 from pynitf.nitf_tre_csde import TreUSE00A
+from pynitf.nitf_tre import TreWarning
 from pynitf.nitf_diff_handle import DifferenceFormatter
 from unittest import SkipTest
 import os
@@ -32,10 +33,21 @@ except ImportError:
     # Ok if we don't have h5py, we just can't execute this code
     have_h5py = False
 
+# All warnings about TREs are treated as errors.
+#
+# With the exception:
+# The MATESA TRE changed between v 0.1 and 1.0 of the SNIP. The RIP
+# data uses the old format. We can't do anything about this, so just
+# ignore warning messages about this TRE. But treat other warnings as
+# errors
+
+pytestmark = [pytest.mark.filterwarnings("error::pynitf.TreWarning"),
+              pytest.mark.filterwarnings("ignore:Trouble reading TRE MATESA:pynitf.TreWarning")]
+
 # Location of test data that is part of source
 unit_test_data = os.path.abspath(os.path.dirname(__file__) + "/unit_test_data/") + "/"
 # Locate of programs
-program_dir = os.path.abspath(os.path.dirname(__file__) + "../../../extra/") + "/"
+program_dir = os.path.abspath(os.path.dirname(__file__) + "../../../bin/") + "/"
 
 # Fake security object, just so we can test setting and reading
 security_fake = NitfSecurity()

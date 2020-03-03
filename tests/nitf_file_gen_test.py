@@ -91,10 +91,8 @@ def createENGRDA():
     t.englbl[0] = b"TEMP1"
     t.engmtxc[0] = 1
     t.engmtxr[0] = 1
-    t.engtyp[0] = "I"
-    t.engdts[0] = 2
     t.engdatu[0] = "tC"
-    t.engdata[0] = b'\x01\x25'
+    t.engdata[0] = np.array([[277]], dtype = np.uint16)
 
     return t
 

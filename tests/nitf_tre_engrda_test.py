@@ -11,39 +11,33 @@ def test_tre_engrda():
     t = TreENGRDA()
     t.resrc = "My_sensor"
     t.recnt=3
-    t.englbl[0] = b"TEMP1"
+    t.englbl[0] = "TEMP1"
     t.engmtxc[0]=1
     t.engmtxr[0]=1
-    t.engtyp[0]="I"
-    t.engdts[0]=2
     t.engdatu[0]="tC"
     # Should have this automatically calculated
     assert t.engdatc[0] == t.engmtxc[0]*t.engmtxr[0]
-    t.engdata[0]= b'\x01\x25'
+    t.engdata[0]= np.array([[277,],], dtype=np.int16)
 
-    t.englbl[1] = b"TEMP2"
+    t.englbl[1] = "TEMP2"
     t.engmtxc[1]=1
     t.engmtxr[1]=1
-    t.engtyp[1]="R"
-    t.engdts[1]=4
     t.engdatu[1]="tK"
     # Should have this automatically calculated
     assert t.engdatc[1] == t.engmtxc[1]*t.engmtxr[1]
-    t.engdata[1]= b'\x03\x27\x12\x76'
-    t.englbl[2] = b"TEMP3 Wall"
+    t.engdata[1]= np.array([[277.45,],], dtype=np.float32)
+    t.englbl[2] = "TEMP3 Wall"
     t.engmtxc[2]=10
     t.engmtxr[2]=1
-    t.engtyp[2]="A"
-    t.engdts[2]=1
     t.engdatu[2]="NA"
     # Should have this automatically calculated
     assert t.engdatc[2] == t.engmtxc[2]*t.engmtxr[2]
-    t.engdata[2]= b"10.7 DEG C"
+    t.engdata[2]= "10.7 DEG C"
     
     fh = io.BytesIO()
     t.write_to_file(fh)
     print(fh.getvalue())
-    assert fh.getvalue() == b"ENGRDA00125My_sensor           00305TEMP100010001I2tC00000001\x01%05TEMP200010001R4tK00000001\x03'\x12v10TEMP3 Wall00100001A1NA0000001010.7 DEG C"
+    assert fh.getvalue() == b'ENGRDA00125My_sensor           00305TEMP100010001S2tC00000001\x01\x1505TEMP200010001R4tK00000001C\x8a\xb9\x9a10TEMP3 Wall00100001A1NA0000001010.7 DEG C'
     fh2 = io.BytesIO(fh.getvalue())
     t2 = TreENGRDA()
     t2.read_from_file(fh2)
@@ -51,13 +45,13 @@ def test_tre_engrda():
     assert t2.recnt == 3
     # These dynamically filled in
     assert list(t2.engln) == [5, 5, 10]
-    assert list(t2.englbl) == [b"TEMP1", b"TEMP2", b"TEMP3 Wall"]
+    assert list(t2.englbl) == ["TEMP1", "TEMP2", "TEMP3 Wall"]
     assert list(t2.engmtxc) == [1,1,10]
     assert list(t2.engmtxr) == [1,1,1]
-    assert list(t2.engtyp) == ["I", "R", "A"]
-    assert t.engdata[0] == b'\x01\x25'
-    assert t.engdata[1] == b'\x03\x27\x12\x76'
-    assert t.engdata[2] == b"10.7 DEG C"
+    assert list(t2.engtyp) == ["S", "R", "A"]
+    assert t.engdata[0] == np.array([[277,],], dtype=np.int16)
+    assert t.engdata[1] == np.array([[ 277.45]], dtype=np.float32)
+    assert t.engdata[2] == "10.7 DEG C"
 
     print ("\n" + t.summary())
 

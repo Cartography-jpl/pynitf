@@ -40,7 +40,7 @@ class TreSTDIDC(Tre):
     tre_tag = "STDIDC"
     def summary(self):
         res = io.StringIO()
-        print("STDIDC: %s, %s, %s, %d" %
+        print("TRE - STDIDC: %s, %s, %s, %d" %
               (self.acquisition_date, self.mission, self.pass_, self.op_num),
               file=res)
         return res.getvalue()
@@ -90,10 +90,6 @@ class TreUSE00A(Tre):
     __doc__ = hlp
     desc = desc
     tre_tag = "USE00A"
-    def summary(self):
-        res = io.StringIO()
-        print("USE00A", file=res)
-        return res.getvalue()
 
 tre_tag_to_cls.add_cls(TreUSE00A)    
 

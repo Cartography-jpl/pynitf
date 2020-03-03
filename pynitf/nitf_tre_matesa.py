@@ -36,7 +36,7 @@ class TreMATESA(Tre):
     tre_tag = "MATESA"
     def summary(self):
         res = io.StringIO()
-        print("MATESA num_groups:%d" % (self.num_groups), file=res)
+        print("TRE - MATESA num_groups:%d" % (self.num_groups), file=res)
         return res.getvalue()
 
 tre_tag_to_cls.add_cls(TreMATESA)    

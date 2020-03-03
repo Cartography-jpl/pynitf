@@ -19,20 +19,16 @@ def test_tre_matesa_basic():
     t.num_mates[0] = 1
     t.source[0, 0] = "S1"
     t.mate_type[0, 0] = "T1"
-    t.mate_id_len[0, 0] = 1
     t.mate_id[0, 0] = b"I1"
 
     t.relationship[1] = "R1"
     t.num_mates[1] = 2
     t.source[1, 0] = "S1"
     t.mate_type[1, 0] = "T1"
-    t.mate_id_len[1, 0] = 2
     t.mate_id[1, 0] = b"I1"
     t.source[1, 1] = "S2"
     t.mate_type[1, 1] = "T2"
 
-    #TODO: Reducing the length but keeping the string length the same should throw an error but it doesn't.
-    t.mate_id_len[1, 1] = 3
     t.mate_id[1, 1] = b"I23"
 
     fh = io.BytesIO()

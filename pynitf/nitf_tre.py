@@ -9,6 +9,11 @@ from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
 import copy
 import io
 import logging
+import warnings
+
+class TreWarning(UserWarning):
+    '''Warning specific to trouble reading a TRE'''
+    pass
 
 class Tre(FieldStruct):
     '''Add a little extra structure unique to Tres'''
@@ -60,6 +65,7 @@ class Tre(FieldStruct):
     def summary(self):
         res = io.StringIO()
         print("TRE - %s" % self.tre_tag, file=res)
+        return res.getvalue()
         
 class TreObjectImplementation(Tre):
     '''Modifications where the class of type tre_implementation_class in
@@ -99,7 +105,7 @@ class TreUnknown(Tre):
     '''The is a general class to handle TREs that we don't have another 
     handler for. It just reports the tre string.'''
     def __init__(self, tre_tag):
-        super.__init__(description = [])
+        super().__init__(description = [])
         self.tre_tag = tre_tag
         self.tre_bytes = b''
     def cetag_value(self):
@@ -162,18 +168,12 @@ def read_tre(header, des_list, field_list = []):
         if(getattr(header, h_len) > 0):
             des_index = getattr(header, h_ofl)
             if(des_index > 0):
-                try:
-                    # des_index is 1 based, so subtract 1 to get the des
-                    desseg = des_list[getattr(header, h_ofl)-1]
-                    t = read_tre_data(desseg.des.data)
-                    tre_list.extend(t)
-                except Exception as e:
-                    print("Warning: ", e)
-            try:
-                t = read_tre_data(getattr(header, h_data))
+                # des_index is 1 based, so subtract 1 to get the des
+                desseg = des_list[getattr(header, h_ofl)-1]
+                t = read_tre_data(desseg.des.data)
                 tre_list.extend(t)
-            except Exception as e:
-                print("Warning: ", e)
+            t = read_tre_data(getattr(header, h_data))
+            tre_list.extend(t)
     return tre_list
 
 def prepare_tre_write(tre_list, header, des_list, field_list = [],
@@ -241,7 +241,14 @@ def read_tre_data(data):
             t.read_from_file(fh)
             res.append(t)
         except Exception as e:
-            raise Exception("Error while reading TRE " + str(tre_name), str(e))
+            warnings.warn("Trouble reading TRE " + tre_name.decode("utf-8") +
+                          " " + str(e) +
+                          ", treating as a TreUnknown so we can continue.",
+                          TreWarning)
+            fh.seek(st)
+            t = TreUnknown(tre_name)
+            t.read_from_file(fh)
+            res.append(t)
     return res
     
 def _find_tre(self, tre_tag):
@@ -310,7 +317,7 @@ class TreUnknownDiff(FieldStructDiff):
 NitfDiffHandleSet.add_default_handle(TreUnknownDiff(), priority_order = 1)
     
 __all__ = [ "TreObjectImplementation", "TreUnknown",
-            "TreDiff", "Tre",
+            "TreDiff", "Tre", "TreWarning",
             "tre_tag_to_cls",
             "read_tre", "prepare_tre_write", "read_tre_data",
             "add_find_tre_function"]

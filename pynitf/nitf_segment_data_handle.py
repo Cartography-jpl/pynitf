@@ -10,6 +10,7 @@ from .priority_handle_set import PriorityHandleSet
 import abc
 import io
 import weakref
+import logging
 
 class NitfSegmentDataHandleSet(PriorityHandleSet):
     '''Handle reading the data in a segment (e.g, a image)'''
@@ -170,7 +171,8 @@ class NitfDataPlaceHolder(NitfData):
     final place holder if none of our other NitfData classes can handle
     a particular segment. We just skip over the data when reading.'''
     def __str__(self):
-        return "NitfDataPlaceHolder %d bytes of data" % (self._seg().data_size)
+        return ("NitfDataPlaceHolder for %s with %d bytes of data" %
+                (self._seg().short_desc(), self._seg().data_size))
         
     def read_from_file(self, fh, seg_index=None):
         fh.seek(self._seg().data_size, 1)
@@ -179,13 +181,14 @@ class NitfDataPlaceHolder(NitfData):
     def write_to_file(self, fh):
         raise NotImplementedError("Can't write a NitfDataPlaceHolder")
 
+logger = logging.getLogger('nitf_diff')
 class DataPlaceHolderDiff(NitfDiffHandle):
     '''Compare two NitfDataPlaceHolder'''
     def handle_diff(self, g1, g2, nitf_diff):
         if(not isinstance(g1, NitfDataPlaceHolder) or
            not isinstance(g2, NitfDataPlaceHolder)):
             return (False, None)
-        logger.warning("Skipping data, don't know how to read it.")
+        logger.warning("Skipping data %s, don't know how to read it." % g1)
         return (True, True)
 
 NitfDiffHandleSet.add_default_handle(DataPlaceHolderDiff())

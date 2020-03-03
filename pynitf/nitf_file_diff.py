@@ -126,8 +126,17 @@ class GraphicSegmentDiff(NitfDiffHandle):
         if(not isinstance(gseg1, NitfGraphicSegment) or
            not isinstance(gseg2, NitfGraphicSegment)):
             return (False, None)
-        logger.warning("Skipping GraphicSegment, we don't currently handle this")
-        return (True, True)
+        with nitf_diff.diff_context("GraphicSegment '%s'" % gseg1.subheader.sid):
+            is_same = nitf_diff.compare_obj(gseg1.subheader, gseg2.subheader)
+            if(len(gseg1.tre_list) != len(gseg2.tre_list)):
+                logger.difference("Segment 1 has %d TREs while Segment 2 has %d",
+                                  len(gseg1.tre_list), len(gseg2.tre_list))
+                is_same = False
+            for i in range(min(len(gseg1.tre_list), len(gseg2.tre_list))):
+                is_same = nitf_diff.compare_obj(gseg1.tre_list[i],
+                                                gseg2.tre_list[i]) and is_same
+            is_same = nitf_diff.compare_obj(gseg1.data, gseg2.data) and is_same
+            return (True, is_same)
 
 NitfDiffHandleSet.add_default_handle(GraphicSegmentDiff())
 
@@ -146,10 +155,7 @@ class TextSegmentDiff(NitfDiffHandle):
             for i in range(min(len(tseg1.tre_list), len(tseg2.tre_list))):
                 is_same = nitf_diff.compare_obj(tseg1.tre_list[i],
                                                 tseg2.tre_list[i]) and is_same
-            # TODO Perhaps use difflib in python to calculate differences
-            if(tseg1.data != tseg2.data):
-                is_same = False
-                logger.difference("Text data is different")
+            is_same = nitf_diff.compare_obj(tseg1.data, tseg2.data) and is_same
             return (True, is_same)
 
 NitfDiffHandleSet.add_default_handle(TextSegmentDiff())
@@ -182,8 +188,13 @@ class ResSegmentDiff(NitfDiffHandle):
         if(not isinstance(rseg1, NitfResSegment) or
            not isinstance(rseg2, NitfResSegment)):
             return (False, None)
-        logger.warning("Skipping ResSegment, we don't currently handle this")
-        return (True, True)
+        with nitf_diff.diff_context("ResSegment '%s'" % rseg1.subheader.resid):
+            is_same = nitf_diff.compare_obj(rseg1.subheader, rseg2.subheader)
+            if(rseg1.des.user_subheader):
+                is_same = nitf_diff.compare_obj(rseg1.des.user_subheader,
+                                       rseg2.des.user_subheader) and is_same
+            is_same = nitf_diff.compare_obj(rseg1.data, rseg2.data) and is_same
+            return (True, is_same)
 
 NitfDiffHandleSet.add_default_handle(ResSegmentDiff())
 

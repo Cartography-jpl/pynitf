@@ -11,8 +11,8 @@ setup(name='pynitf',
       author_email='Mike.M.Smyth@jpl.nasa.gov',
       license='Copyright 2020, California Institute of Technology. ALL RIGHTS RESERVED. U.S. Government Sponsorship acknowledged.',
       packages=['pynitf'],
-      scripts=["extra/nitf_diff", "extra/nitfinfofull",
-               "extra/explore_nitf.py"],
+      scripts=["bin/nitf_diff", "bin/nitf_info",
+               "bin/explore_nitf"],
       install_requires=[
           'numpy',
           'docopt'

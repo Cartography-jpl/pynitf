@@ -30,7 +30,7 @@ class TreCSEPHA(Tre):
     tre_tag = "CSEPHA"
     def summary(self):
         res = io.StringIO()
-        print("CSEPHA: %s %d ephemeris vectors" %
+        print("TRE - CSEPHA: %s %d ephemeris vectors" %
               (self.ephem_flag, self.num_ephem), file=res)
         return res.getvalue()
 

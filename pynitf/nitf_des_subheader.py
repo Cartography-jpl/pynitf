@@ -50,7 +50,7 @@ class NitfDesSubheader(FieldStruct):
         
     def summary(self):
         res = io.StringIO()
-        print("%s %s %s " % (self.de, self.desid, self.dsver), file=res)
+        print("%s " % (self.desid), file=res)
         return res.getvalue()
 
 

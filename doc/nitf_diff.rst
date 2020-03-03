@@ -2,6 +2,11 @@
 NITF File Differences
 ****************************************************
 
+.. _nitf-diff-section:
+
+NITF Diff
+---------
+
 We want to be able compare two NITF files to know if they are the "same".
 
 What is the "same" really depends on the application. For example, two files
@@ -211,14 +216,19 @@ the nitf_diff object.  This then contains keyword/value pairs for
 controlling things. While derived classes can supply other parameters,
 these are things that can be defined:
 
-* **exclude** - List of fields to exclude from comparing
-* **exclude_but_warn** - List of field to exclude from comparing, but
-  warn if different.
-* **include** - If nonempty, only include the given fields
-* **eq_fun** - A dictionary going from field name to a function to compare.
-* **rel_tol** - A dictionary going from field name to a relative tolerance.
+**exclude**
+  List of fields to exclude from comparing
+**exclude_but_warn**
+  List of field to exclude from comparing, but warn if different.
+**include**
+  If nonempty, only include the given fields
+**eq_fun**
+  A dictionary going from field name to a function to compare.
+**rel_tol**
+  A dictionary going from field name to a relative tolerance.
   Only used for fields with float type.
-* **abs_tol** - A dictionary going from field name to absolute tolerance.
+**abs_tol**
+  A dictionary going from field name to absolute tolerance.
   Only used for fields with float type.
 
 If a function isn't otherwise defined in eq_fun, we use operator.eq, 

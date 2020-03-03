@@ -6,9 +6,9 @@ import logging
 import json
 import os
 import collections.abc
+import warnings
 
-version="January 17, 2020"
-
+version="March 3, 2020"
 usage="""Usage: 
   nitf_diff [options] <file1> <file2>
   nitf_diff -h | --help
@@ -57,6 +57,11 @@ Options:
   --quiet
        Don't print any messages, just return an overall status code.
 
+  --tre-warning-as-error
+       Normally we warn about any error parsing a TRE and then continue
+       treating that as a TreUnknown. With this option we instead treat this
+       as an error.
+
   --verbose
        Give more verbose messages (turn debugging on
 
@@ -71,7 +76,16 @@ if "NITF_PLUGIN" in os.environ:
     for m in os.environ["NITF_PLUGIN"].split(":"):
         if m != "":
             exec("import %s" % m)
-        
+
+if(args.tre_warning_as_error):
+    warnings.filterwarnings("error", category=pynitf.TreWarning)
+else:
+    # The MATESA TRE changed between v 0.1 and 1.0 of the SNIP. The RIP
+    # data uses the old format. We can't do anything about this, so just
+    # ignore warning messages about this TRE. 
+    warnings.filterwarnings("ignore", "Trouble reading TRE MATESA",
+                            category=pynitf.TreWarning)
+            
 # TODO Remove this
 # Temporary kludge, some extra pieces for geocal that will get
 # added in the next geocal update
@@ -137,7 +151,7 @@ is_same = nitf_diff.compare(args.file1, args.file2)
 
 if(not is_same):
     if(not args.quiet):
-        print(dformat.color_text("Files are the different", logging.ERROR))
+        print(dformat.color_text("Files are different", logging.ERROR))
     sys.exit(1)
     
 if(not args.quiet):

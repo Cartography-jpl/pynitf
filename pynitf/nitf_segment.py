@@ -57,6 +57,9 @@ class NitfSegment(object):
             self.nitf_file.segment_hook_set.after_init_hook(self,
                                                             self.nitf_file)
 
+    def short_desc(self):
+        pass
+
     @property
     def subheader(self):
         '''Return subheader for NitfSegment'''
@@ -119,10 +122,13 @@ class NitfSegment(object):
 
     def summary(self):
         res = io.StringIO()
-        print("Segment level TRES:", file=res)
-        if (hasattr(self, 'tre_list') == True):
+        if (hasattr(self, 'tre_list') == True and
+            len(self.tre_list) > 0):
+            print("Segment level TRES:", file=res)
             for t in self.tre_list:
                 print(t.summary(), file=res, end='', flush=True)
+        else:
+            print("No Segment level TRES", file=res)
                 
         return self.subheader.summary() + res.getvalue()
 
@@ -223,6 +229,9 @@ class NitfImageSegment(NitfSegment):
     _type_support_tre = True
     _tre_field_list = [["ixshdl", "ixofl", "ixshd"],
                        ["udidl", "udofl", "udid"]]
+
+    def short_desc(self):
+        return "ImageSegment %s" % self.subheader.iid1
     
     @property
     def image(self):
@@ -255,6 +264,10 @@ class NitfGraphicSegment(NitfSegment):
     _type_support_tre = True
     _tre_field_list = [["sxshdl", "sxsofl", "sxshd"]]
 
+    def short_desc(self):
+        return "GraphicSegment %s \"%s\"" % (self.subheader.sid,
+                                         self.subheader.sname)
+    
     @property
     def graphic(self):
         '''Synonym for data, just a more descriptive name of content for
@@ -271,6 +284,10 @@ class NitfTextSegment(NitfSegment):
     _update_file_header_field = ("ltsh", "lt")
     _type_support_tre = True
     _tre_field_list = [["txshdl", "txsofl", "txshd"]]
+
+    def short_desc(self):
+        return "TextSegment %s" % self.subheader.textid
+    
     @property
     def text(self):
         '''Synonym for data, just a more descriptive name of content for
@@ -284,6 +301,9 @@ class NitfDesSegment(NitfSegment):
     _type_support_tre = False
     _update_file_header_field = ("ldsh", "ld")
 
+    def short_desc(self):
+        return "DesSegment %s" % self.subheader.desid
+
     @property
     def des(self):
         '''Synonym for data, just a more descriptive name of content for
@@ -296,7 +316,7 @@ class NitfDesSegment(NitfSegment):
         # Because we will print the data out as TREs later so we'll skip
         # printing here
         if(self.subheader.desid.encode("utf-8") == b'TRE_OVERFLOW'):
-            return ""
+            return "TRE_OVERFLOW\n"
         return super().__str__()
 
 class NitfResSegment(NitfSegment):
@@ -306,6 +326,10 @@ class NitfResSegment(NitfSegment):
     sh_class = NitfResSubheader
     _type_support_tre = False
     _update_file_header_field = ("lresh", "lre")
+    
+    def short_desc(self):
+        return "ResSegment %s" % self.subheader.resid
+
 
 # Add engrda to give hash access to ENGRDA TREs
 add_engrda_function(NitfSegment)

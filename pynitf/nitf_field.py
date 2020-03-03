@@ -92,6 +92,7 @@ class NitfField(object):
         self.optional = options.get("optional", False)
         self.optional_char = options.get("optional_char", " ")
         self.hardcoded_value = options.get("hardcoded_value", False)
+        self.value_func = options.get("value", None)
         # Have a dictionary that maps the index/looping key to a value.
         # To prevent needing special handling, a single value is still
         # treated as a dict with a key of (). You
@@ -246,7 +247,10 @@ class NitfField(object):
             return None
         try:
             v = None
-            v = self.value_dict[k]
+            if(self.value_func is not None):
+                v = self.value_func(self.fs, k)
+            else:
+                v = self.value_dict[k]
             if(self.optional and v is None):
                 return None
             if(isinstance(v, NitfLiteral)):
@@ -272,7 +276,7 @@ class NitfField(object):
             self.loop.check_index(k)
         if(not self.check_condition(k)):
             raise RuntimeError("Can't set value for field %s because the condition '%s' isn't met" % (self.field_name, self.condition))
-        if(self.hardcoded_value):
+        if(self.hardcoded_value or self.value_func):
             raise RuntimeError("Can't set value for field " + self.field_name)
         # If we are implementing the TRE in its own object, don't allow
         # the raw values to be set
@@ -694,6 +698,9 @@ class FieldStruct(object):
     hardcoded_value - If True, do not allow the value to be modified. It
               is set to the default value, and trying to change it gives
               an error.
+    value   - Some fields aren't really independent, but rather are calculated
+              from other fields. If supplied, this gives a function that
+              should take the FieldStruct and Key, and return a value.
     condition - An expression used to determine if the field is included
               or not.
     optional - If true, a field is optional. Note that this is different than
@@ -780,7 +787,7 @@ class FieldStruct(object):
         
         self.field = OrderedDict()
         self._desc_init_none = True
-        if(description):
+        if(description is not None):
             self.desc = copy.deepcopy(description)
             self._desc_init_none = False
         # Note this also fills in self.field

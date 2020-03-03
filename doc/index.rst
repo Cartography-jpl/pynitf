@@ -11,9 +11,11 @@ Welcome to pynitf's documentation!
    :caption: Contents:
 
    introduction
+   design_principle
    design
    nitf_file
    nitf_diff
+   script
    nitf_file_ref
    
 
