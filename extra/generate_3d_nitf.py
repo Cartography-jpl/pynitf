@@ -21,7 +21,7 @@ rows = 400
 cols = 300
 bands = 500
 
-data = np.zeros((bands,rows,cols), dtype=np.dtype('>i2'))
+data = np.zeros((rows,cols, bands), dtype=np.dtype('>i2'))
 
 def write_by_row_p(d, bstart, lstart, sstart):
     #print("sstart", sstart)
@@ -31,7 +31,7 @@ def write_by_row_p(d, bstart, lstart, sstart):
             d[a, b] = a*20+b*30
 
 def write_by_row_p_from_data(d, bstart, lstart, sstart):
-    d[:, :] = data[:, lstart, :].transpose()
+    d[:, :] = data[lstart, :, :]
 
 def create_16bit_image():
     # Write by column
@@ -83,32 +83,33 @@ if __name__ ==  "__main__":
     for b in range(bands):
         #print(data[:, :, b].shape)
         data2 = np.zeros((rows, cols), dtype=np.uint16)
-        data[b,:,:] = cv2.putText(data2, 'Band #'+str(b), org, font,
+        data[:,:,b] = cv2.putText(data2, 'Band #'+str(b), org, font,
                         fontScale, color, thickness, cv2.LINE_AA)
 
     # Write rows
     org = (100, 30)
     for r in range(rows):
         # print(data[:, :, b].shape)
-        data2 = data[:,r,:].copy()
-        data[:, r, :] = cv2.putText(data2, 'Row #' + str(r), org, font,
+        data2 = data[r,:,:].copy()
+        data[r, :, :] = cv2.putText(data2, 'Row #' + str(r), org, font,
                         fontScale, color, thickness, cv2.LINE_AA)
 
     # Write cols
     org = (300, 300)
     for c in range(cols):
         #print(data[:, :, c].shape)
-        data3 = data[:, :, c].copy()
-        data[:, :, c] = cv2.putText(data3, 'Col #' + str(c), org, font,
+        data3 = data[:, c, :].copy()
+        data[:, c, :] = cv2.putText(data3, 'Col #' + str(c), org, font,
                         fontScale, color, thickness, cv2.LINE_AA)
 
     # Displaying the image
-    '''plot = plt.imshow(data[:, :, 17])
-    plt.show()
-    plot = plt.imshow(data[:, 17, :])
-    plt.show()
-    plot = plt.imshow(data[17, :, :])
-    plt.show()'''
+    # plot = plt.imshow(data[:, :, 19])
+    # plt.show()
+    # plot = plt.imshow(data[:, 9, :])
+    # plt.show()
+    # for i in range(20):
+    #     plot = plt.imshow(data[i,:,:])
+    #     plt.show()
 
     f.image_segment.append(create_16bit_image())
     f.image_segment.append(create_float_image())
