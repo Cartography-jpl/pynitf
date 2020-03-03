@@ -1,13 +1,6 @@
 import cProfile
-from pynitf.nitf_file import *
-from pynitf.nitf_tre_csde import *
-from pynitf.nitf_tre_csepha import *
-from pynitf.nitf_tre_csexrb import *
-from pynitf.nitf_tre_piae import *
-from pynitf.nitf_tre_rpc import *
-from pynitf.nitf_tre_geosde import *
-from pynitf.nitf_image import *
-from pynitf.nitf_tre import *
+from pynitf.nitf_file import NitfFile
+from pynitf.nitf_tre import Tre, tre_tag_to_cls
 from pynitf_test_support import *
 import pynitf.nitf_field
 import pynitf.nitf_des
@@ -103,10 +96,10 @@ def test_basic_write(isolated_dir):
 def test_large_tre_write(isolated_dir):
     '''Repeat of test_basic_write, but also include a really big TRE that
     forces the use of the second place in the header for TREs'''
-    desc = ["BIGTRE",
-            ["big_field", "", 99999-20, str]
-            ]
-    TreBig = create_nitf_tre_structure("TreBig", desc)
+    class TreBig(Tre):
+        desc = [["big_field", "", 99999-20, str],]
+        tre_tag = "BIGTRE"
+    tre_tag_to_cls.add_cls(TreBig)    
     f = NitfFile()
     create_image_seg(f)
     f.tre_list.append(TreBig())
@@ -146,10 +139,10 @@ def test_large_tre_write(isolated_dir):
 def test_tre_overflow_write(isolated_dir):
     '''Repeat of test_basic_write, but also include two really big TREs that
     forces the use of the DES TRE overflow for TREs'''
-    desc = ["BIGTRE",
-            ["big_field", "", 99999-20, str]
-            ]
-    TreBig = create_nitf_tre_structure("TreBig", desc)
+    class TreBig(Tre):
+        desc = [["big_field", "", 99999-20, str]]
+        tre_tag = "BIGTRE"
+    tre_tag_to_cls.add_cls(TreBig)    
     f = NitfFile()
     create_image_seg(f)
     f.tre_list.append(TreBig())

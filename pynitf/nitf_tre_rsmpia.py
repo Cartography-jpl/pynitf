@@ -1,4 +1,4 @@
-from .nitf_tre import *
+from .nitf_tre import Tre, tre_tag_to_cls
 
 hlp = '''This is the RSMPIA TRE, Replacement Sensor Model Polynomial 
 Identification. 
@@ -16,8 +16,7 @@ RSMPIA is documented at U-6, which points to other documentation, such as
 '''
 _r0_format = "%+21.14E"
 
-desc = ["RSMPIA",
-        ["iid", "Image Identifier", 80, str, {'optional':True}],
+desc = [["iid", "Image Identifier", 80, str, {'optional':True}],
         ["edition", "RSM Image Support Data Edition", 40, str],
         ["r0", "Low Order Poly Const Coeff for Row", 21, float, {'frmt' : _r0_format}],
         ["rx", "Low Order Poly Coff of X for Row", 21, float, {'frmt' : _r0_format}],
@@ -46,7 +45,11 @@ desc = ["RSMPIA",
         ["cssiz", "Section Size in Cols", 21, float, {'frmt' : _r0_format}],
 ]
 
-TreRSMPIA = create_nitf_tre_structure("TreRSMPIA",desc,hlp=hlp)
-                                      
+class TreRSMPIA(Tre):
+    __doc__ = hlp
+    desc = desc
+    tre_tag = "RSMPIA"
+
+tre_tag_to_cls.add_cls(TreRSMPIA)    
 
 __all__ = [ "TreRSMPIA" ]

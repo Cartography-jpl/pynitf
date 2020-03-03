@@ -1,5 +1,5 @@
-from .nitf_field_old import FieldDataOld
-from .nitf_tre import *
+from .nitf_field import BytesFieldData
+from .nitf_tre import Tre, tre_tag_to_cls
 import io
 
 hlp = '''This is the PIXMTA TRE, Pixel Metric.
@@ -15,8 +15,7 @@ It will be finalized in sometime 2018
 _origin_format = "%+14.7E"
 _coef_format = "%+15.8E"
 
-desc = ["PIXMTA",
-        ["numais", "Number of Associated Image Segments", 3, str],
+desc = [["numais", "Number of Associated Image Segments", 3, str],
         [["loop", "0 if f.numais == 'ALL' else int(f.numais)"],
          ["aisdlvl", "Associated Image Segment Display Level", 3, int]],
         ["origin_x", "Column Position of the Upper Left Pixel Metric Value", 14, float, {'frmt': _origin_format}],
@@ -35,16 +34,19 @@ desc = ["PIXMTA",
           [["loop", "0 if f.fittype[i1] == 'D' else int(f.numcoef[i1])"],
            ["coef", "jth Data Transformation Coefficient for the mth Pixel Metric", 15, float, {'frmt': _coef_format}]]],
         ["reserved_len", "Size of the Reserved Field", 5, int],
-        ["reserved", "Reserved Data Field", "f.reserved_len", None, {'field_value_class' : FieldDataOld}]
+        ["reserved", "Reserved Data Field", "f.reserved_len", None, {'field_value_class' : BytesFieldData}]
 ]
 
-TrePIXMTA = create_nitf_tre_structure("TrePIXMTA",desc,hlp=hlp)
+class TrePIXMTA(Tre):
+    __doc__ = hlp
+    desc = desc
+    tre_tag = "PIXMTA"
+    def summary(self):
+        res = io.StringIO()
+        print("PIXMTA %s Associated ISs, %d Metrics" %
+              (self.numais, self.nummetrics), file=res)
+        return res.getvalue()
 
-def _summary(self):
-    res = io.StringIO()
-    print("PIXMTA %s Associated ISs, %d Metrics" % (self.numais, self.nummetrics), file=res)
-    return res.getvalue()
-
-TrePIXMTA.summary = _summary
+tre_tag_to_cls.add_cls(TrePIXMTA)    
 
 __all__ = [ "TrePIXMTA" ]

@@ -1,4 +1,4 @@
-from .nitf_tre import *
+from .nitf_tre import Tre, tre_tag_to_cls
 import copy
 import re
 
@@ -26,8 +26,7 @@ where in the document a particular TRE is defined.
 
 RPC00B is documented at E-62.
 '''
-desc = ["RPC00B",
-        ["success", "Success", 1, int],
+desc = [["success", "Success", 1, int],
         ["err_bias", "Error - Bias", 7, float, {"frmt" : "%07.2lf"}],
         ["err_rand", "Error - Random", 7, float, {"frmt" : "%07.2lf"}],
         ["line_off", "Line Offset", 6, int],
@@ -50,7 +49,12 @@ desc = ["RPC00B",
          ["samp_den_coeff", "Sample Denominator Coefficient", 12, float, {"frmt": _tre_rpc_coeff_format}]],
 ]
 
-TreRPC00B = create_nitf_tre_structure("TreRPC00B",desc,hlp=hlp)
+class TreRPC00B(Tre):
+    __doc__ = hlp
+    desc = desc
+    tre_tag = "RPC00B"
+
+tre_tag_to_cls.add_cls(TreRPC00B)    
 
 # RCP00A is the same format at the OOB, we just have the parameters in
 # a different order (as already handled by the Rpc class). But this is
@@ -59,6 +63,11 @@ TreRPC00B = create_nitf_tre_structure("TreRPC00B",desc,hlp=hlp)
 desc2 = copy.deepcopy(desc)
 desc2[0] = "RPC00A"
 
-TreRPC00A = create_nitf_tre_structure("TreRPC00A",desc2,hlp=hlp)
+class TreRPC00A(Tre):
+    __doc__ = hlp
+    desc = desc
+    tre_tag = "RPC00A"
+
+tre_tag_to_cls.add_cls(TreRPC00A)    
 
 __all__ = [ "TreRPC00B", "TreRPC00A"]

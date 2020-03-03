@@ -1,4 +1,4 @@
-from .nitf_tre import *
+from .nitf_tre import Tre, tre_tag_to_cls
 
 hlp = '''This is the RSMPIA TRE, Replacement Sensor Model Grid
 Identification. 
@@ -17,8 +17,7 @@ RSMGIA is documented at U-6, which points to other documentation, such as
 
 _gr0_format = "%+21.14E"
 
-desc = ["RSMGIA",
-        ["iid", "Image Identifier", 80, str, {'optional':True}],
+desc = [["iid", "Image Identifier", 80, str, {'optional':True}],
         ["edition", "RSM Image Support Data Edition", 40, str],
         ["gr0", "Low Order Poly Const Coeff for Row", 21, float, {'frmt' : _gr0_format}],
         ["grx", "Low Order Poly Coeff of X for Row", 21, float, {'frmt' : _gr0_format}],
@@ -46,7 +45,12 @@ desc = ["RSMGIA",
         ["grssiz", "Section Size in Rows", 21, float, {'frmt' : _gr0_format}],
         ["gcssiz", "Section Size in Cols", 21, float, {'frmt' : _gr0_format}],
 ]
-TreRSMGIA = create_nitf_tre_structure("TreRSMGIA",desc,hlp=hlp)
-                                      
+
+class TreRSMGIA(Tre):
+    __doc__ = hlp
+    desc = desc
+    tre_tag = "RSMGIA"
+
+tre_tag_to_cls.add_cls(TreRSMGIA)    
 
 __all__ = [ "TreRSMGIA" ]

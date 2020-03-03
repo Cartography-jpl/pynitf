@@ -1,4 +1,4 @@
-from .nitf_tre import *
+from .nitf_tre import Tre, tre_tag_to_cls
 
 hlp = '''This is the RSMAPB TRE,
 Replacement Sensor Model Adjustable Parameters, version B.
@@ -15,8 +15,7 @@ RSMAPB is documented at http://www.gwg.nga.mil/ntb/baseline/docs/RSM/RSM_NITF_TR
 
 _nsfx_format = "%+21.14E"
 
-desc = ["RSMAPB",
-        ["iid", "Image Identifier", 80, str, {'optional':True}],
+desc = [["iid", "Image Identifier", 80, str, {'optional':True}],
         ["edition", "RSM Image Support Data Edition", 40, str],
         ["tid", "Triangulation ID", 40, str],
         ["npar", "Number of Parameters", 2, int],
@@ -68,6 +67,11 @@ desc = ["RSMAPB",
         ]
 ]
 
-TreRSMAPB = create_nitf_tre_structure("TreRSMAPB",desc,hlp=hlp)
+class TreRSMAPB(Tre):
+    __doc__ = hlp
+    desc = desc
+    tre_tag = "RSMAPB"
 
-__all__ = [ "TreRSMAPB" ]
+tre_tag_to_cls.add_cls(TreRSMAPB)    
+
+__all__ = [ "TreRSMAPB", ]

@@ -1,84 +1,14 @@
-# We import a number of "private" classes from nitf_field. This module really
-# is part of nitf_field.py, we have just pulled it out into a separate file
-# to keep things clean
-#
 # Note when importing TREs that much of the documentation is in PDF tables.
 # You can't easily paste this directly to emacs. But you can import to Excel.
 # To do this, cute and paste the table into *Word*, and then cut and paste
 # from word to Excel. For some reason, you can't go directly to Excel. You
 # can then cut and paste from excel to emacs
-from .nitf_field_old import (_FieldStruct, _FieldLoopStruct,
-                         FieldStructDiffOld,
-                         _create_nitf_field_structure)
+
 from .nitf_field import FieldStruct, FieldStructDiff
 from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
 import copy
 import io
 import logging
-
-class TreOld(_FieldStruct):
-    '''Add a little extra structure unique to Tres'''
-    def cetag_value(self):
-        return self.tre_tag
-    def cel_value(self):
-        return len(self.tre_bytes())
-    def tre_bytes(self):
-        '''All of the TRE expect for the front two cetag and cel fields'''
-        fh = io.BytesIO()
-        _FieldStruct.write_to_file(self, fh)
-        return fh.getvalue()
-    def read_from_tre_bytes(self, bt, nitf_literal = False):
-        fh = io.BytesIO(bt)
-        _FieldStruct.read_from_file(self,fh, nitf_literal)
-    def read_from_file(self, fh, nitf_literal = False):
-        tag = fh.read(6).rstrip().decode("utf-8")
-        if(tag != self.tre_tag):
-            raise RuntimeError("Expected TRE %s but got %s" % (self.tre_tag, tag))
-        cel = int(fh.read(5))
-        st = fh.tell()
-        _FieldStruct.read_from_file(self,fh, nitf_literal)
-        sz = fh.tell() - st
-        if(sz != cel):
-            raise RuntimeError("TRE length was expected to be %d but was actually %d" % (cel, sz))
-    def write_to_file(self, fh):
-        fh.write("{:6s}".format(self.cetag_value()).encode("utf-8"))
-        t = self.tre_bytes()
-        v = len(t)
-        if(v > 99999):
-            raise RuntimeError("TRE string is too long at size %d" % v)
-        fh.write("{:0>5d}".format(v).encode("utf-8"))
-        fh.write(t)
-    def str_hook(self, file):
-        '''Convenient to have a place to add stuff in __str__ for derived
-        classes. This gets called after the TRE name is written, but before
-        any fields. Default is to do nothing, but derived classes can 
-        override this if desired.'''
-        pass
-    def __str__(self):
-        '''Text description of structure, e.g., something you can print
-        out.'''
-        try:
-            maxlen = max(len(f.field_name) for f in self.field_value_list
-                         if not isinstance(f, _FieldLoopStruct) and
-                         f.field_name is not None)
-        except ValueError:
-            # We have no _FieldValue, so just set maxlen to a fixed value
-            maxlen = 10
-        res = io.StringIO()
-        print("TRE - %s" % self.tre_tag, file=res)
-        self.str_hook(res)
-        for f in self.field_value_list:
-            if(not isinstance(f, _FieldLoopStruct)):
-                if(f.field_name is not None):
-                    print(f.field_name.ljust(maxlen) + ": " + f.get_print(self,()),
-                          file=res)
-            else:
-                print(f.desc(self), file=res, end='')
-        return res.getvalue()
-
-    def summary(self):
-        res = io.StringIO()
-        print("TRE - %s" % self.tre_tag, file=res)
 
 class Tre(FieldStruct):
     '''Add a little extra structure unique to Tres'''
@@ -131,7 +61,7 @@ class Tre(FieldStruct):
         res = io.StringIO()
         print("TRE - %s" % self.tre_tag, file=res)
         
-class TreObjectImplementation(TreOld):
+class TreObjectImplementation(Tre):
     '''Modifications where the class of type tre_implementation_class in
     the attribute tre_implementation_field handles most of the TRE conversion
     (see for example TreRSMPCA).'''
@@ -314,70 +244,6 @@ def read_tre_data(data):
             raise Exception("Error while reading TRE " + str(tre_name), str(e))
     return res
     
-def create_nitf_tre_structure(name, description, hlp = None,
-                              tre_implementation_class=None,
-                              tre_implementation_field=None):
-    '''This is like create_nitf_field_structure, but adds a little
-    extra structure for TREs. The description should be almost like
-    with create_nitf_field_structure, except for the addition of a
-    TRE tag. By convention, we don't list the cetag and cel fields,
-    since these are always present.
-
-    Note that it is perfectly fine to call create_nitf_field_structure 
-    from outside of the nitf module. This can be useful for projects that
-    need to support specialized TREs that aren't included in this package.
-    Just call create_nitf_field_structure to add your TREs.
-
-    It is also perfectly ok to call create_nitf_field_structure with an 
-    existing TRE tag. This can be useful to add in a replacement TRE 
-    structure outside of the nitf module. For example, we can have a
-    generic version of a TRE like RSMGGA replaced with a version in geocal 
-    that uses RsmGrid.
-
-    In some cases, we want the bulk of the TRE generation/reading to
-    be done in another class (e.g., a C++ class such as for 
-    RsmRationalPolynomial and RSMPCA). To support this, the optional
-    arguments tre_implementation_class and tre_implementation_field can
-    be passed in, e.g., RsmRationalPolynomial and "rsm_rational_polynomial".
-    Typically this will be done by replacing an existing TRE (so calling
-    create_nitf_field_structure in your own module). This allows the nitf 
-    module to have a minimum set of requirements but allow for the nitf
-    code to be extended. See for example geocal_nitf_rsm.py.
-
-    The class should have the functions "tre_string()" and 
-    "read_tre_string(s)", as well as having some reasonable "print(obj)" 
-    value. See for example the C++ RsmRationalPolynomial.
-    '''
-    t = _create_nitf_field_structure()
-    desc = copy.deepcopy(description)
-    tre_tag = desc.pop(0)
-    # cetag and cel are really part of the field structure, but it is
-    # convenient to treat the tre as all fields *except* these one. The
-    # tre handles the rest these tags special.
-    if((tre_implementation_field and not tre_implementation_class) or
-       (not tre_implementation_field and tre_implementation_class)):
-        raise RuntimeError("Need to supply either none or both of tre_implementation_class and tre_implementation_field")
-    if(tre_implementation_field):
-        res = type(name, (TreObjectImplementation,), t.process(desc))
-        res.tre_implementation_class = tre_implementation_class
-        res.tre_implementation_field = tre_implementation_field
-    else:
-        res = type(name, (TreOld,), t.process(desc))
-    res.tre_tag = tre_tag
-    # Stash description, to make available if we want to later override a TRE
-    # (see geocal_nitf_rsm.py in geocal for an example)
-    res._description = description
-    if(hlp is not None):
-        try:
-            # This doesn't work in python 2.7, we can't write to the
-            # doc. Rather than try to do something clever, just punt and
-            # skip adding help for python 2.7. This works find with python 3
-            res.__doc__ = hlp
-        except AttributeError:
-            pass
-    tre_tag_to_cls.add_cls(res)
-    return res
-
 def _find_tre(self, tre_tag):
     return [t for t in self.tre_list if t.tre_tag == tre_tag]
 
@@ -404,22 +270,6 @@ def add_find_tre_function(cls):
     cls.find_exactly_one_tre = _find_exactly_one_tre
 
 logger = logging.getLogger('nitf_diff')
-class TreDiffOld(FieldStructDiffOld):
-    '''Compare two TREs.'''
-    def configuration(self, nitf_diff):
-        return self._config
-    def handle_diff(self, h1, h2, nitf_diff):
-        if(not isinstance(h1, TreOld) or
-           not isinstance(h2, TreOld)):
-            return (False, None)
-        if(h1.tre_tag != h2.tre_tag):
-            logger.difference("TREs tags don't match. TRE 1 '%s' and TRE 2 '%s'",
-                              h1.tre_tag, h2.tre_tag)
-            return (True, False)
-        self._config = nitf_diff.config.get("TRE", {}).get(h1.tre_tag, {})
-        with nitf_diff.diff_context("TRE '%s'" % h1.tre_tag, add_text = True):
-            return (True, self.compare_obj(h1, h2, nitf_diff))
-
 class TreDiff(FieldStructDiff):
     '''Compare two TREs.'''
     def configuration(self, nitf_diff):
@@ -436,7 +286,6 @@ class TreDiff(FieldStructDiff):
         with nitf_diff.diff_context("TRE '%s'" % h1.tre_tag, add_text = True):
             return (True, self.compare_obj(h1, h2, nitf_diff))
         
-NitfDiffHandleSet.add_default_handle(TreDiffOld())
 NitfDiffHandleSet.add_default_handle(TreDiff())
 NitfDiffHandleSet.default_config["TRE"] = {}
         
@@ -460,9 +309,9 @@ class TreUnknownDiff(FieldStructDiff):
 # Look for TreUnknown first, before handling the generic TRE case    
 NitfDiffHandleSet.add_default_handle(TreUnknownDiff(), priority_order = 1)
     
-__all__ = [ "TreOld", "TreObjectImplementation", "TreUnknown",
-            "TreDiff",
+__all__ = [ "TreObjectImplementation", "TreUnknown",
+            "TreDiff", "Tre",
             "tre_tag_to_cls",
             "read_tre", "prepare_tre_write", "read_tre_data",
-            "create_nitf_tre_structure", "add_find_tre_function"]
+            "add_find_tre_function"]
 

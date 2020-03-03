@@ -1,5 +1,6 @@
-from .nitf_field_old import FieldDataOld, StringFieldDataOld
-from .nitf_tre import *
+from .nitf_field_old import (FieldDataOld, StringFieldDataOld,
+                             create_nitf_tre_structure, TreOld)
+from .nitf_tre import Tre, tre_tag_to_cls
 import io
 from collections.abc import MutableMapping
 import numpy as np

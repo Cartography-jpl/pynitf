@@ -1,5 +1,4 @@
-from .nitf_file import *
-from .nitf_field_old import _FieldLoopStruct
+from .nitf_file import NitfFile
 import logging
 import abc, collections
 import numpy as np

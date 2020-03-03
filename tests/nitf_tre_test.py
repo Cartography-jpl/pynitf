@@ -1,20 +1,18 @@
-from pynitf.nitf_tre import *
-from pynitf.nitf_tre_csde import *
-from pynitf.nitf_file_header import *
-from pynitf.nitf_image_subheader import *
+from pynitf.nitf_tre import Tre, read_tre_data
+from pynitf.nitf_file_header import NitfFileHeader
+from pynitf.nitf_image_subheader import NitfImageSubheader
 from pynitf_test_support import *
 import io
 
 def test_tre():
     # This is part of USE00A, but we give it a different name so it
     # doesn't conflict with the real TRE defined in nitf_tre_csde.py
-    TestUSE00A = create_nitf_tre_structure("TestUSE00A",
-        ["USETST",
-         ["angle_to_north", "Angle to North", 3, int],
-         ["mean_gsd", "Mean GSD", 5, float, {"frmt" : "%05.1lf"}],
-         [None, None, 1, str],
-         ["dynamic_range", "Dynamic Range", 5, int],
-         ])
+    class TestUSE00A(Tre):
+        desc = [["angle_to_north", "Angle to North", 3, int],
+                ["mean_gsd", "Mean GSD", 5, float, {"frmt" : "%05.1lf"}],
+                [None, None, 1, str],
+                ["dynamic_range", "Dynamic Range", 5, int],]
+        tre_tag = "USETST"
     t = TestUSE00A()
     t.angle_to_north = 270
     t.mean_gsd = 105.2

@@ -31,30 +31,6 @@ class TreCAMSDA(Tre):
     __doc__ = hlp
     desc = desc
     tre_tag = "CAMSDA"
-    def summary(self):
-        res = io.StringIO()
-        print("CAMSDA:", file=res)
-        print("Number of Camera Sets: %d" % (self.num_camera_sets), file=res)
-        print("Number of Camera Sets in TRE: %d" %
-              (self.num_camera_sets_in_tre), file=res)
-        for i in range(self.num_camera_sets_in_tre):
-            print("Camera Set %d:" % (i), file=res)
-            print("Number of Cameras in Set: %d" %
-                  (self.num_cameras_in_set[i]), file=res)
-            for j in range(self.num_cameras_in_set[i]):
-                print("Camera ID: %s" % (self.camera_id[i, j]), file=res)
-                print("Camera Description: %s" % (self.camera_desc[i, j]),
-                      file=res)
-                print("Layer ID: %s" % (self.layer_id[i, j]), file=res)
-                print("Image Display Level: %d" % (self.idlvl[i, j]), file=res)
-                print("Image Attachment Level: %d" % (self.ialvl[i, j]),
-                      file=res)
-                print("Image Location: %s" % (self.iloc[i, j]), file=res)
-                print("Number of Pixel Rows: %d" % (self.nrows[i, j]), file=res)
-                print("Number of Pixel Columns: %d" % (self.ncols[i, j]),
-                      file=res)
-
-        return res.getvalue()
 
 tre_tag_to_cls.add_cls(TreCAMSDA)    
 

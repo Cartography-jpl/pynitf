@@ -1,4 +1,4 @@
-from .nitf_tre import *
+from .nitf_tre import Tre, tre_tag_to_cls
 
 hlp = '''This is the RSMAPA TRE, blah. 
 
@@ -14,8 +14,7 @@ RSMAPA is documented at blah.
 
 _xuol_format = "%21.14E"
 
-desc = ["RSMAPA",
-        ["iid", "Image Identifier", 80, str, {'optional':True}],
+desc = [["iid", "Image Identifier", 80, str, {'optional':True}],
         ["edition", "RSM Image Support Data Edition", 40, str],
         ["tid", "Triangulation ID", 40, str, {'optional':True}],
         ["npar", "Number of Parameters", 2, int],
@@ -72,6 +71,11 @@ desc = ["RSMAPA",
         ],
 ]
 
-TreRSMAPA = create_nitf_tre_structure("TreRSMAPA",desc,hlp=hlp)
+class TreRSMAPA(Tre):
+    __doc__ = hlp
+    desc = desc
+    tre_tag = "RSMAPA"
 
-__all__ = [ "TreRSMAPA" ]
+tre_tag_to_cls.add_cls(TreRSMAPA)    
+
+__all__ = [ "TreRSMAPA", ]

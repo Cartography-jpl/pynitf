@@ -1,4 +1,4 @@
-from .nitf_tre import *
+from .nitf_tre import Tre, tre_tag_to_cls
 
 hlp = '''This is the RSMPCA TRE, the Replacement Senor Model Polynomial
 Coefficients version A. 
@@ -16,8 +16,7 @@ RSMPCA is documented at U-6, which points to other documentation, such as
 '''
 _rfep_format = "%+21.14E"
 
-desc = ["RSMPCA",
-        ["iid", "Image Identifier", 80, str, {'optional':True}],
+desc = [["iid", "Image Identifier", 80, str, {'optional':True}],
         ["edition", "RSM Image Support Data Edition", 40, str],
         ["rsn", "Row Section Number", 3, int],
         ["csn", "Column Section Number", 3, int],
@@ -75,16 +74,19 @@ desc = ["RSMPCA",
         ],
 ]
 
-TreRSMPCA = create_nitf_tre_structure("TreRSMPCA",desc,hlp=hlp)
+class TreRSMPCA(Tre):
+    __doc__ = hlp
+    desc = desc
+    tre_tag = "RSMPCA"
+
+    @property
+    def row_section_number(self):
+        return self.rsn
+
+    @property
+    def col_section_number(self):
+        return self.csn
     
-def _row_section_number(self):
-    return self.rsn
-
-def _col_section_number(self):
-    return self.csn
-
-TreRSMPCA.row_section_number = property(_row_section_number)
-
-TreRSMPCA.col_section_number = property(_col_section_number)
+tre_tag_to_cls.add_cls(TreRSMPCA)    
 
 __all__ = [ "TreRSMPCA" ]

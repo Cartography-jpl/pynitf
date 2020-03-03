@@ -27,10 +27,6 @@ class NitfDesFieldStruct(NitfDes, FieldStruct):
 
     This base class handles this case.
     
-    Note that although you can directly create a class based on this one,
-    there is also the create_nitf_des_structure function that automates 
-    creating this from a table like we do with TREs.
-
     The TRE may or may not be followed by data. If it isn't, then we report
     an error if all the data isn't read.
     '''
@@ -90,10 +86,6 @@ class NitfDesObjectHandle(NitfDes):
     des_implementation_class in des_implementation_field. This
     possibly also include user defined subheaders.  See for example
     DesCSATTB in geocal.
-
-    Note that although you can directly create a class based on this one,
-    there is also the create_nitf_des_structure function that automates 
-    creating this from a table like we do with TREs.
     '''
     def __init__(self, seg=None):
         if(DEBUG):

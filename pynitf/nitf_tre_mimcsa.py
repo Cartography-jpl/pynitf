@@ -1,4 +1,4 @@
-from .nitf_tre import *
+from .nitf_tre import Tre, tre_tag_to_cls
 import io
 
 hlp = '''This is the MIMCSA TRE, Motion Imagery Collection Summary.
@@ -9,8 +9,7 @@ available at https://nsgreg.nga.mil/doc/view?i=4754
 
 MIMCSA is documented in Table 11.
 '''
-desc = ["MIMCSA",
-        ["layer_id", "Layer ID", 36, str],
+desc = [["layer_id", "Layer ID", 36, str],
         ["nominal_frame_rate", "Nominal Frame Rate", 13, float],
         ["min_frame_rate", "Minimum Frame Rate", 13, float],
         ["max_frame_rate", "Maximum Frame Rate", 13, float],
@@ -20,21 +19,12 @@ desc = ["MIMCSA",
         ["mi_req_level", "Compression Level", 6, str],
 ]
 
-TreMIMCSA = create_nitf_tre_structure("TreMIMCSA",desc,hlp=hlp)
 
-def _summary(self):
-    res = io.StringIO()
-    print("MIMCSA:", file=res)
-    print("Layer ID: %s" % (self.layer_id), file=res)
-    print("Nominal Frame Rate: %f" % (self.nominal_frame_rate), file=res)
-    print("Minimum Frame Rate: %f" % (self.min_frame_rate), file=res)
-    print("Maximum Frame Rate: %f" % (self.max_frame_rate), file=res)
-    print("Temporal Resolution Set: %d" % (self.t_rset), file=res)
-    print("Image Compression: %s" % (self.mi_req_decoder), file=res)
-    print("Compression Profile: %s" % (self.mi_req_profile), file=res)
-    print("Compression Level: %s" % (self.mi_req_level), file=res)
-    return res.getvalue()
+class TreMIMCSA(Tre):
+    __doc__ = hlp
+    desc = desc
+    tre_tag = "MIMCSA"
 
-TreMIMCSA.summary = _summary
+tre_tag_to_cls.add_cls(TreMIMCSA)    
 
 __all__ = [ "TreMIMCSA" ]

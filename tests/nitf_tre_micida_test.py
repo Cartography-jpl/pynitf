@@ -25,5 +25,5 @@ def test_tre_micida_basic():
     fh = io.BytesIO()
     t.write_to_file(fh)
     print(fh.getvalue())
-    assert fh.getvalue() == b'MICIDA0011000002First camera ID                     013First core IDSecond camera ID                    014Second core ID'
+    assert fh.getvalue() == b'MICIDA0011001002First camera ID                     013First core IDSecond camera ID                    014Second core ID'
     

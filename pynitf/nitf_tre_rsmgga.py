@@ -1,33 +1,13 @@
-from .nitf_field_old import FieldDataOld
-from .nitf_tre import *
+from .nitf_field import FieldData
+from .nitf_tre import Tre, tre_tag_to_cls
 
-class BaseCoord(FieldDataOld):
-    '''The row/column coordinate is a scaled integer. This class handles 
-    presenting this as an actual value.'''
-    def conv_float(self, t, parent_obj):
-        raise NotImplemented
-    def get(self,parent_obj,key):
-        if(self.loop is not None):
-            self.loop.check_index(parent_obj, key)
-        if(not self.check_condition(parent_obj, key)):
-            return None
-        t = self.value(parent_obj)[key]
-        if(t.rstrip() == ""):
-            return None
-        return self.conv_float(t, parent_obj)
-    def get_print(self, parent_obj,key):
-        t = self.get(parent_obj,key)
-        if(t is None):
-            return "None"
-        return str(t)
+class RCoord(FieldData):
+    def unpack(self, key, bdata):
+        return int(bdata) / pow(10.0, self.fs.fnumrd) + self.fs.refrow
 
-class RCoord(BaseCoord):
-    def conv_float(self, t, parent_obj):
-        return int(t) / pow(10.0, parent_obj.fnumrd) + parent_obj.refrow
-
-class CCoord(BaseCoord):
-    def conv_float(self, t, parent_obj):
-        return int(t) / pow(10.0, parent_obj.fnumcd) + parent_obj.refcol    
+class CCoord(FieldData):
+    def unpack(self, key, bdata):
+        return int(bdata) / pow(10.0, self.fs.fnumcd) + self.fs.refcol
     
 hlp = '''This is the RSMGGA TRE, Replacement Sensor Model Ground-to-Image Grid 
 
@@ -45,8 +25,7 @@ RSMGGA is documented at U-6, which points to other documentation, such as
 
 _ggrfep_format = "%+21.14E"
 
-desc = ["RSMGGA",
-        ["iid", "Image Identifier", 80, str, {'optional':True}],
+desc = [["iid", "Image Identifier", 80, str, {'optional':True}],
         ["edition", "RSM Image Support Data Edition", 40, str],
         ["ggrsn", "Ground-to-image Grid Row Section Number", 3, int],
         ["ggcsn", "Ground-to-image Grid Column Section Number", 3, int],
@@ -80,15 +59,18 @@ desc = ["RSMGGA",
         ]
 ]
 
-TreRSMGGA = create_nitf_tre_structure("TreRSMGGA",desc,hlp=hlp)
+class TreRSMGGA(Tre):
+    __doc__ = hlp
+    desc = desc
+    tre_tag = "RSMGGA"
 
-def _row_section_number(self):
-    return self.ggrsn
+    @property
+    def row_section_number(self):
+        return self.ggrsn
+    @property
+    def col_section_number(self):
+        return self.ggcsn
+    
+tre_tag_to_cls.add_cls(TreRSMGGA)
 
-def _col_section_number(self):
-    return self.ggcsn
-
-TreRSMGGA.row_section_number = property(_row_section_number)
-
-TreRSMGGA.col_section_number = property(_col_section_number)
 __all__ = [ "TreRSMGGA" ]

@@ -1,4 +1,4 @@
-from .nitf_tre import *
+from .nitf_tre import Tre, tre_tag_to_cls
 import io
 
 hlp = '''This is the MTIMFA TRE, Motion Imagery File
@@ -9,8 +9,7 @@ available at https://nsgreg.nga.mil/doc/view?i=4754
 
 MTIMFA is documented in Table 15.
 '''
-desc = ["MTIMFA",
-        ["layer_id", "Layer Identifier", 36, str],
+desc = [["layer_id", "Layer Identifier", 36, str],
         ["camera_set_index", "Camera Set Index", 3, int],
         ["time_interval_index", "Time Interval Index", 6, int],
         ["num_cameras_defined", "Number of Defined Cameras", 3, int],
@@ -25,25 +24,11 @@ desc = ["MTIMFA",
          ],
 ]
 
-TreMTIMFA = create_nitf_tre_structure("TreMTIMFA",desc,hlp=hlp)
+class TreMTIMFA(Tre):
+    __doc__ = hlp
+    desc = desc
+    tre_tag = "MTIMFA"
 
-def _summary(self):
-    res = io.StringIO()
-    print("MTIMFA:", file=res)
-    print("Layer Identifier: %s" % (self.layer_id), file=res)
-    print("Camera Set Index: %d" % (self.camera_set_index), file=res)
-    print("Time Interval Index: %d" % (self.time_interval_index), file=res)
-    print("Number of Defined Cameras: %d" % (self.num_cameras_defined), file=res)
-    for i in range(self.num_cameras_defined):
-        print("Camera UUID: %s" % (self.camera_id[i]), file=res)
-        print("Number of Temporal Blocks: %d" % (self.num_temp_blocks[i]), file=res)
-        for j in range(self.num_temp_blocks[i]):
-            print("Temporal Block Start Time: %s" % (self.start_timestamp[i, j]), file=res)
-            print("Temporal Block End Time: %s" % (self.end_timestamp[i, j]), file=res)
-            print("Image Segment Index: %d" % (self.image_seg_index[i, j]), file=res)
-
-    return res.getvalue()
-
-TreMTIMFA.summary = _summary
+tre_tag_to_cls.add_cls(TreMTIMFA)    
 
 __all__ = [ "TreMTIMFA" ]

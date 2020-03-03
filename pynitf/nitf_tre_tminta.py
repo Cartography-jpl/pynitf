@@ -21,18 +21,6 @@ class TreTMINTA(Tre):
     __doc__ = hlp
     desc = desc
     tre_tag = "TMINTA"
-    def summary(self):
-        res = io.StringIO()
-        print("TMINTA:", file=res)
-        print("Number of Time Intervals: %d" % (self.num_time_int), file=res)
-        for i in range(self.num_time_int):
-            print("Time Interval Index: %d" % (self.time_interval_index[i]),
-                  file=res)
-            print("Time Interval Start Time: %s" % (self.start_timestamp[i]),
-                  file=res)
-            print("Time Interval End Time: %s" % (self.end_timestamp[i]),
-                  file=res)
-        return res.getvalue()
 
 tre_tag_to_cls.add_cls(TreTMINTA)    
 

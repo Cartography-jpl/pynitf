@@ -1,4 +1,4 @@
-from .nitf_tre import *
+from .nitf_tre import Tre, tre_tag_to_cls
 
 hlp = '''This is the PIAIMC TRE, Profile for Imagery Access Image
 
@@ -11,8 +11,7 @@ where in the document a particular TRE is defined.
 
 PIAIMC is documented at C-8.
 '''
-desc = ["PIAIMC",
-        ["cloudcvr", "Cloud Cover", 3, int, {"optional" : True}],
+desc = [["cloudcvr", "Cloud Cover", 3, int, {"optional" : True}],
         ["srp", "Standard Radiometric Product", 1, str, {"optional" : True}],
         ["sensormode", "Sensor Mode", 12, str, {"optional" : True}],
         ["sensname", "Sensor Name", 18, str, {"optional" : True}],
@@ -33,6 +32,11 @@ desc = ["PIAIMC",
         ["sattrack", "Satellite Track", 8, int, {"optional" : True}],
         ]
 
-TrePIAIMC = create_nitf_tre_structure("TrePIAIMC", desc, hlp=hlp)
+class TrePIAIMC(Tre):
+    __doc__ = hlp
+    desc = desc
+    tre_tag = "PIAIMC"
+
+tre_tag_to_cls.add_cls(TrePIAIMC)    
 
 __all__ = ["TrePIAIMC" ]

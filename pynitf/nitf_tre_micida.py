@@ -1,5 +1,5 @@
-from .nitf_field_old import StringFieldDataOld, hardcoded_value
-from .nitf_tre import *
+from .nitf_field import StringFieldData
+from .nitf_tre import Tre, tre_tag_to_cls
 import io
 
 hlp = '''This is the MICIDA TRE, Motion Imagery Core Identification
@@ -10,32 +10,22 @@ available at https://nsgreg.nga.mil/doc/view?i=4754
 
 MICIDA is documented in Table 13.
 '''
-desc = ["MICIDA",
-        ["miis_core_id_version", "MISB ST 1204 Version Number", 2, int, {"frmt": "%02d"}],
+desc = [["miis_core_id_version", "MISB ST 1204 Version Number", 2, int,
+         {"frmt": "%02d", "default" : 1, "hardcoded_value" : True}],
         ["num_camera_ids", "Number of MIIS Core Identifiers", 3, int],
         [["loop", "f.num_camera_ids"],
          ["cameras_id", "Camera UUID", 36, str],
          ["core_id_length", "MIIS Core Identifier Length", 3, int],
          ["camera_core_id", "MIIS Core Identifier", "f.core_id_length[i1]", None,
-          {'field_value_class' : StringFieldDataOld}],
+          {'field_value_class' : StringFieldData}],
         ],
 ]
 
-TreMICIDA = create_nitf_tre_structure("TreMICIDA",desc,hlp=hlp)
-TreMICIDA.miis_core_id_version = hardcoded_value(1)
+class TreMICIDA(Tre):
+    __doc__ = hlp
+    desc = desc
+    tre_tag = "MICIDA"
 
-def _summary(self):
-    res = io.StringIO()
-    print("MICIDA:", file=res)
-    print("MISB ST 1204 Version Number: %02d" % (self.miis_core_id_version()), file=res)
-    print("Number of MIIS Core Identifiers: %d" % (self.num_camera_ids), file=res)
-    for i in range(self.num_camera_ids):
-        print("Camera UUID: %s" % (self.cameras_id[i]), file=res)
-        print("MIIS Core Identifier Length: %d" % (self.core_id_length[i]), file=res)
-        print("MIIS Core Identifier: %s" % (self.camera_core_id[i]), file=res)
+tre_tag_to_cls.add_cls(TreMICIDA)    
 
-    return res.getvalue()
-
-TreMICIDA.summary = _summary
-
-__all__ = [ "TreMICIDA" ]
+__all__ = [ "TreMICIDA", ]

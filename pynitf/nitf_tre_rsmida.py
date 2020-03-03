@@ -1,4 +1,4 @@
-from .nitf_tre import *
+from .nitf_tre import Tre, tre_tag_to_cls
 
 hlp = '''This is the RSMIDA TRE, Replacement Sensor Model Identification. 
 
@@ -17,8 +17,7 @@ RSMIDA is documented at U-6, which points to other documentation, such as
 _second_format = "%09.6lf"
 _trg_format = "%21.14E"
 
-desc = ["RSMIDA",
-        ["iid", "Image Identifier", 80, str],
+desc = [["iid", "Image Identifier", 80, str],
         ["edition", "RSM Image Support Data Edition", 40, str],
         ["isid", "Image Sequence Identifier", 40, str],
         ["sid", "Sensor Identifier", 40, str],
@@ -102,6 +101,11 @@ desc = ["RSMIDA",
         ["saz", "Sensor z-acceleration", 21, float, {'optional':True, 'frmt' : _trg_format}],
 ]
 
-TreRSMIDA = create_nitf_tre_structure("TreRSMIDA",desc,hlp=hlp)
+class TreRSMIDA(Tre):
+    __doc__ = hlp
+    desc = desc
+    tre_tag = "RSMIDA"
+
+tre_tag_to_cls.add_cls(TreRSMIDA)    
 
 __all__ = [ "TreRSMIDA" ]

@@ -1,4 +1,3 @@
-from .nitf_field_old import float_to_fixed_width, NitfLiteral
 from .nitf_diff_handle import NitfDiffHandle
 from collections import defaultdict, OrderedDict
 import itertools
@@ -12,6 +11,33 @@ import io
 
 # Add a bunch of debugging if you are diagnosing a problem
 DEBUG = False
+
+def float_to_fixed_width(n, max_width, maximum_precision=False):
+    '''Utility function that tries to fit a float with maximum precision into
+    other a fixed point string, or optionally an exponent string'''
+    s1 = '{:.{}f}'
+    if(maximum_precision and
+       (n < pow(10,-max_width+5) or
+        n > pow(10,max_width-5))):
+        s1 = '{:.{}e}'
+    for i in range(max_width - 2, -1, -1):
+        s = s1.format(n, i)
+        if len(s) <= max_width:
+            break
+    if(len(s) > max_width):
+        raise RuntimeError("Can't fit %f into length %d" % (n, max_width))
+    return s
+
+class NitfLiteral(object):
+    '''Sometimes we have a field with a particularly odd format, and it 
+    is easier to just return a literal string to return as the TRE field 
+    content. If this is passed, we return the exact string passed, plus
+    any padding.'''
+    def __init__(self, value, trunc_size = None):
+        if(trunc_size is None):
+            self.value = bytes(value)
+        else:
+            self.value = bytes(value)[0:(trunc_size-1)]
 
 def _eval_or_exec_expr(fs, key, expr, do_eval):
     '''We have a few places where we evaluate or execute an expression,
@@ -131,7 +157,7 @@ class NitfField(object):
         if (type(self._size) == int):
             sz = self._size
         else:
-            sz = self.eval_expr(key, self._size)
+            sz = self.eval_expr(self.key_as_tuple(key), self._size)
         if(sz != 0):
             sz -= self.size_offset
         return sz
