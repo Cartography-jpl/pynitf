@@ -4,6 +4,7 @@ PYTHON = python
 PYTEST = pytest
 SPHINXBUILD = sphinx-build
 SPHINXOPTS =
+PYTEST_OPTS = -n auto
 
 install:
 	$(PYTHON) -m pip install . --no-deps --ignore-installed --no-cache-dir --no-index -vvv
@@ -19,7 +20,7 @@ install-develop-afids:
 	$(PYTHON) setup.py develop --prefix $(AFIDSPYTHONTOP)
 
 check:
-	export PYTHONPATH=$(shell pwd) && $(PYTEST) -rxXs tests
+	export PYTHONPATH=$(shell pwd) && $(PYTEST) $(PYTEST_OPTS) -rxXs tests
 
 # Put it first so that "make" without argument is like "make help".
 doc-help:
