@@ -140,6 +140,10 @@ The optional parameters are:
   If True, do not allow the value to be modified. It
   is set to the default value, and trying to change it gives
   an error.
+**value**
+  Some fields aren't really independent, but rather are calculated
+  from other fields. If supplied, this gives a function that
+  should take the FieldStruct and Key, and return a value.
 **condition**
   An expression used to determine if the field is included
   or not.

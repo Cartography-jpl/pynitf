@@ -207,6 +207,10 @@ default is all spaces for a str and 0 for a number type.</p>
 is set to the default value, and trying to change it gives
 an error.</p>
 </dd>
+<dt><strong>value</strong></dt><dd><p>Some fields aren’t really independent, but rather are calculated
+from other fields. If supplied, this gives a function that
+should take the FieldStruct and Key, and return a value.</p>
+</dd>
 <dt><strong>condition</strong></dt><dd><p>An expression used to determine if the field is included
 or not.</p>
 </dd>

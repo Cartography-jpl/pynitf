@@ -107,6 +107,38 @@ However, NitfResSegment
 and NitfDesSegment can have a "user_subheader" supplied. The particular fields
 in a user_subheader are determined by the desid or resid type identifier.
 
+TRE Errors
+----------
+
+It is not infrequent to run into a file that has a TRE that doesn't conform
+to the documentation that we code from. A required field might be left blank
+for example, or a format might have changed (e.g. MATESA changed from version
+0.1 to 1.0 of the SNIP).
+
+Depending on what you are trying to do you may want:
+
+1. The difference to be completely ignored, and the TRE replaced with
+   TreUnknown.
+2. The difference reported as a warning, and the TRE replaced with TreUnknown.
+3. The difference to be treated as an error and an exception thrown.
+
+To accommodate this range of possibilities. the TRE reading code reports using
+python `warnings <https://docs.python.org/3/library/warnings.html>`_ module.
+We introduce a new warning "TreWarning" derived from  the standard UserWarning
+exception.
+
+You can use the standard warnings filterwarnings function to control the
+behavior. For example, to treat all TreWarnings as an error you can use the
+code snippet::
+
+  warnings.filterwarnings("error", category=pynitf.TreWarning)
+
+To ignore just the MATESA format change, you can use::
+  
+  warnings.filterwarnings("ignore", "Trouble reading TRE MATESA",
+                          category=pynitf.TreWarning)
+
+
 NitfFile Handles and Hooks
 --------------------------
 

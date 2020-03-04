@@ -43,6 +43,7 @@
 <li class="toctree-l1"><a class="reference internal" href="design_principle.html">Design principles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="design.html">Software Design</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">NITF File</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#tre-errors">TRE Errors</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#nitffile-handles-and-hooks">NitfFile Handles and Hooks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#nitfsegmenthookset">NitfSegmentHookSet</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#nitfsegmentusersubheaderhandleset">NitfSegmentUserSubheaderHandleSet</a></li>
@@ -185,6 +186,35 @@ NitfGraphicSegment can have TREs. NitfResSegment and NitfDesSegment can not.
 However, NitfResSegment
 and NitfDesSegment can have a “user_subheader” supplied. The particular fields
 in a user_subheader are determined by the desid or resid type identifier.</p>
+<div class="section" id="tre-errors">
+<h2>TRE Errors<a class="headerlink" href="#tre-errors" title="Permalink to this headline">¶</a></h2>
+<p>It is not infrequent to run into a file that has a TRE that doesn’t conform
+to the documentation that we code from. A required field might be left blank
+for example, or a format might have changed (e.g. MATESA changed from version
+0.1 to 1.0 of the SNIP).</p>
+<p>Depending on what you are trying to do you may want:</p>
+<ol class="arabic simple">
+<li><p>The difference to be completely ignored, and the TRE replaced with
+TreUnknown.</p></li>
+<li><p>The difference reported as a warning, and the TRE replaced with TreUnknown.</p></li>
+<li><p>The difference to be treated as an error and an exception thrown.</p></li>
+</ol>
+<p>To accommodate this range of possibilities. the TRE reading code reports using
+python <a class="reference external" href="https://docs.python.org/3/library/warnings.html">warnings</a> module.
+We introduce a new warning “TreWarning” derived from  the standard UserWarning
+exception.</p>
+<p>You can use the standard warnings filterwarnings function to control the
+behavior. For example, to treat all TreWarnings as an error you can use the
+code snippet:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;error&quot;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="n">pynitf</span><span class="o">.</span><span class="n">TreWarning</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To ignore just the MATESA format change, you can use:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="s2">&quot;Trouble reading TRE MATESA&quot;</span><span class="p">,</span>
+                        <span class="n">category</span><span class="o">=</span><span class="n">pynitf</span><span class="o">.</span><span class="n">TreWarning</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
 <div class="section" id="nitffile-handles-and-hooks">
 <h2>NitfFile Handles and Hooks<a class="headerlink" href="#nitffile-handles-and-hooks" title="Permalink to this headline">¶</a></h2>
 <p>In addition to the NitfSegment, NitfFile contains several handle and hooks,
