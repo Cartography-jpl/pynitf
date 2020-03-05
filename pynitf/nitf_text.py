@@ -11,7 +11,7 @@ class NitfTextStr(NitfText):
     '''Implementation that just treats the text data as string.'''
 
     def __init__(self, string=None, seg=None):
-        NitfText.__init__(self, seg)
+        super().__init__(seg)
         self.string = string
         
     def __str__(self):

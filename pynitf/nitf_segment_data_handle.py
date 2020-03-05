@@ -166,6 +166,40 @@ class NitfRes(NitfData):
     seg_class = NitfResSegment
     sh_class = NitfResSubheader
 
+class NitfGraphicRaw(NitfGraphic):
+    '''A simple writer. Really just meant for testing, since we don'
+    have anything "real" that reads or writes graphics data.'''
+    def __init__(self, graphic_data=b'', seg=None):
+        super().__init__(seg)
+        self.graphic_data=graphic_data
+
+    def __str__(self):
+        return "NitfGraphicRaw: %s"  % self.graphic_data
+
+    def read_from_file(self, fh, seg_index=None):
+        self.graphic_data = fh.read(self._seg().data_size)
+        return True
+
+    def write_to_file(self, fh):
+        fh.write(self.graphic_data)
+
+class NitfResRaw(NitfRes):
+    '''A simple writer. Really just meant for testing, since we don'
+    have anything "real" that reads or writes reserve data.'''
+    def __init__(self, res_data=b'', seg=None):
+        super().__init__(seg)
+        self.res_data=res_data
+
+    def __str__(self):
+        return "NitfResRaw: %s"  % self.res_data
+
+    def read_from_file(self, fh, seg_index=None):
+        self.res_data = fh.read(self._seg().data_size)
+        return True
+
+    def write_to_file(self, fh):
+        fh.write(self.res_data)
+
 class NitfDataPlaceHolder(NitfData):
     '''Implementation that doesn't actually read any data, useful as a
     final place holder if none of our other NitfData classes can handle
@@ -195,6 +229,12 @@ NitfDiffHandleSet.add_default_handle(DataPlaceHolderDiff())
 NitfSegmentDataHandleSet.add_default_handle(NitfDataPlaceHolder,
                                             priority_order=-9999)
 
+# Don't actually register these, we don't normally want to use this.
+# But can be useful in testing
+#NitfSegmentDataHandleSet.add_default_handle(NitfGraphicRaw)
+#NitfSegmentDataHandleSet.add_default_handle(NitfResRaw)
+
 __all__ = ["NitfSegmentDataHandleSet", "NitfData", "NitfImage",
            "NitfDes", "NitfText", "NitfGraphic", "NitfRes",
+           "NitfGraphicRaw", "NitfResRaw",
            "NitfDataPlaceHolder"]

@@ -818,6 +818,14 @@ class FieldStruct(object):
             raise AttributeError()
         t = fld[nm]
         return t if t.has_loop else t[()]
+
+    def get_raw_bytes(self, nm, key=()):
+        '''Return the raw bytes for a field. This only works if we read the
+        data with nitf_literal=True set'''
+        fld = self.__dict__["field"]
+        if(nm not in fld):
+            raise AttributeError()
+        return fld[nm].get_raw_bytes()
     
     def __setattr__(self, nm, value):
         if("field" in self.__dict__ and nm in self.__dict__["field"]):
@@ -827,6 +835,12 @@ class FieldStruct(object):
             t[()] = value
         else:
             super().__setattr__(nm, value)
+
+    def field_names(self):
+        '''Return an iterator that returns the field names'''
+        for f in self.field.values():
+            if(f.field_name is not None):
+                yield f.field_name
 
     def items(self, array_as_list = True):
         '''Return an iterator that gives returns tuples with the field name

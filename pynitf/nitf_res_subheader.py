@@ -30,7 +30,7 @@ desc = [['re', "Reserve Extension Subheader Identifier", 2, str,
         ['resrdt', "RES Security Source Date", 8, str],
         ['rectln', "RES Security Control Number", 15, str],
         ['resshl', "RES User-Defined Subheader Length", 4, int],
-        ['resshf', "", 'f.desshl', None, {'field_value_class' :
+        ['resshf', "", 'f.resshl', None, {'field_value_class' :
                                           BytesFieldData}],
 ]
 

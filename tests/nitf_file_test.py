@@ -289,9 +289,14 @@ def test_full_file(isolated_dir):
     create_tre(f, 290)
     create_text_segment(f)
     create_des(f)
+    create_graphic_segment(f)
+    create_res_segment(f)
     print(f)
     f.write("basic_nitf.ntf")
-    f2 = NitfFile("basic_nitf.ntf")
+    f2 = NitfFile()
+    f2.data_handle_set.add_handle(NitfGraphicRaw)
+    f2.data_handle_set.add_handle(NitfResRaw)
+    f2.read("basic_nitf.ntf")
     print(f2)
     print("Image Data:")
     print(f2.image_segment[0].data.data)
@@ -299,6 +304,12 @@ def test_full_file(isolated_dir):
     print("Text Data:")
     print(f2.text_segment[0].data)        
 
+    print("Graphic Data:")
+    print(f2.graphic_segment[0].data)        
+
+    print("Res Data:")
+    print(f2.res_segment[0].data)        
+    
 def test_full_file_security(isolated_dir):
     '''This create an end to end NITF file, this was at least initially the
     same as basic_nitf_example.py but as a unit test.
@@ -315,16 +326,26 @@ def test_full_file_security(isolated_dir):
     create_tre(f, 290)
     create_text_segment(f, security=security_fake)
     create_des(f, security=security_fake)
+    create_graphic_segment(f, security=security_fake)
+    create_res_segment(f, security=security_fake)
     print(f)
     f.write("basic_nitf.ntf")
-    f2 = NitfFile("basic_nitf.ntf")
-    print(f2)
+    f2 = NitfFile()
+    f2.data_handle_set.add_handle(NitfGraphicRaw)
+    f2.data_handle_set.add_handle(NitfResRaw)
+    f2.read("basic_nitf.ntf")
     print("Image Data:")
     print(f2.image_segment[0].data.data)
 
     print("Text Data:")
     print(f2.text_segment[0].data)        
 
+    print("Graphic Data:")
+    print(f2.graphic_segment[0].data)        
+
+    print("Res Data:")
+    print(f2.res_segment[0].data)        
+    
 # This is a set of sample NITF files found at
 # https://gwg.nga.mil/ntb/baseline/software/testfile/Nitfv2_1/scen_2_1.html.
 # Go through an make sure we can read them all (as a minimum check)

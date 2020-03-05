@@ -4,8 +4,10 @@ from numpy.testing import assert_almost_equal, assert_approx_equal
 from pynitf.nitf_security import NitfSecurity
 from pynitf.nitf_image import NitfImageWriteNumpy
 from pynitf.nitf_file import (NitfImageSegment, NitfTextSegment,
-                              NitfDesSegment)
+                              NitfDesSegment, NitfGraphicSegment,
+                              NitfResSegment)
 from pynitf.nitf_text import NitfTextStr
+from pynitf.nitf_segment_data_handle import NitfGraphicRaw, NitfResRaw
 from pynitf.nitf_des_csattb import DesCSATTB
 from pynitf.nitf_tre_csde import TreUSE00A
 from pynitf.nitf_tre import TreWarning
@@ -135,6 +137,23 @@ def create_text_segment(f, first_name = 'Guido', textid = 'ID12345',
     ts.subheader.txtitl = 'sample title'
     f.text_segment.append(ts)
 
+def create_graphic_segment(f, graphic_data=b'fake graph data',
+                           graphicid = 'GID12345', security = None):
+    '''Create a graphic segment'''
+    gs = NitfGraphicSegment(NitfGraphicRaw(graphic_data),
+                            security=security)
+    gs.subheader.sid = graphicid
+    gs.subheader.sname = "Fake graphic"
+    gs.subheader.salvl = 0
+    f.graphic_segment.append(gs)
+
+def create_res_segment(f, res_data=b'fake res data',
+                       resid = 'GID12345', security = None):
+    '''Create a res segment'''
+    rs = NitfResSegment(NitfResRaw(res_data), security=security)
+    rs.subheader.resid = resid
+    f.res_segment.append(rs)
+    
 def create_des(f, date_att = 20170501, q = 0.1, security=None):
     '''Create a DES segment'''
     des = DesCSATTB()

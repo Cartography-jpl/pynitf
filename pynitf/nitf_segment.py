@@ -274,7 +274,6 @@ class NitfGraphicSegment(NitfSegment):
         a NitfGrapichSegment'''
         return self.data
 
-
 class NitfTextSegment(NitfSegment):
     '''Text segment (TS), support the standard text type of data. 
     Note that txt can be either a str or bytes, whichever is most convenient

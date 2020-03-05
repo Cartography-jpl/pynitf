@@ -9,7 +9,7 @@ class NitfImageHDF5(NitfImage):
         if image_subheader is None:
             image_subheader = NitfImageSubheader()
 
-        NitfImage.__init__(self,image_subheader, header_size, data_size)
+        super().__init__(image_subheader, header_size, data_size)
 
         self.data = data
 
