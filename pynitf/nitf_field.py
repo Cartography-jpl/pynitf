@@ -280,7 +280,8 @@ class NitfField(object):
             raise RuntimeError("Can't set value for field " + self.field_name)
         # If we are implementing the TRE in its own object, don't allow
         # the raw values to be set
-        if(self.fs and hasattr(self.fs, "tre_implementation_field")):
+        if(self.fs and hasattr(self.fs, "tre_implementation_field") and
+           self.fs.tre_implementation_field is not None):
             raise RuntimeError("You can't directly set fields in %s TRE. Instead, set this through the %s object" % (self.fs.cetag_value(), self.fs.tre_implementation_field))
         if(v is None and not self.optional):
             raise RuntimeError("Can only set a field to 'None' if it is marked as being optional")

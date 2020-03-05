@@ -1,1 +1,1 @@
-PYTHONPATH=`pwd` pytest -rxXs tests/
+PYTHONPATH=`pwd` pytest -n auto -rxXs tests/

@@ -81,17 +81,12 @@ class NitfDesFieldStruct(NitfDes, FieldStruct):
                   file=res)
         return res.getvalue()
 
-class NitfDesObjectHandle(NitfDes):
+class NitfDesFieldStructObjectHandle(NitfDesFieldStruct):
     '''This is a class where the DES is handled by an object type
     des_implementation_class in des_implementation_field. This
     possibly also include user defined subheaders.  See for example
     DesCSATTB in geocal.
     '''
-    def __init__(self, seg=None):
-        if(DEBUG):
-            print("In constructor for %s" % self.des_tag)
-        super().__init__(seg)
-        
     def read_from_file(self, fh, seg_index=None):
         if(DEBUG):
             print("Trying to match %s" % self.subheader.desid)
@@ -103,6 +98,7 @@ class NitfDesObjectHandle(NitfDes):
             print("Match succeeded in constructor")
         setattr(self, self.des_implementation_field,
                 self.des_implementation_class.des_read(fh))
+        self.update_raw_field()
         return True
     
     def write_to_file(self, fh):
@@ -117,6 +113,10 @@ class NitfDesObjectHandle(NitfDes):
     def __str__(self):
         '''Text description of structure, e.g., something you can print
         out.'''
+        if(self._seg and self._seg().nitf_file and
+           self._seg().nitf_file.report_raw):
+            self.update_raw_field()
+            return super().__str__()
         res = io.StringIO()
         self.str_hook(res)
         if(self.user_subheader):
@@ -125,6 +125,13 @@ class NitfDesObjectHandle(NitfDes):
         print("Object associated with DES:", file=res)
         print(getattr(self, self.des_implementation_field), file=res)
         return res.getvalue()
+    
+    def update_raw_field(self):
+        '''Update the raw fields after a change to des_implementation_field'''
+        fh = io.BytesIO()
+        self.write_to_file(fh)
+        fh2 = io.BytesIO(fh.getvalue())
+        super().read_from_file(fh2)
 
 # TODO May want to rework this, not sure if having handle_diff in the
 # object is the right way to handle this.
@@ -202,5 +209,6 @@ NitfSegmentDataHandleSet.add_default_handle(TreOverflow)
 # Don't normally use, but you can add this if desired
 #NitfSegmentDataHandleSet.add_default_handle(NitfDesCopy, priority_order=-999)
 
-__all__ = [ "NitfDesCopy", "TreOverflow", "NitfDesFieldStruct"]
+__all__ = [ "NitfDesCopy", "TreOverflow", "NitfDesFieldStruct",
+            "NitfDesFieldStructObjectHandle"]
 

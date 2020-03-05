@@ -17,28 +17,46 @@ class TreWarning(UserWarning):
 
 class Tre(FieldStruct):
     '''Add a little extra structure unique to Tres'''
+    tre_implementation_field = None
+    tre_implementation_class = None
     def cetag_value(self):
         return self.tre_tag
     def cel_value(self):
         return len(self.tre_bytes())
     def tre_bytes(self):
         '''All of the TRE expect for the front two cetag and cel fields'''
-        fh = io.BytesIO()
-        super().write_to_file(fh)
-        return fh.getvalue()
+        if(self.tre_implementation_field):
+            t = getattr(self, self.tre_implementation_field).tre_string()
+            if(isinstance(t, bytes)):
+                return t
+            return t.encode("utf-8")
+        else:
+            fh = io.BytesIO()
+            super().write_to_file(fh)
+            return fh.getvalue()
     def read_from_tre_bytes(self, bt, nitf_literal = False):
-        fh = io.BytesIO(bt)
-        super().read_from_file(fh, nitf_literal)
+        if(self.tre_implementation_field):
+            t = bt
+            if not isinstance(t, str):
+                t = t.decode("utf-8")
+            setattr(self, self.tre_implementation_field, self.tre_implementation_class.read_tre_string(t))
+            self.update_raw_field()
+        else:
+            fh = io.BytesIO(bt)
+            super().read_from_file(fh, nitf_literal)
     def read_from_file(self, fh, nitf_literal = False):
         tag = fh.read(6).rstrip().decode("utf-8")
         if(tag != self.tre_tag):
             raise RuntimeError("Expected TRE %s but got %s" % (self.tre_tag, tag))
         cel = int(fh.read(5))
-        st = fh.tell()
-        super().read_from_file(fh, nitf_literal)
-        sz = fh.tell() - st
-        if(sz != cel):
-            raise RuntimeError("TRE length was expected to be %d but was actually %d" % (cel, sz))
+        if(self.tre_implementation_field):
+            self.read_from_tre_bytes(fh.read(cel), nitf_literal)
+        else:
+            st = fh.tell()
+            super().read_from_file(fh, nitf_literal)
+            sz = fh.tell() - st
+            if(sz != cel):
+                raise RuntimeError("TRE length was expected to be %d but was actually %d" % (cel, sz))
     def write_to_file(self, fh):
         fh.write("{:6s}".format(self.cetag_value()).encode("utf-8"))
         t = self.tre_bytes()
@@ -47,12 +65,16 @@ class Tre(FieldStruct):
             raise RuntimeError("TRE string is too long at size %d" % v)
         fh.write("{:0>5d}".format(v).encode("utf-8"))
         fh.write(t)
-    def str_hook(self, file):
+    def str_hook(self, fh):
         '''Convenient to have a place to add stuff in __str__ for derived
         classes. This gets called after the TRE name is written, but before
         any fields. Default is to do nothing, but derived classes can 
         override this if desired.'''
-        pass
+        if(self.tre_implementation_field):
+            print("Object associated with TRE:", file=fh)
+            print(getattr(self, self.tre_implementation_field), file=fh)
+            print("Raw fields:", file=fh)
+            
     def __str__(self):
         '''Text description of structure, e.g., something you can print
         out.'''
@@ -66,41 +88,12 @@ class Tre(FieldStruct):
         res = io.StringIO()
         print("TRE - %s" % self.tre_tag, file=res)
         return res.getvalue()
-        
-class TreObjectImplementation(Tre):
-    '''Modifications where the class of type tre_implementation_class in
-    the attribute tre_implementation_field handles most of the TRE conversion
-    (see for example TreRSMPCA).'''
-    def tre_bytes(self):
-        t = getattr(self, self.tre_implementation_field).tre_string()
-        if(isinstance(t, bytes)):
-            return t
-        return t.encode("utf-8")
-    def read_from_tre_bytes(self, bt, nitf_literal = False):
-        t = bt
-        if not isinstance(t, str):
-            t = t.decode("utf-8")
-        setattr(self, self.tre_implementation_field, self.tre_implementation_class.read_tre_string(t))
-        self.update_raw_field()
-
-    def read_from_file(self, fh, nitf_literal = False):
-        tag = fh.read(6).rstrip().decode("utf-8")
-        if(tag != self.tre_tag):
-            raise RuntimeError("Expected TRE %s but got %s" % (self.tre_tag,
-                                                               tag))
-        cel = int(fh.read(5))
-        self.read_from_tre_bytes(fh.read(cel), nitf_literal)
-
-    def str_hook(self, fh):
-        print("Object associated with TRE:", file=fh)
-        print(getattr(self, self.tre_implementation_field), file=fh)
-        print("Raw fields:", file=fh)
-
+    
     def update_raw_field(self):
         '''Update the raw fields after a change to tre_implementation_field'''
         fh = io.BytesIO(self.tre_bytes())
-        _FieldStruct.read_from_file(self, fh)
-
+        super().read_from_file(fh)
+        
 class TreUnknown(Tre):
     '''The is a general class to handle TREs that we don't have another 
     handler for. It just reports the tre string.'''
@@ -316,8 +309,7 @@ class TreUnknownDiff(FieldStructDiff):
 # Look for TreUnknown first, before handling the generic TRE case    
 NitfDiffHandleSet.add_default_handle(TreUnknownDiff(), priority_order = 1)
     
-__all__ = [ "TreObjectImplementation", "TreUnknown",
-            "TreDiff", "Tre", "TreWarning",
+__all__ = [ "TreUnknown", "TreDiff", "Tre", "TreWarning",
             "tre_tag_to_cls",
             "read_tre", "prepare_tre_write", "read_tre_data",
             "add_find_tre_function"]
