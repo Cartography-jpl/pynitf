@@ -150,6 +150,10 @@ class NitfDes(NitfData):
             self.subheader.dsver = self.des_ver
             if(self.des_tag):
                 self.subheader.desid = self.des_tag
+
+    @property
+    def desid(self):
+        return self.subheader.desid
             
 class NitfText(NitfData):
     '''Base class for reading/writing data in a NitfTextSegment'''
