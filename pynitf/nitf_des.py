@@ -39,11 +39,11 @@ class NitfDesFieldStruct(NitfDes, FieldStruct):
         self.data_after_tre_size = None
         self.data_to_copy = None
         
-    def read_from_file(self, fh, seg_index=None, nitf_literal = False):
+    def read_from_file(self, fh, seg_index=None):
         if(self.subheader.desid != self.des_tag):
             return False
         t = fh.tell()
-        FieldStruct.read_from_file(self,fh, nitf_literal)
+        FieldStruct.read_from_file(self,fh)
         self.data_start = fh.tell()
         self.data_after_tre_size = self._seg().data_size - (self.data_start - t)
         if(self.data_after_tre_size != 0):
@@ -136,15 +136,15 @@ class NitfDesFieldStructObjectHandle(NitfDesFieldStruct):
 # TODO May want to rework this, not sure if having handle_diff in the
 # object is the right way to handle this.
 
-class DesObjectDiff(NitfDiffHandle):
+class DesFieldStructObjectDiff(NitfDiffHandle):
     '''Compare two NitfDesObjectHandle.'''
     def handle_diff(self, des1, des2, nitf_diff):
-        if(not isinstance(des1, NitfDesObjectHandle) or
-           not isinstance(des2, NitfDesObjectHandle)):
+        if(not isinstance(des1, NitfDesFieldStructObjectHandle) or
+           not isinstance(des2, NitfDesFieldStructObjectHandle)):
             return (False, None)
         return (True, des1.handle_diff(des2))
 
-NitfDiffHandleSet.add_default_handle(DesObjectDiff())
+NitfDiffHandleSet.add_default_handle(DesFieldStructObjectDiff())
     
 class NitfDesCopy(NitfDes):
     '''Implementation that reads from one file and just copies to the other.
@@ -157,7 +157,7 @@ class NitfDesCopy(NitfDes):
     def __str__(self):
         return "NitfDesCopy %d bytes of data" % (len(self.data))
         
-    def read_from_file(self, fh, seg_index=None, nitf_literal = False):
+    def read_from_file(self, fh, seg_index=None):
         self.data = fh.read(self._seg().data_size)
         return True
 

@@ -1,4 +1,5 @@
 import collections
+import collections.abc
 
 class PriorityHandleSet(collections.abc.Set):
     def __init__(self):

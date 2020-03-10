@@ -107,6 +107,10 @@ class NitfField(object):
             self.value_dict = defaultdict(lambda : "")
         else:
             self.value_dict = defaultdict(lambda : 0)
+        # Second version that saves the raw data. I don't think saving
+        # data twice will be a problem, but if it is we can come back
+        # to this.
+        self.raw_value_dict = {}
         # Location data was written in file, used by update_file.
         self.fh_loc = {}
         # If true, then we check the size of data set by __setitem__.
@@ -232,10 +236,10 @@ class NitfField(object):
     def get_raw_bytes(self, key):
         '''Like self[key], but returns the raw bytes in the NITF file 
         without converting to the field type.'''
-        t = self.value_dict[self.key_as_tuple(key)]
-        if(not isinstance(t, NitfLiteral)):
-            raise RuntimeError("get_no_type_conversion can only be called if data is a NitfLiteral (e.g. read was done with nitf_literal=True)")
-        return t.value
+        k = self.key_as_tuple(key)
+        if(k in self.raw_value_dict):
+            return self.raw_value_dict[k].value
+        return self.bytes(k)
     
     def __getitem__(self, key):
         if(self.field_name is None):
@@ -259,6 +263,8 @@ class NitfField(object):
                    v.rstrip(self.optional_char.encode('utf-8') + b' ') == b''):
                     return None
             if(self.ty == str):
+                if(isinstance(v, bytes)):
+                    return v.decode("utf-8").rstrip()
                 return self.ty(v).rstrip()
             else:
                 return self.ty(v)
@@ -286,6 +292,8 @@ class NitfField(object):
         if(v is None and not self.optional):
             raise RuntimeError("Can only set a field to 'None' if it is marked as being optional")
         self.value_dict[k] = v
+        if k in self.raw_value_dict:
+            del self.raw_value_dict[k]
         if self._check_or_set_size:
             if(self.size_not_updated):
                 sz = self.size(k)
@@ -303,7 +311,7 @@ class NitfField(object):
         k = self.key_as_tuple(key)
         sz = self.size(k)
         if(isinstance(self.value_dict[k], NitfLiteral)):
-            t = ("{:%ds}" % sz).format(self.value_dict[k].value)
+            t = self.value_dict[k].value.ljust(sz)
         else:
             # Otherwise, get the value and do the formatting that has been
             # supplied to us. Note that we have the explicit getitem in call
@@ -318,7 +326,7 @@ class NitfField(object):
                 t = self._format_val(v, sz)
         if(len(t) != sz):
             raise RuntimeError("Formatting error. String '%s' is not right length for NITF field %s" % (t, self.field_name))
-        if(self.ty == bytes):
+        if(self.ty == bytes or isinstance(self.value_dict[k], NitfLiteral)):
             return t
         else:
             return t.encode("utf-8")
@@ -362,6 +370,7 @@ class NitfField(object):
             raise RuntimeError("Not enough bytes left to read %d bytes for field %s" % (sz, self.field_name))
         if(self.field_name is not None):
             try:
+                self.raw_value_dict[k] = NitfLiteral(t)
                 if(nitf_literal):
                     self.value_dict[k] = NitfLiteral(t)
                 elif(self.optional and
@@ -821,12 +830,11 @@ class FieldStruct(object):
         return t if t.has_loop else t[()]
 
     def get_raw_bytes(self, nm, key=()):
-        '''Return the raw bytes for a field. This only works if we read the
-        data with nitf_literal=True set'''
+        '''Return the raw bytes for a field.'''
         fld = self.__dict__["field"]
         if(nm not in fld):
             raise AttributeError()
-        return fld[nm].get_raw_bytes()
+        return fld[nm].get_raw_bytes(key)
     
     def __setattr__(self, nm, value):
         if("field" in self.__dict__ and nm in self.__dict__["field"]):
@@ -875,8 +883,9 @@ class FieldStruct(object):
         self.pseudo_outer_loop.write_to_file(fh)
 
     def read_from_file(self, fh, nitf_literal=False):
-        '''Read from a file stream.  
-        
+        '''
+        Read from a file stream.
+
         nitf_literal set to True is to handle odd formatting rules,
         where we want to read the values from a file as a string and
         not apply any additional formatting. The data is read as

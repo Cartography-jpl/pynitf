@@ -409,14 +409,17 @@ def test_profile(isolated_dir):
     f.write("basic_nitf.ntf")
     cProfile.run('import pynitf; pynitf.NitfFile("basic_nitf.ntf")')
 
-# TODO Come back and rework use of mmap to reduce number of files    
-@skip(reason="need to fix too many file error")
 def test_too_many_file(isolated_dir):
-    '''Because of how we currently use np.memmap for images, we can
+    '''
+    Because of how we used np.memmap for images before, we could
     run into "too many files" error if we have a couple of files open
     using large number of images (so more than 1024 images across a 
-    few files). This unit test triggers this error, so we can eventually
-    fix this.'''
+    few files). 
+
+    We've fixed this by using a single mmap for the entire file.
+    This unit test checks this fix by having enough image segments to
+    trigger this using the old method.
+    '''
     f = NitfFile()
     for i in range(600):
         create_image_seg(f)

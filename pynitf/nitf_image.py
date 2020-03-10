@@ -3,7 +3,9 @@ from .nitf_image_subheader import (NitfImageSubheader,
 from .nitf_segment_data_handle import (NitfImage, NitfSegmentDataHandleSet)
 from .nitf_security import security_unclassified
 from .nitf_diff_handle import (NitfDiffHandle, NitfDiffHandleSet)
+from .weak_key_value_dict import WeakKeyValueDict
 import numpy as np
+import mmap
 import logging
 
 class NitfImageWithSubset(NitfImage):
@@ -101,6 +103,12 @@ class NitfImageReadNumpy(NitfImageWithSubset):
     This is a good default class. It does not handle blocked data or 
     compression however.
     '''
+
+    # Keep a list of mmap associated with a filehandle. If either the
+    # mmap or the filehandle disappears, this gets removed from this
+    # dict
+    mmap_cache = WeakKeyValueDict()
+    
     def __init__(self, *args, **kwargs):
         '''Read data. If the keyword mmap=True, we memory map the data rather
         than reading it into memory (useful for larger files). Otherwise, we
@@ -145,10 +153,15 @@ class NitfImageReadNumpy(NitfImageWithSubset):
         except RuntimeError:
             return False
         if(self.do_mmap):
+            if(fh not in self.mmap_cache):
+                self.mm = mmap.mmap(fh.fileno(), 0, access=mmap.ACCESS_READ)
+                self.mmap_cache[fh] = self.mm
+            else:
+                self.mm = self.mmap_cache[fh]
             foff = fh.tell()
-            self.data = np.memmap(fh, mode="r", dtype = ih.dtype,
-                                  shape=self.shape,
-                                  offset = foff)
+            self.data = np.ndarray(self.shape, dtype = ih.dtype,
+                                   buffer = self.mm,
+                                   offset = foff)
             fh.seek(self.data.size * self.data.itemsize + foff, 0)
         else:
             self.data = np.fromfile(fh, dtype = ih.dtype,

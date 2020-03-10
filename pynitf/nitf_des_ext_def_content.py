@@ -82,8 +82,8 @@ class DesExtContentHeader(FieldStruct):
             k, v = ln.split(b': ')
             self._set_snippet(k, v)
             
-    def read_from_file(self, fh, nitf_literal=False):
-        super().read_from_file(fh, nitf_literal)
+    def read_from_file(self, fh):
+        super().read_from_file(fh)
         self.parse()
 
     def write_to_file(self, fh):
