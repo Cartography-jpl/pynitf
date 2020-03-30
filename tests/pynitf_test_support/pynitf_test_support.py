@@ -47,9 +47,10 @@ pytestmark = [pytest.mark.filterwarnings("error::pynitf.TreWarning"),
               pytest.mark.filterwarnings("ignore:Trouble reading TRE MATESA:pynitf.TreWarning")]
 
 # Location of test data that is part of source
-unit_test_data = os.path.abspath(os.path.dirname(__file__) + "/unit_test_data/") + "/"
+unit_test_data = os.path.abspath(os.path.expandvars(os.path.dirname(__file__)) + "/unit_test_data/") + "/"
 # Locate of programs
-program_dir = os.path.abspath(os.path.dirname(__file__) + "../../../bin/") + "/"
+program_dir = os.path.abspath(os.path.expandvars(os.path.dirname(__file__)) + "../../../bin/") + "/"
+os.environ["PATH"] = program_dir + ":" + os.environ["PATH"]
 
 # Fake security object, just so we can test setting and reading
 security_fake = NitfSecurity()

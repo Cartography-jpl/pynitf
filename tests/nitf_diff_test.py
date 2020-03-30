@@ -19,6 +19,6 @@ def test_nitf_diff(isolated_dir):
     create_tre(f, 290)
     f.write("basic2_nitf.ntf")
     print("Results of nitf_diff.")
-    t = subprocess.run([program_dir + "nitf_diff", "basic_nitf.ntf",
+    t = subprocess.run(["nitf_diff", "basic_nitf.ntf",
                         "basic2_nitf.ntf"])
     assert t.returncode == 1
