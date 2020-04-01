@@ -39,7 +39,7 @@ def create_16bit_image():
                                       numbands=bands, data_callback=write_by_row_p_from_data,
                                       image_gen_mode=NitfImageWriteDataOnDemand.IMAGE_GEN_MODE_ROW_P)
 
-    ih = img3.image_subheader
+    ih = img3.subheader
     ih.nbpr = 1
     ih.nbpc = rows
     ih.nppbh = cols
@@ -55,7 +55,7 @@ def create_float_image():
     img3 = NitfImageWriteDataOnDemand(nrow=rows, ncol=cols, data_type=np.float32,
                                       numbands=bands, data_callback=write_by_row_p_from_data,
                                       image_gen_mode=NitfImageWriteDataOnDemand.IMAGE_GEN_MODE_ROW_P)
-    ih = img3.image_subheader
+    ih = img3.subheader
     ih.nbpr = 1
     ih.nbpc = rows
     ih.nppbh = cols

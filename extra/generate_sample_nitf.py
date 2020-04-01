@@ -105,7 +105,7 @@ def createENGRDA():
     t.engtyp[0] = "I"
     t.engdts[0] = 2
     t.engdatu[0] = "tC"
-    t.engdata[0] = b'\x01\x25'
+    t.engdata[0] = b'\x01'
 
     return t
 
@@ -208,7 +208,7 @@ if __name__ ==  "__main__":
     img3 = NitfImageWriteDataOnDemand(nrow=400, ncol=300, data_type=np.dtype('>i2'),
                                       numbands=50, data_callback=write_by_row_p,
                                       image_gen_mode=NitfImageWriteDataOnDemand.IMAGE_GEN_MODE_ROW_P)
-    ih = img3.image_subheader
+    ih = img3.subheader
     ih.nbpr = 300
     ih.nbpc = 1
     ih.nppbh = 1
@@ -247,7 +247,7 @@ if __name__ ==  "__main__":
         'titles': ['BDFL', 'Developer'],
     }
 
-    ts = NitfTextSegment(data = (json.dumps(d)))
+    ts = NitfTextSegment(data = (NitfTextStr(json.dumps(d))))
 
     ts.subheader.textid = 'ID12345'
     ts.subheader.txtalvl = 0
@@ -258,14 +258,14 @@ if __name__ ==  "__main__":
     #DES ------------------------------------------------------------------------------
 
     # -- CSATTB --
-    ds = DesCSATTB_UH()
+    d = DesCSATTB()
+    ds = d.user_subheader
     ds.id = '4385ab47-f3ba-40b7-9520-13d6b7a7f311'
     ds.numais = '010'
     for i in range(int(ds.numais)):
         ds.aisdlvl[i] = 5 + i
     ds.reservedsubh_len = 0
 
-    d = DesCSATTB(user_subheader=ds)
     d.qual_flag_att = 1
     d.interp_type_att = 1
     d.att_type = 1
@@ -285,8 +285,8 @@ if __name__ ==  "__main__":
     f.des_segment.append(de2)
 
     # -- CSEPHB --
-
-    ds3 = DesCSEPHB_UH()
+    d = DesCSEPHB()
+    ds3 = d.user_subheader
     ds3.id = '4385ab47-f3ba-40b7-9520-13d6b7a7f31b'
     ds3.numais = '011'
     for i in range(int(ds3.numais)):
@@ -296,7 +296,7 @@ if __name__ ==  "__main__":
     r = 1000
     offset1 = 1000
     offset2 = 2000
-    d = DesCSEPHB(user_subheader=ds3)
+
     d.qual_flag_eph = 1
     d.interp_type_eph = 1
     d.ephem_flag = 1
