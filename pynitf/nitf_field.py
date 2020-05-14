@@ -478,46 +478,46 @@ class IntFieldData(FieldData):
 
     def unpack(self, key, bdata):
         sz = self.size(key)
-        if (sz is 1 and self.signed is False):
+        if (sz == 1 and self.signed is False):
             return unpack(">B", bdata)[0]
-        elif (sz is 1 and self.signed is True):
+        elif (sz == 1 and self.signed is True):
             return unpack(">b", bdata)[0]
-        elif (sz is 2 and self.signed is False):
+        elif (sz == 2 and self.signed is False):
             return unpack(">H", bdata)[0]
-        elif (sz is 2 and self.signed is True):
+        elif (sz == 2 and self.signed is True):
             return unpack(">h", bdata)[0]
-        elif (sz is 3):
+        elif (sz == 3):
             return int.from_bytes(bdata, "big", signed=self.signed)
-        elif (sz is 4 and self.signed is False):
+        elif (sz == 4 and self.signed is False):
             return unpack(">I", bdata)[0]
-        elif (sz is 4 and self.signed is True):
+        elif (sz == 4 and self.signed is True):
             return unpack(">i", bdata)[0]
-        elif (sz is 8 and self.signed is False):
+        elif (sz == 8 and self.signed is False):
             return unpack(">Q", bdata)[0]
-        elif (sz is 8 and self.signed is True):
+        elif (sz == 8 and self.signed is True):
             return unpack(">q", bdata)[0]
         else:
             raise Exception("Can't determine number format")
         
     def pack(self, key, v):
         sz = self.size(key)
-        if (sz is 1 and self.signed is False):
+        if (sz == 1 and self.signed is False):
             return pack(">B", v)
-        elif (sz is 1 and self.signed is True):
+        elif (sz == 1 and self.signed is True):
             return pack(">b", v)
-        elif (sz is 2 and self.signed is False):
+        elif (sz == 2 and self.signed is False):
             return pack(">H", v)
-        elif (sz is 2 and self.signed is True):
+        elif (sz == 2 and self.signed is True):
             return pack(">h", v)
-        elif (sz is 3):
+        elif (sz == 3):
             return int(v).to_bytes(3, "big", signed=self.signed)
-        elif (sz is 4 and self.signed is False):
+        elif (sz == 4 and self.signed is False):
             return pack(">I", v)
-        elif (sz is 4 and self.signed is True):
+        elif (sz == 4 and self.signed is True):
             return pack(">i", v)
-        elif (sz is 8 and self.signed is False):
+        elif (sz == 8 and self.signed is False):
             return pack(">Q", v)
-        elif (sz is 8 and self.signed is True):
+        elif (sz == 8 and self.signed is True):
             return pack(">q", v)
         else:
             raise Exception("Can't determine number format")
