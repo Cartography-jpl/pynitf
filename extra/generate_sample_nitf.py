@@ -109,6 +109,20 @@ def createENGRDA():
 
     return t
 
+def createCSEXRB():
+    t = TreCSEXRB()
+    t.platform_id = 'ABCDEF'
+    t.sensor_type = 'F'
+    t.time_stamp_loc = 0
+    t.base_timestamp = '20200707010159.000000000'
+
+    t.dt_multiplier = 1000000
+    t.dt_size = 1
+    t.number_frames = 1
+    t.number_dt = 0
+
+    return t
+
 def write_zero(d, bstart, lstart, sstart):
     d[:,:] = 0
 
@@ -159,6 +173,8 @@ def create_float_image_1():
 
     segment = NitfImageSegment(img)
     segment.subheader.iid1 = 'float1'
+
+    segment.tre_list.append(createCSEXRB())
 
     return segment
 
