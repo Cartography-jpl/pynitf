@@ -86,37 +86,6 @@ else:
     warnings.filterwarnings("ignore", "Trouble reading TRE MATESA",
                             category=pynitf.TreWarning)
             
-# TODO Remove this
-# Temporary kludge, some extra pieces for geocal that will get
-# added in the next geocal update
-try:
-    geocal.DesCSEPHB_geocal.uh_class = pynitf.DesCSEPHB.uh_class
-    geocal.DesCSATTB_geocal.uh_class = pynitf.DesCSATTB.uh_class
-
-    import logging
-    import numpy as np
-    logger = logging.getLogger('nitf_diff')
-    class ImageGdalDiff(pynitf.NitfDiffHandle):
-        def handle_diff(self, d1, d2, nitf_diff):
-            if(not isinstance(d1, geocal.NitfImageGdal) or
-               not isinstance(d2, geocal.NitfImageGdal)):
-                return (False, None)
-            is_same = True
-            t1 = d1[:,:,:]
-            t2 = d2[:,:,:]
-            # TODO Expose tolerance as configuration parameters
-            if(not np.allclose(t1, t2)):
-                logger.difference("Image '%s is different",
-                                  d1.image_subheader.iid1)
-                is_same = False
-            return (True, is_same)
-
-    pynitf.NitfDiffHandleSet.add_default_handle(ImageGdalDiff())
-    
-except NameError:
-    pass
-    
-
 nitf_diff = pynitf.NitfDiff()
 
 if(args.config_file_json):

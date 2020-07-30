@@ -41,11 +41,11 @@ class NitfResSubheader(FieldStruct):
 
     @property
     def security(self):
-        return NitfSecurity.get_security(self, "f")
+        return NitfSecurity.get_security(self, "re")
 
     @security.setter
     def security(self, s):
-        s.set_security(self, "f")
+        s.set_security(self, "re")
         
     def summary(self):
         res = io.StringIO()

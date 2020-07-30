@@ -121,7 +121,7 @@ class DesFieldStructDiff(FieldStructDiff):
                               des.des_tag, des.des_tag)
             return (True, False)
         # If we have a handle_diff function use it. 
-        if(hasattr(des, "handle_diff")):
+        if(hasattr(des1, "handle_diff")):
             return (True, des1.handle_diff(des2))
         # Otherwise compare the fields
         self._config = nitf_diff.config.get("DES", {}).get(des1.des_tag, {})

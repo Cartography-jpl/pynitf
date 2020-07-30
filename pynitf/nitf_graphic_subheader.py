@@ -54,11 +54,11 @@ class NitfGraphicSubheader(FieldStruct):
 
     @property
     def security(self):
-        return NitfSecurity.get_security(self, "f")
+        return NitfSecurity.get_security(self, "ss")
 
     @security.setter
     def security(self, s):
-        s.set_security(self, "f")
+        s.set_security(self, "ss")
         
     def summary(self):
         res = io.StringIO()

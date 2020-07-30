@@ -81,11 +81,11 @@ class NitfFileHeader(FieldStruct):
 
     @property
     def security(self):
-        return NitfSecurity.get_security(self, "f")
+        return NitfSecurity.get_security(self, "fs")
 
     @security.setter
     def security(self, s):
-        s.set_security(self, "f")
+        s.set_security(self, "fs")
         
     def summary(self):
         res = io.StringIO()
