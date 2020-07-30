@@ -30,9 +30,10 @@ modules listed on NITF_PLUGIN environment variable list.
 If you need to supply special handlers, you can load arbitrary python code.
 The code should have the general format:
 
-   import __main__
-   __main__.nitf_info.handle_set.add_handle(my_handle)
-   __main__.nitf_info.config["My key"] = "My value"
+   from __main__ import nitf_diff
+
+   nitf_diff.handle_set.add_handle(my_handle)
+   nitf_diff.config["My key"] = "My value"
 
 Options:
   -h --help         

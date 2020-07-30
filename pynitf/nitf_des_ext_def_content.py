@@ -11,6 +11,7 @@ import tempfile
 import numpy as np
 import warnings
 import subprocess
+import logging
 
 # DesEXT_h5 depends on h5py being available. Ok if it isn't, we just can't
 # use this particular class.
@@ -163,6 +164,46 @@ class DesEXT_DEF_CONTENT(NitfDes):
 
 desid_to_user_subheader_handle.add_des_user_subheader("EXT_DEF_CONTENT",
                                                       DesExtContentHeader)
+
+logger = logging.getLogger('nitf_diff')
+class DesExtDefContentDiff(NitfDiffHandle):
+    '''Compare two DesExt. This just does a binary comparison. Often
+    that is all that we want, if this is from some external file usually
+    it is better to use tools directly on the external file, and all that
+    we care about for NITF is that this is different. 
+
+    We infrequently want to not consider this an error either. So if for
+    example we have a copy of an external configuration h5 file, we don't
+    directly care if the file changes. However, the default here is to
+    treat this as an error.'''
+    def configuration(self, nitf_diff):
+        return nitf_diff.config.get("DesExtDefContent", {})
+
+    def compare_data(self, d1, d2, nitf_diff):
+        c = self.configuration(nitf_diff)
+        if(c.get('exclude', False)):
+            return True
+        if(c.get('exclude_but_warn', False)):
+            if(not np.array_equal(d1.data, d2.data)):
+                logger.difference_ignored("content is different")
+            return True
+        if(not np.array_equal(d1.data, d2.data)):
+            logger.difference("content is different")
+            return False
+        return True
+    
+    def handle_diff(self, d1, d2, nitf_diff):
+        with nitf_diff.diff_context("DesExtDefContent"):
+            if(not isinstance(d1, DesEXT_DEF_CONTENT) or
+               not isinstance(d2, DesEXT_DEF_CONTENT)):
+                return (False, None)
+            return (True, self.compare_data(d1, d2, nitf_diff))
+
+NitfDiffHandleSet.add_default_handle(DesExtDefContentDiff())
+
+_default_config = {}
+ 
+NitfDiffHandleSet.default_config["DesExtDefContent"] = _default_config
 
 class DesEXT_h5(DesEXT_DEF_CONTENT):
     def __init__(self, seg=None,file=None,
