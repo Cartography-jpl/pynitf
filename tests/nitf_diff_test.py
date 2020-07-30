@@ -18,10 +18,46 @@ def test_nitf_diff(isolated_dir):
     f = NitfFile()
     create_tre(f, 290)
     f.write("basic2_nitf.ntf")
-    print("Results of nitf_diff.")
+    print("Results of nitf_diff, should be different.")
     t = subprocess.run(["nitf_diff", "basic_nitf.ntf",
                         "basic2_nitf.ntf"])
     assert t.returncode == 1
+    print("Results of nitf_diff, should have warnings but not different.")
+    t = subprocess.run(["nitf_diff",
+                        "--config-file-python=" + unit_test_data +
+                        "sample_nitf_diff_config.py",
+                        "basic_nitf.ntf",
+                        "basic2_nitf.ntf"])
+    assert t.returncode == 0
+
+def test_nitf_special_eq_diff(isolated_dir):
+    '''Do a comparison where we supply an explict eq function. In this
+    case we compare the first file field to a fixed value, ignoring the 
+    second files field value. This is useful for example where
+    we have an existing expected results that hasn't been updated yet,
+    and we want to ignore the change for now. This would likely be a
+    temporary sort of configuration (e.g., focus on other parts of the
+    file until we are ready to update the expected values)'''
+    f = NitfFile()
+    create_tre(f)
+    f.tre_list[0].rev_num = 3200
+    f.write("nitf1.ntf")
+    f = NitfFile()
+    create_tre(f)
+    f.write("nitf2.ntf")
+    print("Results of nitf_diff, should be different")
+    t = subprocess.run(["nitf_diff", "nitf1.ntf",
+                        "nitf2.ntf"])
+    assert t.returncode == 1
+
+    print("Results of nitf_diff, should be same")
+    t = subprocess.run(["nitf_diff",
+                        "--config-file-python=" + unit_test_data +
+                        "sample_nitf_diff_config.py",
+                        "nitf1.ntf",
+                        "nitf2.ntf"])
+    assert t.returncode == 0
+    
 
 @require_h5py    
 def test_nitf_diff_h5py(isolated_dir):
@@ -65,7 +101,7 @@ def test_nitf_diff_h5py(isolated_dir):
     print("Results of nitf_diff, should have warnings, but not be different")
     t = subprocess.run(["nitf_diff",
                         "--config-file-python=" + unit_test_data +
-                        "sample_nitf_config.py",
+                        "sample_nitf_diff_config.py",
                         "nitf1.ntf",
                         "nitf2.ntf"])
     assert t.returncode == 0

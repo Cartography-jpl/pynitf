@@ -172,10 +172,16 @@ class DesExtDefContentDiff(NitfDiffHandle):
     it is better to use tools directly on the external file, and all that
     we care about for NITF is that this is different. 
 
-    We infrequently want to not consider this an error either. So if for
+    We frequently want to not consider this an error either. So if for
     example we have a copy of an external configuration h5 file, we don't
     directly care if the file changes. However, the default here is to
-    treat this as an error.'''
+    treat this as an error.
+
+    This takes configuration parameters:
+       exclude - if true, don't compare anything but just succeed
+       exclude_but_warn - of true, warn about differences but don't treat
+          as a failure.
+   '''
     def configuration(self, nitf_diff):
         return nitf_diff.config.get("DesExtDefContent", {})
 
