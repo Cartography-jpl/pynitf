@@ -53,7 +53,7 @@ def test_nitf_special_eq_diff(isolated_dir):
     print("Results of nitf_diff, should be same")
     t = subprocess.run(["nitf_diff",
                         "--config-file-python=" + unit_test_data +
-                        "sample_nitf_diff_config.py",
+                        "sample_nitf_diff_config2.py",
                         "nitf1.ntf",
                         "nitf2.ntf"])
     assert t.returncode == 0
