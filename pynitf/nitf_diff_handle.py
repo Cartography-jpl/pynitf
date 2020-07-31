@@ -97,9 +97,11 @@ class DiffContextFilter(logging.Filter):
         return True
 
 class NitfDiffHandleSet(PriorityHandleSet):
-    default_config = {}
+    default_config = {'skip_obj_func' : [] }
     def handle_h(self, h, obj1, obj2, nitf_diff):
         return h.handle_diff(obj1, obj2, nitf_diff)
+
+    
 
 class NitfDiffHandle(object):
     '''Base class for handling difference between two NITF object. Like always,

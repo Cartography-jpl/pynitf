@@ -9,11 +9,27 @@ from contextlib import contextmanager
 logger = logging.getLogger('nitf_diff')
 
 class NitfDiff(object):
-    '''Class that handles the overall NITF diff between two files.'''
+    '''Class that handles the overall NITF diff between two files.
+
+    Much of the configuration is tied to the various difference handles,
+    but overall configuration:
+       skip_obj_func - A possibly empty list of functions. Each object is
+           passed to the function before we compare. If any of the functions
+           return True, the object is just ignored. This allows us to
+           exclude things we don't want to look at in a file.
+    '''
     def __init__(self):
         self.config = copy.deepcopy(NitfDiffHandleSet.default_config)
         self.handle_set = copy.deepcopy(NitfDiffHandleSet.default_handle_set())
         self.context_filter = DiffContextFilter("File level")
+
+    def skip_obj(self, obj):
+        '''Return True if we should skip this object'''
+        flist = self.config.get('skip_obj_func', [])
+        for f in flist:
+            if(f(obj)):
+                return True
+        return False
 
     @contextmanager
     def diff_context(self, v, add_text = False):
@@ -81,12 +97,29 @@ class NitfFileHandle(NitfDiffHandle):
         is_same = (nitf_diff.compare_obj(f1.file_header, f2.file_header)
                    and is_same)
         for (desc, lis1, lis2) in \
-            [("file level TREs", f1.tre_list, f2.tre_list),
-             ("image segments", f1.image_segment, f2.image_segment),
-             ("graphic segments", f1.graphic_segment, f2.graphic_segment),
-             ("text segments", f1.text_segment, f2.text_segment),
-             ("des segments", f1.des_segment, f2.des_segment),
-             ("res segments", f1.res_segment, f2.res_segment),
+            [("file level TREs",
+              [i for i in f1.tre_list if not nitf_diff.skip_obj(i)],
+              [i for i in f2.tre_list if not nitf_diff.skip_obj(i)]),
+
+             ("image segments",
+              [i for i in f1.image_segment if not nitf_diff.skip_obj(i)],
+              [i for i in f2.image_segment if not nitf_diff.skip_obj(i)]),
+
+             ("graphic segments",
+              [i for i in f1.graphic_segment if not nitf_diff.skip_obj(i)],
+              [i for i in f2.graphic_segment if not nitf_diff.skip_obj(i)]),
+
+             ("text segments",
+              [i for i in f1.text_segment if not nitf_diff.skip_obj(i)],
+              [i for i in f2.text_segment if not nitf_diff.skip_obj(i)]),
+
+             ("des segments",
+              [i for i in f1.des_segment if not nitf_diff.skip_obj(i)],
+              [i for i in f2.des_segment if not nitf_diff.skip_obj(i)]),
+
+             ("res segments", 
+              [i for i in f1.res_segment if not nitf_diff.skip_obj(i)],
+              [i for i in f2.res_segment if not nitf_diff.skip_obj(i)]),
              ]:
             if(len(lis1) != len(lis2)):
                 logger = logging.getLogger('nitf_diff')
@@ -108,13 +141,15 @@ class ImageSegmentDiff(NitfDiffHandle):
             return (False, None)
         with nitf_diff.diff_context("ImageSegment '%s'" % iseg1.iid1):
             is_same = nitf_diff.compare_obj(iseg1.subheader, iseg2.subheader)
-            if(len(iseg1.tre_list) != len(iseg2.tre_list)):
+            t1 = [i for i in iseg1.tre_list if not nitf_diff.skip_obj(i)]
+            t2 = [i for i in iseg2.tre_list if not nitf_diff.skip_obj(i)]
+            if(len(t1) != len(t2)):
                 logger.difference("Segment 1 has %d TREs while Segment 2 has %d",
-                                  len(iseg1.tre_list), len(iseg2.tre_list))
+                                  len(t1), len(t2))
                 is_same = False
-            for i in range(min(len(iseg1.tre_list), len(iseg2.tre_list))):
-                is_same = nitf_diff.compare_obj(iseg1.tre_list[i],
-                                                iseg2.tre_list[i]) and is_same
+            for i in range(min(len(t1), len(t2))):
+                is_same = nitf_diff.compare_obj(t1[i],
+                                                t2[i]) and is_same
             is_same = nitf_diff.compare_obj(iseg1.data, iseg2.data) and is_same
             return (True, is_same)
 
@@ -128,13 +163,15 @@ class GraphicSegmentDiff(NitfDiffHandle):
             return (False, None)
         with nitf_diff.diff_context("GraphicSegment '%s'" % gseg1.subheader.sid):
             is_same = nitf_diff.compare_obj(gseg1.subheader, gseg2.subheader)
-            if(len(gseg1.tre_list) != len(gseg2.tre_list)):
+            t1 = [i for i in gseg1.tre_list if not nitf_diff.skip_obj(i)]
+            t2 = [i for i in gseg2.tre_list if not nitf_diff.skip_obj(i)]
+            if(len(t1) != len(t2)):
                 logger.difference("Segment 1 has %d TREs while Segment 2 has %d",
-                                  len(gseg1.tre_list), len(gseg2.tre_list))
+                                  len(t1), len(t2))
                 is_same = False
-            for i in range(min(len(gseg1.tre_list), len(gseg2.tre_list))):
-                is_same = nitf_diff.compare_obj(gseg1.tre_list[i],
-                                                gseg2.tre_list[i]) and is_same
+            for i in range(min(len(t1), len(t2))):
+                is_same = nitf_diff.compare_obj(t1[i],
+                                                t2[i]) and is_same
             is_same = nitf_diff.compare_obj(gseg1.data, gseg2.data) and is_same
             return (True, is_same)
 
@@ -148,13 +185,15 @@ class TextSegmentDiff(NitfDiffHandle):
             return (False, None)
         with nitf_diff.diff_context("TextSegment '%s'" % tseg1.subheader.textid):
             is_same = nitf_diff.compare_obj(tseg1.subheader, tseg2.subheader)
-            if(len(tseg1.tre_list) != len(tseg2.tre_list)):
+            t1 = [i for i in tseg1.tre_list if not nitf_diff.skip_obj(i)]
+            t2 = [i for i in tseg2.tre_list if not nitf_diff.skip_obj(i)]
+            if(len(t1) != len(t2)):
                 logger.difference("Segment 1 has %d TREs while Segment 2 has %d",
-                                  len(tseg1.tre_list), len(tseg2.tre_list))
+                                  len(t1), len(t2))
                 is_same = False
-            for i in range(min(len(tseg1.tre_list), len(tseg2.tre_list))):
-                is_same = nitf_diff.compare_obj(tseg1.tre_list[i],
-                                                tseg2.tre_list[i]) and is_same
+            for i in range(min(len(t1), len(t2))):
+                is_same = nitf_diff.compare_obj(t1[i],
+                                                t2[i]) and is_same
             is_same = nitf_diff.compare_obj(tseg1.data, tseg2.data) and is_same
             return (True, is_same)
 

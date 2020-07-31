@@ -30,7 +30,7 @@ def test_nitf_diff(isolated_dir):
                         "basic2_nitf.ntf"])
     assert t.returncode == 0
 
-def test_nitf_special_eq_diff(isolated_dir):
+def test_special_eq_diff(isolated_dir):
     '''Do a comparison where we supply an explict eq function. In this
     case we compare the first file field to a fixed value, ignoring the 
     second files field value. This is useful for example where
@@ -99,6 +99,34 @@ def test_nitf_diff_h5py(isolated_dir):
     assert t.returncode == 1
 
     print("Results of nitf_diff, should have warnings, but not be different")
+    t = subprocess.run(["nitf_diff",
+                        "--config-file-python=" + unit_test_data +
+                        "sample_nitf_diff_config.py",
+                        "nitf1.ntf",
+                        "nitf2.ntf"])
+    assert t.returncode == 0
+    
+def test_extra_tre(isolated_dir):
+    '''Test have an extra TRE in the first file. This would be for example
+    if we have extended a file and want to compare against an expected value
+    w/o yet worrying about the new TRE. Like the test_special_eq_diff is 
+    would likely be a temporary thing before we are ready to update 
+    some expected results.'''
+
+    f = NitfFile()
+    t = TreSTDIDC()
+    f.tre_list.append(t)
+    create_tre(f)
+    f.write("nitf1.ntf")
+    f = NitfFile()
+    create_tre(f)
+    f.write("nitf2.ntf")
+    print("Results of nitf_diff, should be different")
+    t = subprocess.run(["nitf_diff", "nitf1.ntf",
+                        "nitf2.ntf"])
+    assert t.returncode == 1
+
+    print("Results of nitf_diff, should be same")
     t = subprocess.run(["nitf_diff",
                         "--config-file-python=" + unit_test_data +
                         "sample_nitf_diff_config.py",
