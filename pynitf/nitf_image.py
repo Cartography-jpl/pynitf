@@ -137,12 +137,22 @@ class NitfImageReadNumpy(NitfImageWithSubset):
         ih = self.subheader
         if(ih.ic != "NC"):
             return False
-        if(ih.nbpr != 1 or ih.nbpc != 1):
-            return False
-        # We could add support here for pixel or row interleave here if
-        # needed, just need to work though juggling the data here.
-        if(ih.imode != "B" and ih.imode != "P"):
-            return False
+        # We have handling for IMAGE_GEN_MODE_ROW_P. We should be able to extend
+        # this over time, but for now just implement this one case.
+        strides = None
+        if(ih.imode == "P" and ih.nbpr == 1 and ih.nbpc == ih.shape[1] and
+           ih.nppbh == ih.shape[2]):
+            strides = np.array([1, ih.shape[0] * ih.shape[2], ih.shape[0]])
+            # strides is in bytes for ndarray, so we need to multiple
+            # by itemsize
+            strides *= ih.dtype.itemsize
+        else:
+            if(ih.nbpr != 1 or ih.nbpc != 1):
+                return False
+            # We could add support here for pixel or row interleave here if
+            # needed, just need to work though juggling the data here.
+            if(ih.imode != "B" and ih.imode != "P"):
+                return False
         # Likewise, we don't work with 1 bit data
         if(ih.nbpp == 1):
             return False
@@ -161,11 +171,15 @@ class NitfImageReadNumpy(NitfImageWithSubset):
             foff = fh.tell()
             self.data = np.ndarray(self.shape, dtype = ih.dtype,
                                    buffer = self.mm,
+                                   strides = strides,
                                    offset = foff)
             fh.seek(self.data.size * self.data.itemsize + foff, 0)
         else:
             self.data = np.fromfile(fh, dtype = ih.dtype,
                                     count=ih.nrows*ih.ncols*ih.number_band)
+            if(strides is not None):
+                self.data = np.lib.stride_tricks.as_strided(self.data,
+                                   shape=self.shape, strides=strides)
             self.data = np.reshape(self.data, self.shape)
         self.data_size = self.data.size * self.data.itemsize
         return True
@@ -260,6 +274,33 @@ class NitfImageWriteDataOnDemand(NitfImageWithSubset):
         self.security = security
         self.data_callback = data_callback
         self.image_gen_mode = image_gen_mode
+        ih = self.subheader
+        if(self.image_gen_mode == self.IMAGE_GEN_MODE_ALL):
+            # set_default_image_subheader already set the blocking stuff
+            # right for this mode
+            pass
+        elif(self.image_gen_mode == self.IMAGE_GEN_MODE_BAND):
+            # set_default_image_subheader already set the blocking stuff
+            # right for this mode
+            pass
+        elif(self.image_gen_mode == self.IMAGE_GEN_MODE_ROW_B):
+            raise NotImplemented()
+        elif(self.image_gen_mode == self.IMAGE_GEN_MODE_ROW_P):
+            # Note that we could have a row broken up into multiple blocks,
+            # plus the row doesn't have to be 1. But this is what is
+            # currently assumed while writing, so we need to use this.
+            ih.nbpr = 1
+            ih.nbpc = nrow
+            ih.nppbh = ncol
+            ih.nppbv = 1
+            ih.imode = "P"
+        elif(self.image_gen_mode == self.IMAGE_GEN_MODE_COL_B):
+            raise NotImplemented()
+        elif(self.image_gen_mode == self.IMAGE_GEN_MODE_COL_P):
+            raise NotImplemented()
+        else:
+            raise RuntimeError("Unrecognized image_gen_mode")
+
 
     def read_from_file(self, fh, segindex=None):
         '''Write an image to a file.'''

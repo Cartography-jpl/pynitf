@@ -95,7 +95,7 @@ def test_write_band(isolated_dir):
             for j in range(ncol):
                 assert img2[b, i,j] == img[b, i,j]
                 assert int(gdal_value("test.ntf", i, j, b)) == img[b,i,j]
-    
+                
 def test_write_data_on_demand(isolated_dir):
     '''A sample of generating data on demand. This generates radiance data
     from DN, Gain, and Offset (like we do for ECOSTRESS). For this example,
@@ -146,6 +146,44 @@ def test_write_data_on_demand(isolated_dir):
     dnv = np.array(dn[:,:,:])
     ov = np.array(offset[:,:,:])
     np.testing.assert_almost_equal(radv, gv * dnv + ov)
+
+@require_gdal_value
+def test_write_on_demand_blocking(isolated_dir):
+    f = NitfFile()
+    nrow = 3
+    ncol = 5
+    nband = 4
+    data = np.empty((nrow, ncol, nband), np.int32)
+    for i in range(nrow):
+        for j in range(ncol):
+            for b in range(nband):
+                data[i,j,b] = 10 * i + j + b * 100
+    def write_by_row_p(d, bstart, lstart, sstart):
+        d[:,:] = data[lstart, :, :]
+    img = NitfImageWriteDataOnDemand(nrow=nrow, ncol=ncol, data_type=np.int32,
+               numbands=nband, data_callback=write_by_row_p,
+               image_gen_mode=NitfImageWriteDataOnDemand.IMAGE_GEN_MODE_ROW_P)    
+    f.image_segment.append(NitfImageSegment(img))
+    f.write("test.ntf")
+    f2 = NitfFile("test.ntf")
+    img2 = f2.image_segment[0].data
+    assert img2.shape == img.shape
+    for b in range(nband):
+        for i in range(nrow):
+            for j in range(ncol):
+                assert img2[b, i,j] == data[i,j,b]
+                assert int(gdal_value("test.ntf", i, j, b)) == data[i,j,b]
+    t = NitfFileHeader()
+    img3 = NitfImageReadNumpy(mmap=False)
+    with open("test.ntf", 'rb') as fh:
+        t.read_from_file(fh)
+        img3.subheader.read_from_file(fh)
+        img3.read_from_file(fh)
+    assert img3.shape == img.shape
+    for b in range(nband):
+        for i in range(nrow):
+            for j in range(ncol):
+                assert img3[b, i,j] == data[i,j,b]
     
 def test_diff(print_logging):
     nband = 1
