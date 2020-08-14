@@ -22,6 +22,16 @@ def test_nitf_diff(isolated_dir):
     t = subprocess.run(["nitf_diff", "basic_nitf.ntf",
                         "basic2_nitf.ntf"])
     assert t.returncode == 1
+    print("Results of nitf_diff, should be different. Generates log file")
+    t = subprocess.run(["nitf_diff", "--log-file=nitf_diff.log1",
+                        "basic_nitf.ntf",
+                        "basic2_nitf.ntf"])
+    assert t.returncode == 1
+    print("Results of nitf_diff. Generates log file only")
+    t = subprocess.run(["nitf_diff", "--log-file-only=nitf_diff.log2",
+                        "basic_nitf.ntf",
+                        "basic2_nitf.ntf"])
+    assert t.returncode == 1
     print("Results of nitf_diff, should have warnings but not different.")
     t = subprocess.run(["nitf_diff",
                         "--config-file-python=" + unit_test_data +

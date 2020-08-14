@@ -50,10 +50,15 @@ Options:
        Turn debugging information on
        
   --log-file=f
-       Give a path for the logs to be written to
+       Give a path for the logs to be written to. This goes to both the screen
+       an the log file, compare with --log-file-only
+
+  --log-file-only=f
+       Write logs only to the log file, not also to the screen.
 
   --no-color
-       Don't colorize output
+       Don't colorize output. Only applies to the screen, we never put
+       color into log files.
 
   --quiet
        Don't print any messages, just return an overall status code.
@@ -100,30 +105,46 @@ if(args.config_file_python):
     sys.modules["config_file"] = module
 
 logger = logging.getLogger('nitf_diff')
-h = logging.StreamHandler()
+fh = None
+if(args.log_file_only or args.log_file):
+    fh = logging.FileHandler(args.log_file_only or args.log_file)
+    fh.setFormatter(pynitf.DifferenceFormatter(add_color = False))
+    fh.setLevel(logging.INFO)
+    logger.addHandler(fh)
 dformat = pynitf.DifferenceFormatter(add_color = not args.no_color)
-h.setFormatter(dformat)
-logger.addHandler(h)
+h = None
+if(not args.log_file_only):    
+    h = logging.StreamHandler()
+    h.setFormatter(dformat)
+    logger.addHandler(h)
 if(args.debug):
-    h.setLevel(logging.DEBUG)
+    if(h):
+        h.setLevel(logging.DEBUG)
     logger.setLevel(logging.DEBUG)
 elif(args.verbose):
-    h.setLevel(logging.INFO)
+    if(h):
+        h.setLevel(logging.INFO)
     logger.setLevel(logging.INFO)
 elif(args.quiet):
-    h.setLevel(1000)
+    if(h):
+        h.setLevel(1000)
     logger.setLevel(1000)
 else:    
-    h.setLevel(logging.WARNING)
+    if(h):
+        h.setLevel(logging.WARNING)
     logger.setLevel(logging.WARNING)
 
 is_same = nitf_diff.compare(args.file1, args.file2)
 
 if(not is_same):
+    if(fh):
+        print("Files are different", file=fh.stream)
     if(not args.quiet):
         print(dformat.color_text("Files are different", logging.ERROR))
     sys.exit(1)
     
 if(not args.quiet):
+    if(fh):
+        print("Files are the same", file=fh.stream)
     print(dformat.color_text("Files are the same", pynitf.DIFFERENCE_DETAIL))
     

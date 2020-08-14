@@ -642,14 +642,17 @@ class NitfLoop(object):
     @classmethod
     def is_shape_equal(cls, loop1, loop2, lead=()):
         '''Check if two loops have the same shape.'''
-        if(loop1.dim_size != loop2.dim_size):
-            return False
-        if(len(lead) == loop1.dim_size - 1):
-            return loop1.shape(lead) == loop2.shape(lead)
-        for k in loop1.key_subloop(lead):
-            if not cls.is_shape_equal(loop1, loop2, lead=k):
+        try:
+            if(loop1.dim_size != loop2.dim_size):
                 return False
-        return True
+            if(len(lead) == loop1.dim_size - 1):
+                return loop1.shape(lead) == loop2.shape(lead)
+            for k in loop1.key_subloop(lead):
+                if not cls.is_shape_equal(loop1, loop2, lead=k):
+                    return False
+            return True
+        except IndexError:
+            return False
 
     def print_to_fh(self, fh):
         '''Print a description of fields in this loop'''
