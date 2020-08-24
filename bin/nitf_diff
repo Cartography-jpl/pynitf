@@ -134,6 +134,10 @@ else:
         h.setLevel(logging.WARNING)
     logger.setLevel(logging.WARNING)
 
+if(fh):
+    print("Comparing file 1: %s" % os.path.abspath(args.file1), file=fh.stream)
+    print("Comparing file 2: %s" % os.path.abspath(args.file2), file=fh.stream)
+    
 is_same = nitf_diff.compare(args.file1, args.file2)
 
 if(not is_same):
