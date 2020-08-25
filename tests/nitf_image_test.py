@@ -95,6 +95,22 @@ def test_write_band(isolated_dir):
             for j in range(ncol):
                 assert img2[b, i,j] == img[b, i,j]
                 assert int(gdal_value("test.ntf", i, j, b)) == img[b,i,j]
+    # Check that we update the data in the file after the fact.
+    for b in range(nband):
+        for i in range(nrow):
+            for j in range(ncol):
+                img.data_written[b,i,j] = 2 * (10 * i + j + b * 100)
+    img.flush_update()
+    f2 = NitfFile("test.ntf")
+    img2 = f2.image_segment[0].data
+    assert img2.shape == img.shape
+    for b in range(nband):
+        for i in range(nrow):
+            for j in range(ncol):
+                assert img2[b, i,j] == 2 * (10 * i + j + b * 100)
+                assert int(gdal_value("test.ntf", i, j, b)) == 2 * (10 * i + j + b * 100)
+    
+    
                 
 def test_write_data_on_demand(isolated_dir):
     '''A sample of generating data on demand. This generates radiance data
@@ -128,6 +144,17 @@ def test_write_data_on_demand(isolated_dir):
     f.image_segment.append(NitfImageSegment(rad1))
     f.image_segment.append(NitfImageSegment(rad2))
     f.write("test.ntf")
+
+    # Check that we can read data back from the original file that
+    # we wrote
+    radv = np.array(rad1[:,:,:])
+    gv = np.array(gain[:,:,:])
+    dnv = np.array(dn[:,:,:])
+    ov = np.array(offset[:,:,:])
+    np.testing.assert_almost_equal(radv, gv * dnv + ov)
+    radv = np.array(rad2[:,:,:])
+    np.testing.assert_almost_equal(radv, gv * dnv + ov)
+    
     f2 = NitfFile("test.ntf")
     # Check that we can find the iseg by iid1
     assert f2.iseg_by_iid1_single("Gain").idlvl == gain.idlvl
@@ -146,6 +173,7 @@ def test_write_data_on_demand(isolated_dir):
     dnv = np.array(dn[:,:,:])
     ov = np.array(offset[:,:,:])
     np.testing.assert_almost_equal(radv, gv * dnv + ov)
+    
 
 @require_gdal_value
 def test_write_on_demand_blocking(isolated_dir):

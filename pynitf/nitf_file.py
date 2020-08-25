@@ -196,7 +196,7 @@ class NitfFile(object):
             ListNitfFileReference(self, [dseg for dseg in self.des_segment
                                    if(dseg.subheader.desid.encode("utf-8") !=
                                       b'TRE_OVERFLOW')])
-        with open(file_name, 'wb') as fh:
+        with open(file_name, 'w+b') as fh:
             h = self.file_header
             prepare_tre_write(self.tre_list, h, self.des_segment,
                               [["xhdl", "xhdlofl", "xhd"],
