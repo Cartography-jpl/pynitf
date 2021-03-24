@@ -8,6 +8,7 @@ import math
 from struct import pack, unpack
 import logging
 import io
+import numpy as np
 
 # Add a bunch of debugging if you are diagnosing a problem
 DEBUG = False
@@ -994,7 +995,7 @@ class FieldStructDiff(NitfDiffHandle):
         total_count = 0
         for (ind, av1), av2 in itertools.zip_longest(v1.items(), v2.values()):
             total_count += 1
-            if(not cmp_func(av1, av2)):
+            if(not np.all(cmp_func(av1, av2))):
                 ind_str = ", ".join(str(i) for i in ind)
                 logger.difference_detail("%s[%s]: %s != %s", fn1, ind_str,
                                          av1, av2)
