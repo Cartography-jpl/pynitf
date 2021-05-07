@@ -3,10 +3,14 @@ from .nitf_tre import Tre, tre_tag_to_cls
 
 class RCoord(FieldData):
     def unpack(self, key, bdata):
+        if(bdata.isspace()):
+            return float("nan")
         return int(bdata) / pow(10.0, self.fs.fnumrd) + self.fs.refrow
 
 class CCoord(FieldData):
     def unpack(self, key, bdata):
+        if(bdata.isspace()):
+            return float("nan")
         return int(bdata) / pow(10.0, self.fs.fnumcd) + self.fs.refcol
     
 hlp = '''This is the RSMGGA TRE, Replacement Sensor Model Ground-to-Image Grid 
