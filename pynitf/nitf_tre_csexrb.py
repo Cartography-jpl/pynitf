@@ -3,6 +3,7 @@ from .nitf_tre import Tre, tre_tag_to_cls
 from .nitf_diff_handle import NitfDiffHandleSet
 import time
 import uuid
+import io
 
 hlp = '''This is the CSEXRB TRE. 
 
@@ -17,7 +18,8 @@ Supporting TREs Combined V2"
 
 _pt_format = "%+012.2lf"
 _tm_format = "%+016.9lf"
-_gsd_format = "%12.1lf"
+_gsd_5_format = "%5.1lf"
+_gsd_12_format = "%12.1lf"
 
 desc = [["image_uuid", "UUID Assigned to Current Image Plane", 36, str],
         ["num_assoc_des", "Number of Associated DES", 3, int],
@@ -68,21 +70,21 @@ desc = [["image_uuid", "UUID Assigned to Current Image Plane", 36, str],
             'signed' : False}],
         ],
         ["max_gsd", "Maximum Mean Ground Sample Distance (GSD)",
-         12, float, {"frmt" : _gsd_format, "optional" : True}],
+         12, float, {"frmt" : _gsd_12_format, "optional" : True}],
         ["along_scan_gsd", "Measured Along-Scan Ground Sample Distance (GSD)",
-         12, float, {"frmt" : _gsd_format, "optional" : True}],
+         12, float, {"frmt" : _gsd_12_format, "optional" : True}],
         ["cross_scan_gsd", "Measured Cross-Scan Ground Sample Distance (GSD)",
-         12, float, {"frmt" : _gsd_format, "optional" : True}],
+         12, float, {"frmt" : _gsd_12_format, "optional" : True}],
         ["geo_scan_gsd", "Measured Geometric Mean Ground Sample Distance (GSD)",
-         12, float, {"frmt" : _gsd_format, "optional" : True}],
+         12, float, {"frmt" : _gsd_12_format, "optional" : True}],
         ["a_s_vert_gsd", "Measured Along-Scan Vertical Ground Sample Distance (GSD)",
-         12, float, {"frmt" : _gsd_format, "optional" : True}],
+         12, float, {"frmt" : _gsd_12_format, "optional" : True}],
         ["c_s_vert_gsd", "Measured Cross-Scan Vertical Ground Sample Distance (GSD)",
-         12, float, {"frmt" : _gsd_format, "optional" : True}],
+         12, float, {"frmt" : _gsd_12_format, "optional" : True}],
         ["geo_mean_vert_gsd", "Measured Geometric Mean Vertical Ground Sample Distance (GSD)",
-         12, float, {"frmt" : _gsd_format, "optional" : True}],
+         12, float, {"frmt" : _gsd_12_format, "optional" : True}],
         ["geo_beta_angle", "Angle Between Along-Scan and Cross-Scan Directions",
-         5, float, {"frmt" : _gsd_format, "optional" : True}],
+         5, float, {"frmt" : _gsd_5_format, "optional" : True}],
         ["dynamic_range", "Dynamic Range of Pixels in Image Across All Bands",
          5, int, {"optional" : True}],
         ["num_lines", "Number of Lines in the Entire Image Plane",
@@ -124,6 +126,12 @@ class TreCSEXRB(Tre):
     __doc__ = hlp
     desc = desc
     tre_tag = "CSEXRB"
+
+    def summary(self):
+        res = io.StringIO()
+        print("TRE - CSEXRB: %d FDTs" % (self.number_dt), file=res)
+        return res.getvalue()
+
     def assoc_elem(self, f):
         '''Find the associated elements in the given NitfFile f. Right now it
         is not clear if we should treat missing associated elements as an
