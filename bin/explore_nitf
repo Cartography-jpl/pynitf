@@ -3,7 +3,7 @@
 # This is a utility application that lets the user explore a NITF file
 # interactively on the console
 
-import readline
+import os
 import shlex
 import pydoc
 from pynitf import *
@@ -180,6 +180,10 @@ def processCommand(line):
 
     else:
         print('Unknown command: {}'.format(cmd))
+
+if "NITF_PLUGIN" in os.environ:
+    for m in os.environ["NITF_PLUGIN"].split(":"):
+        exec("import %s" % m)
 
 a = pynitf.docopt_simple.docopt_simple(usage, version=version)
 f = NitfFile(a.nitf_file)
