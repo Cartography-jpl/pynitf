@@ -23,7 +23,6 @@ def test_tre_mtimsa_basic():
     t.dt_size = 4
     t.number_frames = 100
     t.number_dt = 2
-    print("***** type(dt)", type(t.dt))
     t.dt[0] = 123
     t.dt[1] = 124
 
@@ -74,7 +73,6 @@ def test_tre_mtimsa_size_2():
     t.dt_size = 2
     t.number_frames = 100
     t.number_dt = 2
-    print("***** type(dt)", type(t.dt))
     t.dt[0] = 123
     t.dt[1] = 124
 
