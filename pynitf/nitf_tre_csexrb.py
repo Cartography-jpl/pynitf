@@ -129,7 +129,10 @@ class TreCSEXRB(Tre):
 
     def summary(self):
         res = io.StringIO()
-        print("TRE - CSEXRB: %d FDTs" % (self.number_dt), file=res)
+        if(self.number_dt is not None):
+            print("TRE - CSEXRB: %d FDTs" % (self.number_dt), file=res)
+        else:
+            print("TRE - CSEXRB", file=res)
         return res.getvalue()
 
     def assoc_elem(self, f):
