@@ -17,6 +17,11 @@ Options:
   -h --help         
        Print this message
 
+  --config-file=f
+       Load arbitrary python code from the given file. Useful if you need
+       to do any modifications to read a file (e.g., ignore a TRE that 
+       isn't processing correctly, adding some special handling).
+
   --debug
        Turn on debugging statements in pynitf
 
@@ -54,6 +59,13 @@ else:
     # ignore warning messages about this TRE. 
     warnings.filterwarnings("ignore", "Trouble reading TRE MATESA",
                             category=pynitf.TreWarning)
+
+if(args.config_file):
+    spec = importlib.util.spec_from_file_location("config_file",
+                                                  args.config_file)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    sys.modules["config_file"] = module
     
 if(args.debug):
     pynitf.nitf_field.DEBUG = True
