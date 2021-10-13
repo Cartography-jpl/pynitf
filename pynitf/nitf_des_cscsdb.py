@@ -126,13 +126,13 @@ desc =[['cov_version_date', 'Covariance Version Date', 8, str],
          ["cal_ap_id", "Calibration Adjustable Parameter Identifiers", 2, int]
          ], # end f.n1cal[i1]
         [["loop", "f.num_sets_cal_ap if f.io_cal_ap == 1 else 0"],
-         [["loop", "int(f.n1cal[i1] / 2) * int(f.n1cal[i1] + 1) if f.io_cal_ap == 1 else 0"],
+         [["loop", "int((f.n1cal[i1] / 2) * (f.n1cal[i1] + 1)) if f.io_cal_ap == 1 else 0"],
           ["errcov_c3", "Individual Calibration Adjustable Parameter Error Covariance Terms", 21, float, {"frmt": "%+15.14le"}],
           ], # End covariance loop
          ], # End f.num_sets_cal_ap loop
-        ["cal_interp", "Interpolation type for nth Group", int, 1],
-        ["spdcf_id_time", "SPDCF Identifer for the nth Correlated Parameter Group in the Time Direction", int, 2],
-        ["spdcf_id_fl", "SPDCF Identifer for the nth Correlated Parameter Group in the Focal Length Direction", int, 2],
+        ["cal_interp", "Interpolation type for nth Group", 1, int],
+        ["spdcf_id_time", "SPDCF Identifer for the nth Correlated Parameter Group in the Time Direction", 2, int],
+        ["spdcf_id_fl", "SPDCF Identifer for the nth Correlated Parameter Group in the Focal Length Direction", 2, int],
         ], # End of f.ncal_cpg
        ["ts_cal_ap", "Time Synch Calibration Adjustable Parameter Flag", 1, int],
        ["num_ts_grp", "Type Synch Parameter Type Flag", 1, int,
@@ -288,7 +288,7 @@ desc =[['cov_version_date', 'Covariance Version Date', 8, str],
           {"condition" : "f.spdcf_fam[i1,i2] == 0", "frmt" : "%7.6lf"}],
          ["fp_beta", "CSM Four Parameter Correlation Function Parameter beta",
           9, float,
-          {"condition" : "f.spdcf_fam[i1,i2] == 0", "frmt" : "%8.7lf"}],
+          {"condition" : "f.spdcf_fam[i1,i2] == 0", "frmt" : "%8.6lf"}],
          ["fp_t", "CSM Four Parameter Correlation Function Parameter T",
           21, float,
           {"condition" : "f.spdcf_fam[i1,i2] == 0", "frmt" : "%16.15le"}],
