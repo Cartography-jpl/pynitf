@@ -44,7 +44,7 @@ class Tre(FieldStruct):
         else:
             fh = io.BytesIO(bt)
             super().read_from_file(fh, nitf_literal=nitf_literal)
-    def read_from_file(self, fh):
+    def read_from_file(self, fh, delayed_read=False):
         tag = fh.read(6).rstrip().decode("utf-8")
         if(tag != self.tre_tag):
             raise RuntimeError("Expected TRE %s but got %s" % (self.tre_tag, tag))
@@ -53,7 +53,9 @@ class Tre(FieldStruct):
             self.read_from_tre_bytes(fh.read(cel))
         else:
             st = fh.tell()
-            super().read_from_file(fh)
+            super().read_from_file(fh, delayed_read=delayed_read)
+            if(delayed_read):
+                fh.seek(cel, 1)
             sz = fh.tell() - st
             if(sz != cel):
                 raise RuntimeError("TRE length was expected to be %d but was actually %d" % (cel, sz))
@@ -92,7 +94,7 @@ class Tre(FieldStruct):
     def update_raw_field(self):
         '''Update the raw fields after a change to tre_implementation_field'''
         fh = io.BytesIO(self.tre_bytes())
-        super().read_from_file(fh)
+        super().read_from_file(fh, delayed_read=True)
         
 class TreUnknown(Tre):
     '''The is a general class to handle TREs that we don't have another 

@@ -794,6 +794,10 @@ class FieldStruct(object):
         # in the NITF file.
         
         self.pseudo_outer_loop = None
+
+        # We can do delayed reads, useful for data that we might never
+        # actual use
+        self._delayed_read = False
         
         # Note that as of python 3.7 the normal dict preserved insert
         # order. However, we don't want to assume we are using that new
@@ -825,6 +829,11 @@ class FieldStruct(object):
         
             
     def __getattr__(self, nm):
+        if(self._delayed_read):
+            self._delayed_read = False
+            self._fh.seek(self._start_pos)
+            self.pseudo_outer_loop.read_from_file(self._fh,
+                                                  self._nitf_literal)
         if("field" not in self.__dict__):
             raise AttributeError()
         fld = self.__dict__["field"]
@@ -886,7 +895,7 @@ class FieldStruct(object):
         '''Write to a file stream.'''
         self.pseudo_outer_loop.write_to_file(fh)
 
-    def read_from_file(self, fh, nitf_literal=False):
+    def read_from_file(self, fh, nitf_literal=False, delayed_read=False):
         '''
         Read from a file stream.
 
@@ -897,7 +906,13 @@ class FieldStruct(object):
         it can be useful for cases hard to capture otherwise (e.g.,
         heritage systems that depend on specific formatting).
         '''
-        self.pseudo_outer_loop.read_from_file(fh, nitf_literal)
+        if(delayed_read):
+            self._delayed_read = True
+            self._fh = fh
+            self._start_pos = fh.tell()
+            self._nitf_literal = nitf_literal
+        else:
+            self.pseudo_outer_loop.read_from_file(fh, nitf_literal)
             
     def update_field(self, fh, field_name, value, key = ()):
         '''Update a field name in an open file'''

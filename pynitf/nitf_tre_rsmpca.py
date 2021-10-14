@@ -79,13 +79,28 @@ class TreRSMPCA(Tre):
     desc = desc
     tre_tag = "RSMPCA"
 
+    # As an optimization, get data from tre_implementation_field if we
+    # have that.
+    @property
+    def edition(self):
+        if(self.tre_implementation_field):
+            return getattr(self, self.tre_implementation_field).rsm_support_data_edition
+        else:
+            return super().edition
+
     @property
     def row_section_number(self):
-        return self.rsn
+        if(self.tre_implementation_field):
+            return getattr(self, self.tre_implementation_field).row_section_number
+        else:
+            return self.rsn
 
     @property
     def col_section_number(self):
-        return self.csn
+        if(self.tre_implementation_field):
+            return getattr(self, self.tre_implementation_field).col_section_number
+        else:
+            return self.csn
     
 tre_tag_to_cls.add_cls(TreRSMPCA)    
 
