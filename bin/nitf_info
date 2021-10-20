@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 import pynitf
+import importlib.util
 import subprocess
 import os
 import sys
