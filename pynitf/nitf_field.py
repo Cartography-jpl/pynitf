@@ -829,7 +829,7 @@ class FieldStruct(object):
         
             
     def __getattr__(self, nm):
-        if(self._delayed_read):
+        if('_delayed_read' in self.__dict__ and self._delayed_read):
             self._delayed_read = False
             self._fh.seek(self._start_pos)
             self.pseudo_outer_loop.read_from_file(self._fh,
