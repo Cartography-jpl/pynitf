@@ -8,6 +8,7 @@ import shlex
 import pydoc
 from pynitf import *
 import pynitf
+import matplotlib.pyplot as plt
 
 version="July 7, 2017"
 usage="""Usage:
@@ -24,6 +25,10 @@ on the console
 """
 
 helpString = '''Usage Example:
+
+load [path to nitf] [alias]
+
+list files
 
 list seg
 list image
@@ -52,7 +57,16 @@ print tre image 1(image_index) 1(tre_index)
 
 data 10000(offset) 50(size)
 data image 1(index) 0(offset) 100(size)
+
+save_des 1
+
+image display 1
+image diff [index_1] [index_2]
 '''
+
+def load_nitf(nitf_path, alias):
+    files[alias] = {'path': nitf_path, 'nitf': NitfFile(nitf_path)}
+
 
 def listTRESegment(segment, p=False):
     if (hasattr(segment, 'tre_list') == True):
@@ -111,11 +125,67 @@ def processTRE(f, param, p):
             else:
                 print("Select Image Segment Index 0 - %d" % (len(f.image_segment) - 1))
 
+def is_valid_image_index(f, index):
+    return index < len(f.image_segment)
+
+def is_displayable_image(image_segment):
+    if isinstance(image_segment.image, NitfImageReadNumpy):
+        image_data = image_segment.image.data.squeeze()
+        if len(image_data.shape) == 2 or (len(image_data.shape)==3 and image_data.shape[2]==3):
+            return True, image_data
+        else:
+            return False, image_data
+    else:
+        return False, None
+
+def is_image_pair_diffable(image1, image2):
+    rv = False
+    if image1.dtype == image2.dtype and image1.shape == image2.shape:
+        rv = True
+    return rv
+
+def display_diff(f, index1, index2):
+    image_segment_1 = f.image_segment[index1]
+    is_displayable1, img1 = is_displayable_image(image_segment_1)
+    image_segment_2 = f.image_segment[index2]
+    is_displayable2, img2 = is_displayable_image(image_segment_2)
+    if is_displayable1 and is_displayable2 and is_image_pair_diffable(img1, img2):
+        diff = img1 - img2
+        plt.imshow(diff.squeeze())
+        plt.title('Diff of image segments {} and {}'.format(index1, index2))
+        plt.show()
+    else:
+        print("image pair not compatible for diff operation")
+        if img1 is not None:
+            print(f"image 1 dtype: {img1.dtype} shape: {img1.shape}")
+        if img2 is not None:
+            print(f"image 2 dtype: {img2.dtype} shape: {img2.shape}")
+
+def display_image(f, index):
+    if is_valid_image_index(f, index):
+        image_segment = f.image_segment[index]
+        is_displayable, image_data =  is_displayable_image(image_segment)
+        if is_displayable:
+            plt.imshow(image_data)
+            plt.title('image segment {} {}'.format(index, f.image_segment[index].iid1))
+            plt.show()
+        else:
+            print("Cannot display image")
+    else:
+        print("Invalid image segment index {}.  Select index in range 0-{}".format(index, len(f.image_segment)-1))
+
 def processCommand(line):
     cmd, args = line[0], line[1:]
-
+    f = files['default']['nitf']
     if cmd == 'help':
         print(helpString)
+
+    elif cmd == 'load':
+        if len(args) !=2:
+            print("load [path to nitf] [alias]")
+            return
+        nitf_path, alias = args[0], args[1]
+        load_nitf(nitf_path, alias)
 
     elif cmd == 'list':
         if (len(args) == 0):
@@ -123,8 +193,9 @@ def processCommand(line):
             return
 
         tar, param = args[0], args[1:]
-
-        if (tar == 'seg'):
+        if tar == 'files':
+            print(files)
+        elif (tar == 'seg'):
             print ("Image Segments:")
             listImageSegments(f)
             # print("Graphic Segments")
@@ -174,10 +245,39 @@ def processCommand(line):
                     print("Select %s Segments 0 - %d" % (tar, len(segs) - 1))
         elif (tar == 'tre'):
             processTRE(f, param, True)
+    elif cmd == 'save_des':
+        param = args[0:]
+        des_segs = f.des_segment
+        if len(args) == 0:
+            print("Select DES Segments 0-{}".format(len(des_segs)-1))
+            return
+        index = int(param[0])
+        if index < len(des_segs):
+            print("Select path to file:")
+            save_path = input()
+            with open(save_path, 'wb') as fh:
+                des_segs[index].data.write_to_file(fh)
+
+        else:
+            print("Select DES Segments 0-{}".format(len(des_segs)-1))
+            return
+
 
     elif cmd == 'data':
         print("Data functionality not yet implemented")
 
+    elif cmd == 'image':
+        if len(args) == 0:
+            print("Specify sub command and image index")
+
+        sub_cmd, index, params = args[0], int(args[1]), args[2:]
+        if sub_cmd == "display":
+            display_image(f, index)
+        elif sub_cmd == "diff":
+            index2 = int(args[2])
+            if index2 >= len(f.image_segment):
+                print("Select Image Segment  0-{} for index 2".format(len(f.image_segments) - 1))
+            display_diff(f, index, index2)
     else:
         print('Unknown command: {}'.format(cmd))
 
@@ -187,6 +287,8 @@ if "NITF_PLUGIN" in os.environ:
 
 a = pynitf.docopt_simple.docopt_simple(usage, version=version)
 f = NitfFile(a.nitf_file)
+files = {}
+load_nitf(a.nitf_file, 'default')
 
 command = a.args['-c']
 print(type(command))
