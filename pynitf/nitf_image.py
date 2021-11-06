@@ -399,8 +399,13 @@ class NitfImageWriteDataOnDemand(NitfImageWithSubset):
                 # being memorymapped
                 can_have_data = False
         else:
-            self.mm = self.mmap_cache[fh]
-            self.mm.resize(fh.tell())
+            try:
+                self.mm = self.mmap_cache[fh]
+                self.mm.resize(fh.tell())
+            except SystemError:
+                # The mac doesn't have resize, so just fall back to not
+                # being able to read the data
+                can_have_data = False
         if(can_have_data):
             self.data_written = np.ndarray(self.shape, dtype = ih.dtype,
                                            buffer = self.mm,

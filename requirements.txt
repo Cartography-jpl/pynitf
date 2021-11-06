@@ -5,3 +5,9 @@ docopt
 h5py
 # Needed for testing only
 pytest
+pytest-xdist
+# For building documentation
+Sphinx
+# Note this doesn't currently have a Anaconda package, but can be installed
+# with pip
+sphinxcontrib-plantuml
