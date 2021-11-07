@@ -9,7 +9,7 @@ import copy
 import logging
 import struct
 
-@pytest.yield_fixture(scope="function")
+@pytest.fixture(scope="function")
 def nitf_diff_field_struct(print_logging):
     '''Set up a NitfDiff object that just compares field structure 
     objects'''

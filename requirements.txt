@@ -3,11 +3,15 @@ docopt
 # h5py isn't strictly required, without this there is just a few
 # functions that aren't implemented
 h5py
+
 # Needed for testing only
 pytest
 pytest-xdist
-# For building documentation
+
+# For building documentation. Can leave these packages out if you aren't
+# building the documentation.
 Sphinx
 # Note this doesn't currently have a Anaconda package, but can be installed
 # with pip
 sphinxcontrib-plantuml
+ghp-import

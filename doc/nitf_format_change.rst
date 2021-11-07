@@ -25,8 +25,8 @@ NITF handling can be changed at run time.
 Note that often you need to modify the writing of a NITF field, but not
 do anything special for the reading. Many of our field handlers just use
 the normal python command (e.g., 'float' to get a float), which doesn't
-assume much about the format. To a "+10.0" or a " 10.0" or a "10.0" all
-get parsed without change.
+assume much about the format. So if we modify a field to a "+10.0" or a
+" 10.0" or a "10.0" all get parsed without change.
 
 However in some cases you do need to update the reading also.
 
@@ -47,7 +47,7 @@ Example 1: No change
 --------------------
 
 The first example is the base example without any change. We'll use
-the TRE USE00A. There is nothing particularly special about this TRE, it
+the TRE USE00A. There is nothing special about this TRE, it
 is just a particularly simple TRE that we often use for examples. We'll
 focus on one particular field "OBL_ANG" in these examples.
 
@@ -97,8 +97,8 @@ So our example code would be::
    print(t2.get_raw_bytes("obl_ang"))
    # Prints b"  1.0"
 
-Example 3: Using new TRE class
-------------------------------
+Example 3: Using a new TRE class
+--------------------------------
 
 After supplying the test file to Yoyodyne, we determine that we want to
 be able to produce a number of files with this new format. We want to
@@ -116,7 +116,7 @@ instance of TreTagToCls). You can either create an entirely new TRE class,
 or just copy and modify the existing class.
 
 Most of the TREs in pynitf are instances of the Tre class, which is
-in turn and instance of FieldStruct that has the class specified
+in turn an instance of FieldStruct that has the class specified
 as a "desc" table. This *isn't* required, you just need to supply
 the same functions as Tre has, or you can supply a
 tre_implementation_class. But for this example we make a class
@@ -147,8 +147,8 @@ Our example is now::
    print(t2.get_raw_bytes("obl_ang"))
    # Prints b"  1.0"
   
-Example 4: Using format function
---------------------------------
+Example 4: Using a format function
+----------------------------------
 
 Sometimes a format is complicated enough it can't be captured with with
 a format string.
@@ -175,7 +175,7 @@ we supply a formatting function instead of a format string::
         tre_tag = TreUSE00A.tre_tag
     tre_tag_to_cls.add_cls(MyTreUSE00A)
 
-If we now test on a new file:
+If we now test on a new file::
 
    # ... rest of code like before
    t = MyTreUSE00A()
@@ -190,8 +190,79 @@ If we now test on a new file:
    # ... rest of code like before
    print(t2.get_raw_bytes("obl_ang"))
    # Prints b" 30.0"
-  
 
+Example 5: Using a FieldData class
+----------------------------------
+
+Even more complicated, there can be formats that can't use the
+normal format string for writing nor the standard python types for reading.
+
+Yoyodyne has decided that what it really needs is the number to be zero filled,
+using a space, and written backwards. For example 12.0 gets written as "00 21".
+
+The most general formatting takes a class that is derived from
+FieldData (or alternatively, just provides the same interface if
+deriving from it is inconvenient).
+
+So our example would look like::
+
+    class ReverseNumber(FieldData):
+        def get_print(self, key):
+            t = self[key]
+            if(t is None or len(t) == 0):
+                return "Not used"
+            return "%f" % t
+
+        def unpack(self, key, v):
+            return float(v.replace(b" ", b".")[::-1])
+        
+        def pack(self, key, v):
+            return (b"%05.2f" % v).replace(b".",b" ")[::-1]
+
+    my_desc = copy.deepcopy(TreUSE00A.desc)
+    ind = [i for i,d in enumerate(my_desc) if d[0] == "obl_ang"][0]
+    my_desc[ind] = ["obl_ang", "Obliquity Angle", 5, float,
+                    {"field_value_class" : ReverseNumber, "optional" :True,
+                     "size_not_updated" : True }]
+    class MyTreUSE00A(Tre):
+        __doc__ = TreUSE00A.__doc__
+        desc = my_desc
+        tre_tag = TreUSE00A.tre_tag
+    tre_tag_to_cls.add_cls(MyTreUSE00A)
+
+We would then use this like::
+  
+   # ... rest of code like before
+   t = MyTreUSE00A()
+   t.obl_ang = 1.0
+   # ... rest of code like before
+   print(t2.get_raw_bytes("obl_ang"))
+   # Prints b"00 10"
+
+
+Example 6: Changing and RSM TRE
+-------------------------------
+
+This is actually a non-example, we just list this to prevent any confusion.
+If you are using GeoCal, you can't modify the RSM TREs directly. This is really
+just a limitation imposed by another design constraint.
+
+The RSM stuff is really pretty complicated. All the TREs are handled
+by C++.  Before writing an RSM out, the GeoCal code deletes all the
+existing RSM TREs and recreates them from scratch. So any changes made
+to the TREs in python wouldn't stick. This is required because the set
+of TREs actually depends on the RSM. I have not been able to come up
+with a design that avoids this, it just seems like an inherent
+complication.  Note that you *can* interact with the GeoCal Rsm C++ class
+through python, but the final writing and reading of the TREs is handled by
+the Rsm C++ class.
+
+This means that changes to the RSM need to be made at the C++ level in GeoCal,
+you can't play the same sorts of games like you can with all the other TREs.
+This is unlike any other part of the NITF file, which gets handled by python.
+Even the GLAS/GFM interface is simpler than the RSM in this regard - you can
+do the same sort of modification games with the GLAS/GFM interface.
+   
 Full unit test examples
 =======================
 

@@ -5,7 +5,7 @@ from pynitf.nitf_tre import Tre, tre_tag_to_cls
 from pynitf_test_support import *
 import copy
 
-@pytest.yield_fixture(scope="function")
+@pytest.fixture(scope="function")
 def modify_use00a_tre():
     '''Wrapper that allows use00a to be modified and then moved 
     back to normal'''
@@ -36,8 +36,8 @@ def modify_use00a_tre():
 # Note that often you need to modify the writing of a NITF field, but not
 # do anything special for the reading. Many of our field handlers just use
 # the normal python command (e.g., 'float' to get a float), which doesn't
-# assume much about the format. To a "+10.0" or a " 10.0" or a "10.0" all
-# get parsed without change.
+# assume much about the format. So if we modify a field to a "+10.0" or a
+# " 10.0" or a "10.0" all get parsed without change.
 #
 # However in some cases you do need to update the reading also.
 #
@@ -126,8 +126,6 @@ def test_tre_modify(isolated_dir, modify_use00a_tre):
         desc = my_desc
         tre_tag = TreUSE00A.tre_tag
     tre_tag_to_cls.add_cls(MyTreUSE00A)
-    print(tre_tag_to_cls.tre_to_cls[b"USE00A"])
-    print(tre_tag_to_cls.tre_to_cls[b"USE00A"].desc)
 
     # Now test on a new file
     f = NitfFile()
@@ -178,8 +176,6 @@ def test_tre_modify_complicated_format(isolated_dir, modify_use00a_tre):
         desc = my_desc
         tre_tag = TreUSE00A.tre_tag
     tre_tag_to_cls.add_cls(MyTreUSE00A)
-    print(tre_tag_to_cls.tre_to_cls[b"USE00A"])
-    print(tre_tag_to_cls.tre_to_cls[b"USE00A"].desc)
 
     # Now test on a new file
     f = NitfFile()
@@ -226,5 +222,65 @@ def test_tre_modify_complicated_format(isolated_dir, modify_use00a_tre):
     assert tre3.get_raw_bytes("obl_ang") == b" 30.0"
     
 
-    
+# Even more complicated, there can be formats that can't use the
+# normal format string for either reading and writing.
+#
+# For example Yoyodyne has decided that what it really needs is the
+# number to zero filled, using a space, and written backwards.
+#
+# The most general formatting takes a class that is derived from
+# pynitf.FieldData (or alternatively, just provides the same interface if
+# deriving from it is inconvenient).
 
+def test_tre_modify_even_more_complicated_format(isolated_dir,
+                                                 modify_use00a_tre):
+    class ReverseNumber(FieldData):
+        def get_print(self, key):
+            t = self[key]
+            if(t is None or len(t) == 0):
+                return "Not used"
+            return "%f" % t
+
+        def unpack(self, key, v):
+            return float(v.replace(b" ", b".")[::-1])
+        
+        def pack(self, key, v):
+            return (b"%05.2f" % v).replace(b".",b" ")[::-1]
+
+    my_desc = copy.deepcopy(TreUSE00A.desc)
+    ind = [i for i,d in enumerate(my_desc) if d[0] == "obl_ang"][0]
+    my_desc[ind] = ["obl_ang", "Obliquity Angle", 5, float,
+                    {"field_value_class" : ReverseNumber, "optional" :True,
+                     "size_not_updated" : True }]
+    class MyTreUSE00A(Tre):
+        __doc__ = TreUSE00A.__doc__
+        desc = my_desc
+        tre_tag = TreUSE00A.tre_tag
+    tre_tag_to_cls.add_cls(MyTreUSE00A)
+
+    # Now test on a new file
+    f = NitfFile()
+    create_image_seg(f)
+    t = MyTreUSE00A()
+    t.angle_to_north = 270
+    t.mean_gsd = 105.2
+    t.dynamic_range = 2047
+    t.obl_ang = 1.0
+    t.roll_ang = -21.15
+    t.n_ref = 0
+    t.rev_num = 3317
+    t.n_seg = 1
+    t.max_lp_seg = 6287
+    t.sun_el = 68.5
+    t.sun_az = 131.3
+    f.image_segment[0].tre_list.append(t)
+    f.write("test.ntf")
+    f2 = NitfFile("test.ntf")
+    tre2 = f2.image_segment[0].tre_list[0]
+    # Float value is as expected
+    assert tre2.obl_ang == 1.0
+    # Raw bytes have 0 leading fill, with exactly 2 digit after
+    # decimal point, decimal point is a space, and in reverse order
+    assert tre2.get_raw_bytes("obl_ang") == b"00 10"
+    
+            

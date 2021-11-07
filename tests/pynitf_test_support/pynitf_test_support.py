@@ -208,7 +208,7 @@ require_gdal_value = pytest.mark.skipif(not sys.version_info > (3,) or
                    not cmd_exists("gdallocationinfo"),
                    reason="Require python 3 and gdallocationinfo")
 
-@pytest.yield_fixture(scope="function")
+@pytest.fixture(scope="function")
 def print_logging(isolated_dir):
     '''Direct logging to a local "run.log" file.
 
@@ -235,7 +235,7 @@ def print_logging(isolated_dir):
         print("\nLogger output:")
         print(t)
 
-@pytest.yield_fixture(scope="function")
+@pytest.fixture(scope="function")
 def config_dir(tmpdir, request):
     '''
     Likes isolated_dir, but first copies a folder with the same name of test
@@ -254,7 +254,7 @@ def config_dir(tmpdir, request):
     finally:
         os.chdir(curdir)
 
-@pytest.yield_fixture(scope="function")
+@pytest.fixture(scope="function")
 def isolated_dir(tmpdir):
     '''This is a fixture that creates a temporary directory, and uses this
     while running a unit tests. Useful for tests that write out a test file
@@ -280,7 +280,7 @@ def isolated_dir(tmpdir):
 # Things that really matter have small test data sets put into unit_test_data,
 # but we do want the option of running larger tests when available
 
-@pytest.yield_fixture(scope="function")
+@pytest.fixture(scope="function")
 def nitf_sample_files(isolated_dir):
     if(os.path.exists("/bigdata/smyth/NitfSamples/")):
         return "/bigdata/smyth/NitfSamples/"
@@ -294,28 +294,28 @@ def nitf_sample_files(isolated_dir):
         return "/Users/smyth/NitfSamples/"
     pytest.skip("Require NitfSamples test data to run")
 
-@pytest.yield_fixture(scope="function")
+@pytest.fixture(scope="function")
 def nitf_sample_quickbird(nitf_sample_files):
     fname = nitf_sample_files + "quickbird/05NOV23034644-P1BS-005545406180_01_P001.NTF"
     if(os.path.exists(fname)):
         return fname
     pytest.skip("Required file %s not found, so skipping test" % fname)
 
-@pytest.yield_fixture(scope="function")
+@pytest.fixture(scope="function")
 def nitf_sample_wv2(nitf_sample_files):
     fname = nitf_sample_files + "wv2/12JAN23015358-P1BS-052654848010_01_P003.NTF"
     if(os.path.exists(fname)):
         return fname
     pytest.skip("Required file %s not found, so skipping test" % fname)
 
-@pytest.yield_fixture(scope="function")
+@pytest.fixture(scope="function")
 def nitf_sample_ikonos(nitf_sample_files):
     fname = nitf_sample_files + "ikonos/11DEC11IK0101000po_755166_pan_0000000.ntf"
     if(os.path.exists(fname)):
         return fname
     pytest.skip("Required file %s not found, so skipping test" % fname)
 
-@pytest.yield_fixture(scope="function")
+@pytest.fixture(scope="function")
 def nitf_sample_rip(nitf_sample_files):
     fname = nitf_sample_files + "rip/07APR2005_Hyperion_331405N0442002E_SWIR172_001_L1R.ntf"
     if(os.path.exists(fname)):
