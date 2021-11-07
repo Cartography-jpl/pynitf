@@ -93,6 +93,8 @@ The function handle forwards work to the function handle_h, as shown in
        end note
    end
 
+.. _field-struct-section:
+   
 FieldStruct
 ------------
 
