@@ -8,13 +8,14 @@ Introduction
 One of the common issues with NITF is the need to do special formatting
 for a particular field.
 
-#. There is a formatting for a field that pynitf isn't doing corrections
+#. There is a formatting for a field that pynitf isn't doing correctly
    (e.g., what amounts to a bug in pynitf)
-#. A particular formatting that is needed by a partner that we are
-   sending files to. In some cases this can just be a tool that has
-   a more restrictive formatting assumption than the standard (e.g.,
+#. A particular format is needed by a partner that we are
+   sending files to. In some cases this can just be because they have a 
+   tool that has a more restrictive formatting assumption than the standard
+   (e.g.,
    it *requires* a '+' before a positive number even if the NITF standard
-   documentation doesn't), or it requires a format that is actually
+   documentation doesn't), or the tool might requires a format that is actually
    wrong (e.g., what amounts to a bug in the tool they are using, but where
    the tool isn't going to be updated and we need to conform to the wrong
    format)
@@ -24,9 +25,9 @@ NITF handling can be changed at run time.
 
 Note that often you need to modify the writing of a NITF field, but not
 do anything special for the reading. Many of our field handlers just use
-the normal python command (e.g., 'float' to get a float), which doesn't
+the normal python conversions (e.g., 'float()' to get a float), which doesn't
 assume much about the format. So if we modify a field to a "+10.0" or a
-" 10.0" or a "10.0" all get parsed without change.
+" 10.0" or a "10.0" all get parsed when reading without change.
 
 However in some cases you do need to update the reading also.
 
@@ -70,7 +71,7 @@ Most of the time when accessing a field in the TRE "t2" we are reading, we
 want the data interpreted as a data type. This is the normal access attributes
 that we have in the Tre class in pynitf. So for example "t2.obl_ang" will
 return the floating point number 1.0. However for some purposes you want to
-know exactly the string the data that is present in the TRE. There is a
+know exactly the string the data get represented as in the TRE. There is a
 special function "get_raw_bytes" that does exactly this::
 
    print(t2.get_raw_bytes("obl_ang"))
@@ -116,7 +117,7 @@ instance of TreTagToCls). You can either create an entirely new TRE class,
 or just copy and modify the existing class.
 
 Most of the TREs in pynitf are instances of the Tre class, which is
-in turn an instance of FieldStruct that has the class specified
+in turn an instance of :ref:`field-struct-section` that has the class specified
 as a "desc" table. This *isn't* required, you just need to supply
 the same functions as Tre has, or you can supply a
 tre_implementation_class. But for this example we make a class
