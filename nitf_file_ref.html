@@ -1,17 +1,18 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
-    <title>Pynitf Reference &#8212; pynitf 1.01 documentation</title>
-    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Pynitf Reference &#8212; pynitf 1.07 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
-    <script src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="prev" title="Top level scripts" href="script.html" />
@@ -36,13 +37,14 @@
 
 
 <h3>Navigation</h3>
-<p class="caption"><span class="caption-text">Contents:</span></p>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="design_principle.html">Design principles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="design.html">Software Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="nitf_file.html">NITF File</a></li>
 <li class="toctree-l1"><a class="reference internal" href="nitf_diff.html">NITF File Differences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nitf_format_change.html">NITF Special Format Changes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="script.html">Top level scripts</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Pynitf Reference</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#nitffile">NitfFile</a></li>
@@ -76,7 +78,7 @@
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
@@ -90,13 +92,13 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="pynitf-reference">
+  <section id="pynitf-reference">
 <h1>Pynitf Reference<a class="headerlink" href="#pynitf-reference" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="nitffile">
+<section id="nitffile">
 <span id="nitf-file-ref-section"></span><h2>NitfFile<a class="headerlink" href="#nitffile" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="pynitf.NitfFile">
-<em class="property">class </em><code class="sig-prename descclassname">pynitf.</code><code class="sig-name descname">NitfFile</code><span class="sig-paren">(</span><em class="sig-param">file_name=None</em>, <em class="sig-param">security=&lt;pynitf.nitf_security.NitfSecurity object&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfFile" title="Permalink to this definition">¶</a></dt>
+<dl class="py class">
+<dt class="sig sig-object py" id="pynitf.NitfFile">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pynitf.</span></span><span class="sig-name descname"><span class="pre">NitfFile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">file_name=None</span></em>, <em class="sig-param"><span class="pre">security=&lt;pynitf.nitf_security.NitfSecurity</span> <span class="pre">object&gt;</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfFile" title="Permalink to this definition">¶</a></dt>
 <dd><p>This is used to read and write a NITF File.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Variables</dt>
@@ -118,61 +120,61 @@ file</p></li>
 </ul>
 </dd>
 </dl>
-<dl class="method">
-<dt id="pynitf.NitfFile.engrda">
-<em class="property">property </em><code class="sig-name descname">engrda</code><a class="headerlink" href="#pynitf.NitfFile.engrda" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="pynitf.NitfFile.engrda">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">engrda</span></span><a class="headerlink" href="#pynitf.NitfFile.engrda" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return access to all the ENGRDA TREs as a hash on resrc (which should be
 unique). Error occurs if resrc is not unique.</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="pynitf.NitfFile.find_exactly_one_tre">
-<code class="sig-name descname">find_exactly_one_tre</code><span class="sig-paren">(</span><em class="sig-param">tre_tag</em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfFile.find_exactly_one_tre" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pynitf.NitfFile.find_exactly_one_tre">
+<span class="sig-name descname"><span class="pre">find_exactly_one_tre</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tre_tag</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfFile.find_exactly_one_tre" title="Permalink to this definition">¶</a></dt>
 <dd><p>Like find_one_tre, but not finding the TRE is treated as an error</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="pynitf.NitfFile.find_one_tre">
-<code class="sig-name descname">find_one_tre</code><span class="sig-paren">(</span><em class="sig-param">tre_tag</em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfFile.find_one_tre" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pynitf.NitfFile.find_one_tre">
+<span class="sig-name descname"><span class="pre">find_one_tre</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tre_tag</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfFile.find_one_tre" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find the given TRE. If not found, return None. If found, return it,
 if more than one found, return an error</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="pynitf.NitfFile.iseg_by_idlvl">
-<code class="sig-name descname">iseg_by_idlvl</code><span class="sig-paren">(</span><em class="sig-param">idlvl</em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfFile.iseg_by_idlvl" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pynitf.NitfFile.iseg_by_idlvl">
+<span class="sig-name descname"><span class="pre">iseg_by_idlvl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idlvl</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfFile.iseg_by_idlvl" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the image segment with a idlvl matching the given id</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="pynitf.NitfFile.iseg_by_iid1">
-<code class="sig-name descname">iseg_by_iid1</code><span class="sig-paren">(</span><em class="sig-param">iid1</em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfFile.iseg_by_iid1" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pynitf.NitfFile.iseg_by_iid1">
+<span class="sig-name descname"><span class="pre">iseg_by_iid1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iid1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfFile.iseg_by_iid1" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a (possibly empty) list of image segments with the given
 iid1 value.</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="pynitf.NitfFile.iseg_by_iid1_single">
-<code class="sig-name descname">iseg_by_iid1_single</code><span class="sig-paren">(</span><em class="sig-param">iid1</em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfFile.iseg_by_iid1_single" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pynitf.NitfFile.iseg_by_iid1_single">
+<span class="sig-name descname"><span class="pre">iseg_by_iid1_single</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iid1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfFile.iseg_by_iid1_single" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a single match to the given iid1. If we have 0 or more than
 1 match, then this throws an error.</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="pynitf.NitfFile.read">
-<code class="sig-name descname">read</code><span class="sig-paren">(</span><em class="sig-param">file_name</em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfFile.read" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pynitf.NitfFile.read">
+<span class="sig-name descname"><span class="pre">read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfFile.read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read the given file.</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="pynitf.NitfFile.security">
-<em class="property">property </em><code class="sig-name descname">security</code><a class="headerlink" href="#pynitf.NitfFile.security" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="pynitf.NitfFile.security">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">security</span></span><a class="headerlink" href="#pynitf.NitfFile.security" title="Permalink to this definition">¶</a></dt>
 <dd><p>NitfSecurity for file.</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="pynitf.NitfFile.segments">
-<code class="sig-name descname">segments</code><span class="sig-paren">(</span><em class="sig-param">include_seg_index=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfFile.segments" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pynitf.NitfFile.segments">
+<span class="sig-name descname"><span class="pre">segments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">include_seg_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfFile.segments" title="Permalink to this definition">¶</a></dt>
 <dd><p>Iterator to go through all the segments in a file. We often also
 need the seg_index, so you can pass that as True and we return the
 pair (seg_index, seg).</p>
@@ -186,26 +188,26 @@ tend to use 1 based indexing, we handle the conversion to and from
 1 based indexing at the lowest level of the file access.</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="pynitf.NitfFile.summary">
-<code class="sig-name descname">summary</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfFile.summary" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pynitf.NitfFile.summary">
+<span class="sig-name descname"><span class="pre">summary</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfFile.summary" title="Permalink to this definition">¶</a></dt>
 <dd><p>Short text summary of this file, something you can print out</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="pynitf.NitfFile.write">
-<code class="sig-name descname">write</code><span class="sig-paren">(</span><em class="sig-param">file_name</em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfFile.write" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pynitf.NitfFile.write">
+<span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfFile.write" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write to the given file</p>
 </dd></dl>
 
 </dd></dl>
 
-</div>
-<div class="section" id="nitfsegmenthookset">
+</section>
+<section id="nitfsegmenthookset">
 <h2>NitfSegmentHookSet<a class="headerlink" href="#nitfsegmenthookset" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="pynitf.NitfSegmentHookSet">
-<em class="property">class </em><code class="sig-prename descclassname">pynitf.</code><code class="sig-name descname">NitfSegmentHookSet</code><span class="sig-paren">(</span><em class="sig-param">iterable=()</em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfSegmentHookSet" title="Permalink to this definition">¶</a></dt>
+<dl class="py class">
+<dt class="sig sig-object py" id="pynitf.NitfSegmentHookSet">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pynitf.</span></span><span class="sig-name descname"><span class="pre">NitfSegmentHookSet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iterable</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfSegmentHookSet" title="Permalink to this definition">¶</a></dt>
 <dd><dl>
 <dt>To allow special handling of TREs etc. we allow a hook_list of</dt><dd><p>these objects to be passed to NitfSegment. These then are called in
 each function of NitfSegment.</p>
@@ -224,72 +226,72 @@ add a special hook, remove a hook).</p>
 in a NitfFile</p>
 </dd>
 </dl>
-<dl class="method">
-<dt id="pynitf.NitfSegmentHookSet.add_default_hook">
-<em class="property">classmethod </em><code class="sig-name descname">add_default_hook</code><span class="sig-paren">(</span><em class="sig-param">h</em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfSegmentHookSet.add_default_hook" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pynitf.NitfSegmentHookSet.add_default_hook">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">add_default_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfSegmentHookSet.add_default_hook" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add the given hook to the default set of hookrs.  The 
 higher priority_order (larger number) items are tried first.</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="pynitf.NitfSegmentHookSet.after_append_hook">
-<code class="sig-name descname">after_append_hook</code><span class="sig-paren">(</span><em class="sig-param">seg</em>, <em class="sig-param">nitf_file</em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfSegmentHookSet.after_append_hook" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pynitf.NitfSegmentHookSet.after_append_hook">
+<span class="sig-name descname"><span class="pre">after_append_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nitf_file</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfSegmentHookSet.after_append_hook" title="Permalink to this definition">¶</a></dt>
 <dd><p>Called after a segment is added to a NitfFile</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="pynitf.NitfSegmentHookSet.after_init_hook">
-<code class="sig-name descname">after_init_hook</code><span class="sig-paren">(</span><em class="sig-param">seg</em>, <em class="sig-param">nitf_file</em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfSegmentHookSet.after_init_hook" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pynitf.NitfSegmentHookSet.after_init_hook">
+<span class="sig-name descname"><span class="pre">after_init_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nitf_file</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfSegmentHookSet.after_init_hook" title="Permalink to this definition">¶</a></dt>
 <dd><p>Called at the end of NitfSegment.__init__</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="pynitf.NitfSegmentHookSet.after_read_hook">
-<code class="sig-name descname">after_read_hook</code><span class="sig-paren">(</span><em class="sig-param">seg</em>, <em class="sig-param">nitf_file</em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfSegmentHookSet.after_read_hook" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pynitf.NitfSegmentHookSet.after_read_hook">
+<span class="sig-name descname"><span class="pre">after_read_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nitf_file</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfSegmentHookSet.after_read_hook" title="Permalink to this definition">¶</a></dt>
 <dd><p>Called after NitfFile has read a file</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="pynitf.NitfSegmentHookSet.before_str_hook">
-<code class="sig-name descname">before_str_hook</code><span class="sig-paren">(</span><em class="sig-param">seg</em>, <em class="sig-param">nitf_file</em>, <em class="sig-param">fh</em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfSegmentHookSet.before_str_hook" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pynitf.NitfSegmentHookSet.before_str_hook">
+<span class="sig-name descname"><span class="pre">before_str_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nitf_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfSegmentHookSet.before_str_hook" title="Permalink to this definition">¶</a></dt>
 <dd><p>Called at the start of NitfSegment.__str__</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="pynitf.NitfSegmentHookSet.before_str_tre_hook">
-<code class="sig-name descname">before_str_tre_hook</code><span class="sig-paren">(</span><em class="sig-param">seg</em>, <em class="sig-param">tre</em>, <em class="sig-param">nitf_file</em>, <em class="sig-param">fh</em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfSegmentHookSet.before_str_tre_hook" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pynitf.NitfSegmentHookSet.before_str_tre_hook">
+<span class="sig-name descname"><span class="pre">before_str_tre_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tre</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nitf_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfSegmentHookSet.before_str_tre_hook" title="Permalink to this definition">¶</a></dt>
 <dd><p>Called before printing a TRE. If this returns true we assume
 that this class has handled the TRE printing. Otherwise, we
 call print on the tre</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="pynitf.NitfSegmentHookSet.before_write_hook">
-<code class="sig-name descname">before_write_hook</code><span class="sig-paren">(</span><em class="sig-param">seg</em>, <em class="sig-param">nitf_file</em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfSegmentHookSet.before_write_hook" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pynitf.NitfSegmentHookSet.before_write_hook">
+<span class="sig-name descname"><span class="pre">before_write_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nitf_file</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfSegmentHookSet.before_write_hook" title="Permalink to this definition">¶</a></dt>
 <dd><p>Called before NitfFile writes a file</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="pynitf.NitfSegmentHookSet.default_hook_set">
-<em class="property">classmethod </em><code class="sig-name descname">default_hook_set</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfSegmentHookSet.default_hook_set" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pynitf.NitfSegmentHookSet.default_hook_set">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">default_hook_set</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfSegmentHookSet.default_hook_set" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the default set of hookrs to use.</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="pynitf.NitfSegmentHookSet.discard_default_hook">
-<em class="property">classmethod </em><code class="sig-name descname">discard_default_hook</code><span class="sig-paren">(</span><em class="sig-param">h</em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfSegmentHookSet.discard_default_hook" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pynitf.NitfSegmentHookSet.discard_default_hook">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">discard_default_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfSegmentHookSet.discard_default_hook" title="Permalink to this definition">¶</a></dt>
 <dd><p>Discard the hook h from the default list. It is ok if h isn’t 
 actually in the set of hooks.</p>
 </dd></dl>
 
 </dd></dl>
 
-</div>
-<div class="section" id="nitfsegmenthook">
+</section>
+<section id="nitfsegmenthook">
 <h2>NitfSegmentHook<a class="headerlink" href="#nitfsegmenthook" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="pynitf.NitfSegmentHook">
-<em class="property">class </em><code class="sig-prename descclassname">pynitf.</code><code class="sig-name descname">NitfSegmentHook</code><a class="headerlink" href="#pynitf.NitfSegmentHook" title="Permalink to this definition">¶</a></dt>
+<dl class="py class">
+<dt class="sig sig-object py" id="pynitf.NitfSegmentHook">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pynitf.</span></span><span class="sig-name descname"><span class="pre">NitfSegmentHook</span></span><a class="headerlink" href="#pynitf.NitfSegmentHook" title="Permalink to this definition">¶</a></dt>
 <dd><p>To allow special handling of TREs etc. we allow a hook_list of
 these objects to be passed to NitfSegment. These then are called in
 each function of NitfSegment.</p>
@@ -298,47 +300,47 @@ the standard “duck” typing of python. This is just the list of functions
 that need to be supplied.</p>
 <p>See for example geocal_nitf_rsm.py in geocal for an example of using
 these hooks to add in support for the geocal Rsm object.</p>
-<dl class="method">
-<dt id="pynitf.NitfSegmentHook.after_append_hook">
-<code class="sig-name descname">after_append_hook</code><span class="sig-paren">(</span><em class="sig-param">seg</em>, <em class="sig-param">nitf_file</em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfSegmentHook.after_append_hook" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pynitf.NitfSegmentHook.after_append_hook">
+<span class="sig-name descname"><span class="pre">after_append_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nitf_file</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfSegmentHook.after_append_hook" title="Permalink to this definition">¶</a></dt>
 <dd><p>Called when a segment is added to a NitfFile</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="pynitf.NitfSegmentHook.after_init_hook">
-<code class="sig-name descname">after_init_hook</code><span class="sig-paren">(</span><em class="sig-param">seg</em>, <em class="sig-param">nitf_file</em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfSegmentHook.after_init_hook" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pynitf.NitfSegmentHook.after_init_hook">
+<span class="sig-name descname"><span class="pre">after_init_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nitf_file</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfSegmentHook.after_init_hook" title="Permalink to this definition">¶</a></dt>
 <dd><p>Called at the end of NitfSegment.__init__</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="pynitf.NitfSegmentHook.after_read_hook">
-<code class="sig-name descname">after_read_hook</code><span class="sig-paren">(</span><em class="sig-param">seg</em>, <em class="sig-param">nitf_file</em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfSegmentHook.after_read_hook" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pynitf.NitfSegmentHook.after_read_hook">
+<span class="sig-name descname"><span class="pre">after_read_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nitf_file</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfSegmentHook.after_read_hook" title="Permalink to this definition">¶</a></dt>
 <dd><p>Called after NitfFile has read a file</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="pynitf.NitfSegmentHook.before_str_hook">
-<code class="sig-name descname">before_str_hook</code><span class="sig-paren">(</span><em class="sig-param">seg</em>, <em class="sig-param">nitf_file</em>, <em class="sig-param">fh</em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfSegmentHook.before_str_hook" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pynitf.NitfSegmentHook.before_str_hook">
+<span class="sig-name descname"><span class="pre">before_str_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nitf_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfSegmentHook.before_str_hook" title="Permalink to this definition">¶</a></dt>
 <dd><p>Called at the start of NitfSegment.__str__</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="pynitf.NitfSegmentHook.before_str_tre_hook">
-<code class="sig-name descname">before_str_tre_hook</code><span class="sig-paren">(</span><em class="sig-param">seg</em>, <em class="sig-param">tre</em>, <em class="sig-param">nitf_file</em>, <em class="sig-param">fh</em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfSegmentHook.before_str_tre_hook" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pynitf.NitfSegmentHook.before_str_tre_hook">
+<span class="sig-name descname"><span class="pre">before_str_tre_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tre</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nitf_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfSegmentHook.before_str_tre_hook" title="Permalink to this definition">¶</a></dt>
 <dd><p>Called before printing a TRE. If this returns true we assume
 that this class has handled the TRE printing. Otherwise, we
 call print on the tre</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="pynitf.NitfSegmentHook.before_write_hook">
-<code class="sig-name descname">before_write_hook</code><span class="sig-paren">(</span><em class="sig-param">seg</em>, <em class="sig-param">nitf_file</em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfSegmentHook.before_write_hook" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pynitf.NitfSegmentHook.before_write_hook">
+<span class="sig-name descname"><span class="pre">before_write_hook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nitf_file</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfSegmentHook.before_write_hook" title="Permalink to this definition">¶</a></dt>
 <dd><p>Called before NitfFile writes a file</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="pynitf.NitfSegmentHook.remove_for_report_raw">
-<code class="sig-name descname">remove_for_report_raw</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfSegmentHook.remove_for_report_raw" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pynitf.NitfSegmentHook.remove_for_report_raw">
+<span class="sig-name descname"><span class="pre">remove_for_report_raw</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfSegmentHook.remove_for_report_raw" title="Permalink to this definition">¶</a></dt>
 <dd><p>Hooks usually map to some higher level object (e.g., Geocal
 handling RSM. Normally you want this, but for certain contexts it
 can be useful to suppress this behavior, e.g., nitfinfofull reporting
@@ -353,131 +355,131 @@ hook you can have the derived class change this to False.</p>
 
 </dd></dl>
 
-</div>
-<div class="section" id="priorityhandleset">
+</section>
+<section id="priorityhandleset">
 <h2>PriorityHandleSet<a class="headerlink" href="#priorityhandleset" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="pynitf.PriorityHandleSet">
-<em class="property">class </em><code class="sig-prename descclassname">pynitf.</code><code class="sig-name descname">PriorityHandleSet</code><a class="headerlink" href="#pynitf.PriorityHandleSet" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
-<dt id="pynitf.PriorityHandleSet.add_default_handle">
-<em class="property">classmethod </em><code class="sig-name descname">add_default_handle</code><span class="sig-paren">(</span><em class="sig-param">h</em>, <em class="sig-param">priority_order=0</em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.PriorityHandleSet.add_default_handle" title="Permalink to this definition">¶</a></dt>
+<dl class="py class">
+<dt class="sig sig-object py" id="pynitf.PriorityHandleSet">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pynitf.</span></span><span class="sig-name descname"><span class="pre">PriorityHandleSet</span></span><a class="headerlink" href="#pynitf.PriorityHandleSet" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="pynitf.PriorityHandleSet.add_default_handle">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">add_default_handle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">priority_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.PriorityHandleSet.add_default_handle" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add the given handle to the default set of handlers.  The 
 higher priority_order (larger number) items are tried first.</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="pynitf.PriorityHandleSet.add_handle">
-<code class="sig-name descname">add_handle</code><span class="sig-paren">(</span><em class="sig-param">h</em>, <em class="sig-param">priority_order=0</em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.PriorityHandleSet.add_handle" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pynitf.PriorityHandleSet.add_handle">
+<span class="sig-name descname"><span class="pre">add_handle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">priority_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.PriorityHandleSet.add_handle" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a handler. The higher priority_order (larger number) items are
 tried first.</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="pynitf.PriorityHandleSet.clear">
-<code class="sig-name descname">clear</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.PriorityHandleSet.clear" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pynitf.PriorityHandleSet.clear">
+<span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.PriorityHandleSet.clear" title="Permalink to this definition">¶</a></dt>
 <dd><p>Remove all handles in the set.</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="pynitf.PriorityHandleSet.default_handle_set">
-<em class="property">classmethod </em><code class="sig-name descname">default_handle_set</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.PriorityHandleSet.default_handle_set" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pynitf.PriorityHandleSet.default_handle_set">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">default_handle_set</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.PriorityHandleSet.default_handle_set" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the default set of handlers to use.</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="pynitf.PriorityHandleSet.discard_default_handle">
-<em class="property">classmethod </em><code class="sig-name descname">discard_default_handle</code><span class="sig-paren">(</span><em class="sig-param">h</em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.PriorityHandleSet.discard_default_handle" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pynitf.PriorityHandleSet.discard_default_handle">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">discard_default_handle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.PriorityHandleSet.discard_default_handle" title="Permalink to this definition">¶</a></dt>
 <dd><p>Discard the handle h from the default list. It is ok if h isn’t 
 actually in the set of handles.</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="pynitf.PriorityHandleSet.discard_handle">
-<code class="sig-name descname">discard_handle</code><span class="sig-paren">(</span><em class="sig-param">h</em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.PriorityHandleSet.discard_handle" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pynitf.PriorityHandleSet.discard_handle">
+<span class="sig-name descname"><span class="pre">discard_handle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.PriorityHandleSet.discard_handle" title="Permalink to this definition">¶</a></dt>
 <dd><p>Discard the handle h. It is ok if h isn’t actually in the set 
 of handles.</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="pynitf.PriorityHandleSet.handle">
-<code class="sig-name descname">handle</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">**keywords</em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.PriorityHandleSet.handle" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pynitf.PriorityHandleSet.handle">
+<span class="sig-name descname"><span class="pre">handle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">keywords</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.PriorityHandleSet.handle" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find the first handle that says it can process the given arguments,
 and return the results from that handle.</p>
 </dd></dl>
 
 </dd></dl>
 
-</div>
-<div class="section" id="nitfsegmentusersubheaderhandleset">
+</section>
+<section id="nitfsegmentusersubheaderhandleset">
 <h2>NitfSegmentUserSubheaderHandleSet<a class="headerlink" href="#nitfsegmentusersubheaderhandleset" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="pynitf.NitfSegmentUserSubheaderHandleSet">
-<em class="property">class </em><code class="sig-prename descclassname">pynitf.</code><code class="sig-name descname">NitfSegmentUserSubheaderHandleSet</code><a class="headerlink" href="#pynitf.NitfSegmentUserSubheaderHandleSet" title="Permalink to this definition">¶</a></dt>
+<dl class="py class">
+<dt class="sig sig-object py" id="pynitf.NitfSegmentUserSubheaderHandleSet">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pynitf.</span></span><span class="sig-name descname"><span class="pre">NitfSegmentUserSubheaderHandleSet</span></span><a class="headerlink" href="#pynitf.NitfSegmentUserSubheaderHandleSet" title="Permalink to this definition">¶</a></dt>
 <dd><p>This holds the user subheader handlers for each of the NitfSegment
 types that support these.</p>
-<dl class="method">
-<dt id="pynitf.NitfSegmentUserSubheaderHandleSet.user_subheader_cls">
-<code class="sig-name descname">user_subheader_cls</code><span class="sig-paren">(</span><em class="sig-param">seg</em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfSegmentUserSubheaderHandleSet.user_subheader_cls" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pynitf.NitfSegmentUserSubheaderHandleSet.user_subheader_cls">
+<span class="sig-name descname"><span class="pre">user_subheader_cls</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfSegmentUserSubheaderHandleSet.user_subheader_cls" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the user subheader class, or None if no User Subheader</p>
 </dd></dl>
 
 </dd></dl>
 
-</div>
-<div class="section" id="usersubheaderhandle">
+</section>
+<section id="usersubheaderhandle">
 <h2>UserSubheaderHandle<a class="headerlink" href="#usersubheaderhandle" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="pynitf.UserSubheaderHandle">
-<em class="property">class </em><code class="sig-prename descclassname">pynitf.</code><code class="sig-name descname">UserSubheaderHandle</code><a class="headerlink" href="#pynitf.UserSubheaderHandle" title="Permalink to this definition">¶</a></dt>
+<dl class="py class">
+<dt class="sig sig-object py" id="pynitf.UserSubheaderHandle">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pynitf.</span></span><span class="sig-name descname"><span class="pre">UserSubheaderHandle</span></span><a class="headerlink" href="#pynitf.UserSubheaderHandle" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-</div>
-<div class="section" id="desidtoushhandle">
+</section>
+<section id="desidtoushhandle">
 <h2>DesIdToUSHHandle<a class="headerlink" href="#desidtoushhandle" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="pynitf.DesIdToUSHHandle">
-<em class="property">class </em><code class="sig-prename descclassname">pynitf.</code><code class="sig-name descname">DesIdToUSHHandle</code><a class="headerlink" href="#pynitf.DesIdToUSHHandle" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="attribute">
-<dt id="pynitf.DesIdToUSHHandle.seg_class">
-<code class="sig-name descname">seg_class</code><a class="headerlink" href="#pynitf.DesIdToUSHHandle.seg_class" title="Permalink to this definition">¶</a></dt>
+<dl class="py class">
+<dt class="sig sig-object py" id="pynitf.DesIdToUSHHandle">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pynitf.</span></span><span class="sig-name descname"><span class="pre">DesIdToUSHHandle</span></span><a class="headerlink" href="#pynitf.DesIdToUSHHandle" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="pynitf.DesIdToUSHHandle.seg_class">
+<span class="sig-name descname"><span class="pre">seg_class</span></span><a class="headerlink" href="#pynitf.DesIdToUSHHandle.seg_class" title="Permalink to this definition">¶</a></dt>
 <dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">pynitf.nitf_segment.NitfDesSegment</span></code></p>
 </dd></dl>
 
 </dd></dl>
 
-</div>
-<div class="section" id="residtoushhandle">
+</section>
+<section id="residtoushhandle">
 <h2>ResIdToUSHHandle<a class="headerlink" href="#residtoushhandle" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="pynitf.ResIdToUSHHandle">
-<em class="property">class </em><code class="sig-prename descclassname">pynitf.</code><code class="sig-name descname">ResIdToUSHHandle</code><a class="headerlink" href="#pynitf.ResIdToUSHHandle" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="attribute">
-<dt id="pynitf.ResIdToUSHHandle.seg_class">
-<code class="sig-name descname">seg_class</code><a class="headerlink" href="#pynitf.ResIdToUSHHandle.seg_class" title="Permalink to this definition">¶</a></dt>
+<dl class="py class">
+<dt class="sig sig-object py" id="pynitf.ResIdToUSHHandle">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pynitf.</span></span><span class="sig-name descname"><span class="pre">ResIdToUSHHandle</span></span><a class="headerlink" href="#pynitf.ResIdToUSHHandle" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="pynitf.ResIdToUSHHandle.seg_class">
+<span class="sig-name descname"><span class="pre">seg_class</span></span><a class="headerlink" href="#pynitf.ResIdToUSHHandle.seg_class" title="Permalink to this definition">¶</a></dt>
 <dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">pynitf.nitf_segment.NitfResSegment</span></code></p>
 </dd></dl>
 
 </dd></dl>
 
-</div>
-<div class="section" id="nitfsegmentdatahandleset">
+</section>
+<section id="nitfsegmentdatahandleset">
 <h2>NitfSegmentDataHandleSet<a class="headerlink" href="#nitfsegmentdatahandleset" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="pynitf.NitfSegmentDataHandleSet">
-<em class="property">class </em><code class="sig-prename descclassname">pynitf.</code><code class="sig-name descname">NitfSegmentDataHandleSet</code><a class="headerlink" href="#pynitf.NitfSegmentDataHandleSet" title="Permalink to this definition">¶</a></dt>
+<dl class="py class">
+<dt class="sig sig-object py" id="pynitf.NitfSegmentDataHandleSet">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pynitf.</span></span><span class="sig-name descname"><span class="pre">NitfSegmentDataHandleSet</span></span><a class="headerlink" href="#pynitf.NitfSegmentDataHandleSet" title="Permalink to this definition">¶</a></dt>
 <dd><p>Handle reading the data in a segment (e.g, a image)</p>
-<dl class="method">
-<dt id="pynitf.NitfSegmentDataHandleSet.handle_h">
-<code class="sig-name descname">handle_h</code><span class="sig-paren">(</span><em class="sig-param">cls</em>, <em class="sig-param">seg</em>, <em class="sig-param">fh</em>, <em class="sig-param">seg_index</em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfSegmentDataHandleSet.handle_h" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pynitf.NitfSegmentDataHandleSet.handle_h">
+<span class="sig-name descname"><span class="pre">handle_h</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seg_index</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfSegmentDataHandleSet.handle_h" title="Permalink to this definition">¶</a></dt>
 <dd><p>Try reading using a given cls derived from NitfData. We 
 first check that the seg is the same class as cls.seg_class,
 and if so try to read the data from file.</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="pynitf.NitfSegmentDataHandleSet.read_from_file">
-<code class="sig-name descname">read_from_file</code><span class="sig-paren">(</span><em class="sig-param">seg</em>, <em class="sig-param">fh</em>, <em class="sig-param">seg_index=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfSegmentDataHandleSet.read_from_file" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pynitf.NitfSegmentDataHandleSet.read_from_file">
+<span class="sig-name descname"><span class="pre">read_from_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seg_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfSegmentDataHandleSet.read_from_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read the data for the given NitfSegment from file handle fh.</p>
 <p>Note that most handlers don’t care about the seg_index, but there
 are some that hand things off other libraries that do use this
@@ -488,16 +490,16 @@ are calling this through NitfFile).</p>
 
 </dd></dl>
 
-</div>
-<div class="section" id="nitfdata">
+</section>
+<section id="nitfdata">
 <h2>NitfData<a class="headerlink" href="#nitfdata" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="pynitf.NitfData">
-<em class="property">class </em><code class="sig-prename descclassname">pynitf.</code><code class="sig-name descname">NitfData</code><span class="sig-paren">(</span><em class="sig-param">seg=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfData" title="Permalink to this definition">¶</a></dt>
+<dl class="py class">
+<dt class="sig sig-object py" id="pynitf.NitfData">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pynitf.</span></span><span class="sig-name descname"><span class="pre">NitfData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfData" title="Permalink to this definition">¶</a></dt>
 <dd><p>Handle reading and writing the data in a segment (e.g, a image).</p>
-<dl class="method">
-<dt id="pynitf.NitfData.read_from_file">
-<em class="property">abstract </em><code class="sig-name descname">read_from_file</code><span class="sig-paren">(</span><em class="sig-param">fh</em>, <em class="sig-param">seg_index=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfData.read_from_file" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pynitf.NitfData.read_from_file">
+<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">read_from_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seg_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfData.read_from_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Attempt to read data from the given file.  If the data can’t be
 read this class, return False. Otherwise, return True. Note that
 True/False <em>isn’t</em> from a read error, but rather because this
@@ -505,147 +507,123 @@ is an unsupported type (e.g., a JPEG-2000 compressed image with
 a reader that doesn’t support that).</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="pynitf.NitfData.security">
-<em class="property">property </em><code class="sig-name descname">security</code><a class="headerlink" href="#pynitf.NitfData.security" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="pynitf.NitfData.security">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">security</span></span><a class="headerlink" href="#pynitf.NitfData.security" title="Permalink to this definition">¶</a></dt>
 <dd><p>NitfSecurity for data.</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="pynitf.NitfData.subheader">
-<em class="property">property </em><code class="sig-name descname">subheader</code><a class="headerlink" href="#pynitf.NitfData.subheader" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="pynitf.NitfData.subheader">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">subheader</span></span><a class="headerlink" href="#pynitf.NitfData.subheader" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return subheader for NitfData</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="pynitf.NitfData.user_subheader">
-<em class="property">property </em><code class="sig-name descname">user_subheader</code><a class="headerlink" href="#pynitf.NitfData.user_subheader" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="pynitf.NitfData.user_subheader">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">user_subheader</span></span><a class="headerlink" href="#pynitf.NitfData.user_subheader" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return user_subheader for NitfData</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="pynitf.NitfData.user_subheader_size">
-<em class="property">property </em><code class="sig-name descname">user_subheader_size</code><a class="headerlink" href="#pynitf.NitfData.user_subheader_size" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="pynitf.NitfData.user_subheader_size">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">user_subheader_size</span></span><a class="headerlink" href="#pynitf.NitfData.user_subheader_size" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the size of the user subheader. This can be used to
 make sure we aren’t exceeding the size supported by desshl</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="pynitf.NitfData.write_to_file">
-<em class="property">abstract </em><code class="sig-name descname">write_to_file</code><span class="sig-paren">(</span><em class="sig-param">fh</em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfData.write_to_file" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pynitf.NitfData.write_to_file">
+<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">write_to_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfData.write_to_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write data to the given file handle.</p>
 </dd></dl>
 
 </dd></dl>
 
-</div>
-<div class="section" id="nitfimage">
+</section>
+<section id="nitfimage">
 <h2>NitfImage<a class="headerlink" href="#nitfimage" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="pynitf.NitfImage">
-<em class="property">class </em><code class="sig-prename descclassname">pynitf.</code><code class="sig-name descname">NitfImage</code><span class="sig-paren">(</span><em class="sig-param">seg=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfImage" title="Permalink to this definition">¶</a></dt>
+<dl class="py class">
+<dt class="sig sig-object py" id="pynitf.NitfImage">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pynitf.</span></span><span class="sig-name descname"><span class="pre">NitfImage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfImage" title="Permalink to this definition">¶</a></dt>
 <dd><p>Base class for reading/writing data in a NitfImageSegment</p>
-<dl class="method">
-<dt id="pynitf.NitfImage.dtype">
-<em class="property">property </em><code class="sig-name descname">dtype</code><a class="headerlink" href="#pynitf.NitfImage.dtype" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="pynitf.NitfImage.dtype">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">dtype</span></span><a class="headerlink" href="#pynitf.NitfImage.dtype" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return data type of data</p>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pynitf.NitfImage.seg_class">
-<code class="sig-name descname">seg_class</code><a class="headerlink" href="#pynitf.NitfImage.seg_class" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pynitf.NitfImage.seg_class">
+<span class="sig-name descname"><span class="pre">seg_class</span></span><a class="headerlink" href="#pynitf.NitfImage.seg_class" title="Permalink to this definition">¶</a></dt>
 <dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">pynitf.nitf_segment.NitfImageSegment</span></code></p>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pynitf.NitfImage.sh_class">
-<code class="sig-name descname">sh_class</code><a class="headerlink" href="#pynitf.NitfImage.sh_class" title="Permalink to this definition">¶</a></dt>
-<dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">pynitf.nitf_image_subheader.NitfImageSubheader</span></code></p>
-</dd></dl>
-
-<dl class="method">
-<dt id="pynitf.NitfImage.shape">
-<em class="property">property </em><code class="sig-name descname">shape</code><a class="headerlink" href="#pynitf.NitfImage.shape" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="pynitf.NitfImage.shape">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">shape</span></span><a class="headerlink" href="#pynitf.NitfImage.shape" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return shape of data</p>
 </dd></dl>
 
 </dd></dl>
 
-</div>
-<div class="section" id="nitfdes">
+</section>
+<section id="nitfdes">
 <h2>NitfDes<a class="headerlink" href="#nitfdes" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="pynitf.NitfDes">
-<em class="property">class </em><code class="sig-prename descclassname">pynitf.</code><code class="sig-name descname">NitfDes</code><span class="sig-paren">(</span><em class="sig-param">seg=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfDes" title="Permalink to this definition">¶</a></dt>
+<dl class="py class">
+<dt class="sig sig-object py" id="pynitf.NitfDes">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pynitf.</span></span><span class="sig-name descname"><span class="pre">NitfDes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfDes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Base class for reading/writing data in a NitfDesSegment</p>
-<dl class="attribute">
-<dt id="pynitf.NitfDes.seg_class">
-<code class="sig-name descname">seg_class</code><a class="headerlink" href="#pynitf.NitfDes.seg_class" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pynitf.NitfDes.seg_class">
+<span class="sig-name descname"><span class="pre">seg_class</span></span><a class="headerlink" href="#pynitf.NitfDes.seg_class" title="Permalink to this definition">¶</a></dt>
 <dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">pynitf.nitf_segment.NitfDesSegment</span></code></p>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pynitf.NitfDes.sh_class">
-<code class="sig-name descname">sh_class</code><a class="headerlink" href="#pynitf.NitfDes.sh_class" title="Permalink to this definition">¶</a></dt>
-<dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">pynitf.nitf_des_subheader.NitfDesSubheader</span></code></p>
 </dd></dl>
 
-</dd></dl>
-
-</div>
-<div class="section" id="nitftext">
+</section>
+<section id="nitftext">
 <h2>NitfText<a class="headerlink" href="#nitftext" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="pynitf.NitfText">
-<em class="property">class </em><code class="sig-prename descclassname">pynitf.</code><code class="sig-name descname">NitfText</code><span class="sig-paren">(</span><em class="sig-param">seg=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfText" title="Permalink to this definition">¶</a></dt>
+<dl class="py class">
+<dt class="sig sig-object py" id="pynitf.NitfText">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pynitf.</span></span><span class="sig-name descname"><span class="pre">NitfText</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfText" title="Permalink to this definition">¶</a></dt>
 <dd><p>Base class for reading/writing data in a NitfTextSegment</p>
-<dl class="attribute">
-<dt id="pynitf.NitfText.seg_class">
-<code class="sig-name descname">seg_class</code><a class="headerlink" href="#pynitf.NitfText.seg_class" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pynitf.NitfText.seg_class">
+<span class="sig-name descname"><span class="pre">seg_class</span></span><a class="headerlink" href="#pynitf.NitfText.seg_class" title="Permalink to this definition">¶</a></dt>
 <dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">pynitf.nitf_segment.NitfTextSegment</span></code></p>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pynitf.NitfText.sh_class">
-<code class="sig-name descname">sh_class</code><a class="headerlink" href="#pynitf.NitfText.sh_class" title="Permalink to this definition">¶</a></dt>
-<dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">pynitf.nitf_text_subheader.NitfTextSubheader</span></code></p>
 </dd></dl>
 
-</dd></dl>
-
-</div>
-<div class="section" id="nitfgraphic">
+</section>
+<section id="nitfgraphic">
 <h2>NitfGraphic<a class="headerlink" href="#nitfgraphic" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="pynitf.NitfGraphic">
-<em class="property">class </em><code class="sig-prename descclassname">pynitf.</code><code class="sig-name descname">NitfGraphic</code><span class="sig-paren">(</span><em class="sig-param">seg=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfGraphic" title="Permalink to this definition">¶</a></dt>
+<dl class="py class">
+<dt class="sig sig-object py" id="pynitf.NitfGraphic">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pynitf.</span></span><span class="sig-name descname"><span class="pre">NitfGraphic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfGraphic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Base class for reading/writing data in a NitfGraphicSegment</p>
-<dl class="attribute">
-<dt id="pynitf.NitfGraphic.seg_class">
-<code class="sig-name descname">seg_class</code><a class="headerlink" href="#pynitf.NitfGraphic.seg_class" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pynitf.NitfGraphic.seg_class">
+<span class="sig-name descname"><span class="pre">seg_class</span></span><a class="headerlink" href="#pynitf.NitfGraphic.seg_class" title="Permalink to this definition">¶</a></dt>
 <dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">pynitf.nitf_segment.NitfGraphicSegment</span></code></p>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pynitf.NitfGraphic.sh_class">
-<code class="sig-name descname">sh_class</code><a class="headerlink" href="#pynitf.NitfGraphic.sh_class" title="Permalink to this definition">¶</a></dt>
-<dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">pynitf.nitf_graphic_subheader.NitfGraphicSubheader</span></code></p>
 </dd></dl>
 
-</dd></dl>
-
-</div>
-<div class="section" id="nitfdataplaceholder">
+</section>
+<section id="nitfdataplaceholder">
 <h2>NitfDataPlaceHolder<a class="headerlink" href="#nitfdataplaceholder" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="pynitf.NitfDataPlaceHolder">
-<em class="property">class </em><code class="sig-prename descclassname">pynitf.</code><code class="sig-name descname">NitfDataPlaceHolder</code><span class="sig-paren">(</span><em class="sig-param">seg=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfDataPlaceHolder" title="Permalink to this definition">¶</a></dt>
+<dl class="py class">
+<dt class="sig sig-object py" id="pynitf.NitfDataPlaceHolder">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pynitf.</span></span><span class="sig-name descname"><span class="pre">NitfDataPlaceHolder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfDataPlaceHolder" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implementation that doesn’t actually read any data, useful as a
 final place holder if none of our other NitfData classes can handle
 a particular segment. We just skip over the data when reading.</p>
-<dl class="method">
-<dt id="pynitf.NitfDataPlaceHolder.read_from_file">
-<code class="sig-name descname">read_from_file</code><span class="sig-paren">(</span><em class="sig-param">fh</em>, <em class="sig-param">seg_index=None</em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfDataPlaceHolder.read_from_file" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pynitf.NitfDataPlaceHolder.read_from_file">
+<span class="sig-name descname"><span class="pre">read_from_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seg_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfDataPlaceHolder.read_from_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Attempt to read data from the given file.  If the data can’t be
 read this class, return False. Otherwise, return True. Note that
 True/False <em>isn’t</em> from a read error, but rather because this
@@ -653,16 +631,16 @@ is an unsupported type (e.g., a JPEG-2000 compressed image with
 a reader that doesn’t support that).</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="pynitf.NitfDataPlaceHolder.write_to_file">
-<code class="sig-name descname">write_to_file</code><span class="sig-paren">(</span><em class="sig-param">fh</em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfDataPlaceHolder.write_to_file" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="pynitf.NitfDataPlaceHolder.write_to_file">
+<span class="sig-name descname"><span class="pre">write_to_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pynitf.NitfDataPlaceHolder.write_to_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write data to the given file handle.</p>
 </dd></dl>
 
 </dd></dl>
 
-</div>
-</div>
+</section>
+</section>
 
 
           </div>
@@ -675,7 +653,7 @@ a reader that doesn’t support that).</p>
       &copy;Copyright 2020, by the California Institute of Technology.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.4</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.2.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

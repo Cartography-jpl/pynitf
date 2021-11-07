@@ -1,0 +1,658 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>NITF Special Format Changes &#8212; pynitf 1.07 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Top level scripts" href="script.html" />
+    <link rel="prev" title="NITF File Differences" href="nitf_diff.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">pynitf</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="design_principle.html">Design principles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="design.html">Software Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nitf_file.html">NITF File</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nitf_diff.html">NITF File Differences</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">NITF Special Format Changes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#examples-of-format-changes">Examples of format changes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#example-1-no-change">Example 1: No change</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#example-2-using-nitfliteral">Example 2: Using NitfLiteral</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#example-3-using-a-new-tre-class">Example 3: Using a new TRE class</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#example-4-using-a-format-function">Example 4: Using a format function</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#example-5-using-a-fielddata-class">Example 5: Using a FieldData class</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#example-6-changing-and-rsm-tre">Example 6: Changing and RSM TRE</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#full-unit-test-examples">Full unit test examples</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="script.html">Top level scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nitf_file_ref.html">Pynitf Reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="nitf_diff.html" title="previous chapter">NITF File Differences</a></li>
+      <li>Next: <a href="script.html" title="next chapter">Top level scripts</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="nitf-special-format-changes">
+<h1>NITF Special Format Changes<a class="headerlink" href="#nitf-special-format-changes" title="Permalink to this headline">¶</a></h1>
+<section id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>One of the common issues with NITF is the need to do special formatting
+for a particular field.</p>
+<ol class="arabic simple">
+<li><p>There is a formatting for a field that pynitf isn’t doing corrections
+(e.g., what amounts to a bug in pynitf)</p></li>
+<li><p>A particular formatting that is needed by a partner that we are
+sending files to. In some cases this can just be a tool that has
+a more restrictive formatting assumption than the standard (e.g.,
+it <em>requires</em> a ‘+’ before a positive number even if the NITF standard
+documentation doesn’t), or it requires a format that is actually
+wrong (e.g., what amounts to a bug in the tool they are using, but where
+the tool isn’t going to be updated and we need to conform to the wrong
+format)</p></li>
+</ol>
+<p>One of the advantages of python is that it is a dynamic language. All the
+NITF handling can be changed at run time.</p>
+<p>Note that often you need to modify the writing of a NITF field, but not
+do anything special for the reading. Many of our field handlers just use
+the normal python command (e.g., ‘float’ to get a float), which doesn’t
+assume much about the format. So if we modify a field to a “+10.0” or a
+” 10.0” or a “10.0” all get parsed without change.</p>
+<p>However in some cases you do need to update the reading also.</p>
+<p>In the case of (1), this should ultimately get fixed in pynitf - a
+bug report should be submitted and pynitf changed. But even in that case
+it can useful to dynamically fix this in a particular program until a
+new version of pynitf is available. So a useful procedure is to fix it
+first in your application, report the problem to pynitf, and then when
+you update to new version of pynitf remove your local fix.</p>
+</section>
+<section id="examples-of-format-changes">
+<h2>Examples of format changes<a class="headerlink" href="#examples-of-format-changes" title="Permalink to this headline">¶</a></h2>
+<p>To illustrate how to do special format changes, we’ll go through a
+series of examples ordered by increasing complexity.</p>
+<section id="example-1-no-change">
+<h3>Example 1: No change<a class="headerlink" href="#example-1-no-change" title="Permalink to this headline">¶</a></h3>
+<p>The first example is the base example without any change. We’ll use
+the TRE USE00A. There is nothing special about this TRE, it
+is just a particularly simple TRE that we often use for examples. We’ll
+focus on one particular field “OBL_ANG” in these examples.</p>
+<p>A basic creation/reading of this TRE is:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pynitf</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">f</span> <span class="o">=</span> <span class="n">NitfFile</span><span class="p">()</span>
+<span class="c1"># Create an image segment</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">TreUSE00A</span><span class="p">()</span>
+<span class="n">t</span><span class="o">.</span><span class="n">angle_to_north</span> <span class="o">=</span> <span class="mi">270</span>
+<span class="c1"># ... Set all the other fields</span>
+<span class="n">t</span><span class="o">.</span><span class="n">obl_ang</span> <span class="o">=</span> <span class="mf">1.0</span>
+<span class="n">f</span><span class="o">.</span><span class="n">image_segment</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tre_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+<span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;test.ntf&quot;</span><span class="p">)</span>
+<span class="n">f2</span> <span class="o">=</span> <span class="n">NitfFile</span><span class="p">(</span><span class="s2">&quot;test.ntf&quot;</span><span class="p">)</span>
+<span class="n">t2</span> <span class="o">=</span> <span class="n">f2</span><span class="o">.</span><span class="n">image_segment</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tre_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Most of the time when accessing a field in the TRE “t2” we are reading, we
+want the data interpreted as a data type. This is the normal access attributes
+that we have in the Tre class in pynitf. So for example “t2.obl_ang” will
+return the floating point number 1.0. However for some purposes you want to
+know exactly the string the data that is present in the TRE. There is a
+special function “get_raw_bytes” that does exactly this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">t2</span><span class="o">.</span><span class="n">get_raw_bytes</span><span class="p">(</span><span class="s2">&quot;obl_ang&quot;</span><span class="p">))</span>
+<span class="c1"># Prints b&quot;01.00&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="example-2-using-nitfliteral">
+<h3>Example 2: Using NitfLiteral<a class="headerlink" href="#example-2-using-nitfliteral" title="Permalink to this headline">¶</a></h3>
+<p>Our partner <a class="reference external" href="https://en.wikipedia.org/wiki/Yoyodyne">Yoyodyne</a> insists
+that we supply this number with leading spaces (instead of 0), and with only
+1 digit after the decimal place.</p>
+<p>The easiest way to do this as a one off (e.g., something quick and dirty for
+test data) is to pass a ‘NitfLiteral’. This is a special class in pynitf
+used to say “use this exact string”. The string is padded to be the right
+size for the NITF file (using python ljust to add trailing spaces), but is
+otherwise unchanged.</p>
+<p>So our example code would be:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># ... rest of code like before</span>
+<span class="n">t</span><span class="o">.</span><span class="n">obl_ang</span> <span class="o">=</span> <span class="n">NitfLiteral</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;  1.0&quot;</span><span class="p">)</span>
+<span class="c1"># ... rest of code like before</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">t2</span><span class="o">.</span><span class="n">get_raw_bytes</span><span class="p">(</span><span class="s2">&quot;obl_ang&quot;</span><span class="p">))</span>
+<span class="c1"># Prints b&quot;  1.0&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="example-3-using-a-new-tre-class">
+<h3>Example 3: Using a new TRE class<a class="headerlink" href="#example-3-using-a-new-tre-class" title="Permalink to this headline">¶</a></h3>
+<p>After supplying the test file to Yoyodyne, we determine that we want to
+be able to produce a number of files with this new format. We want to
+modify the TRE in our local application to use the new format for all files.</p>
+<p>Note this is also very similar to the use case of having a bug fix against
+pynitf (e.g. Yoyodyne’s format matches the standard and pynitf doesn’t).
+We may need to handle things locally until pynitf is updated, or perhaps
+we have a set of changes we want to work out/batch together before modifying
+pynitf.</p>
+<p>The way to do this is to modify how pynitf handles the TRE. All the
+TREs are handled by classes registered in tre_tag_to_cls (a
+instance of TreTagToCls). You can either create an entirely new TRE class,
+or just copy and modify the existing class.</p>
+<p>Most of the TREs in pynitf are instances of the Tre class, which is
+in turn an instance of FieldStruct that has the class specified
+as a “desc” table. This <em>isn’t</em> required, you just need to supply
+the same functions as Tre has, or you can supply a
+tre_implementation_class. But for this example we make a class
+derived from the Tre.</p>
+<p>Since we are only changing one field, we start with the existing
+TreUSE00A desc table. An alternative is just to create an entirely
+new table:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">my_desc</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">TreUSE00A</span><span class="o">.</span><span class="n">desc</span><span class="p">)</span>
+<span class="n">ind</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">d</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">my_desc</span><span class="p">)</span> <span class="k">if</span> <span class="n">d</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;obl_ang&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">my_desc</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;obl_ang&quot;</span><span class="p">,</span> <span class="s2">&quot;Obliquity Angle&quot;</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span>
+                <span class="c1"># frmt was &quot;%05.2lf&quot; for 2 digits after decimal point,</span>
+                <span class="c1"># 0 filled on left. Change to 1 digit, space filled.</span>
+                <span class="p">{</span><span class="s2">&quot;frmt&quot;</span> <span class="p">:</span> <span class="s2">&quot;</span><span class="si">%5.1lf</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;optional&quot;</span> <span class="p">:</span><span class="kc">True</span><span class="p">}]</span>
+<span class="k">class</span> <span class="nc">MyTreUSE00A</span><span class="p">(</span><span class="n">Tre</span><span class="p">):</span>
+    <span class="vm">__doc__</span> <span class="o">=</span> <span class="n">TreUSE00A</span><span class="o">.</span><span class="vm">__doc__</span>
+    <span class="n">desc</span> <span class="o">=</span> <span class="n">my_desc</span>
+    <span class="n">tre_tag</span> <span class="o">=</span> <span class="n">TreUSE00A</span><span class="o">.</span><span class="n">tre_tag</span>
+<span class="n">tre_tag_to_cls</span><span class="o">.</span><span class="n">add_cls</span><span class="p">(</span><span class="n">MyTreUSE00A</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Our example is now:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># ... rest of code like before</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">MyTreUSE00A</span><span class="p">()</span>
+<span class="n">t</span><span class="o">.</span><span class="n">obl_ang</span> <span class="o">=</span> <span class="mf">1.0</span>
+<span class="c1"># ... rest of code like before</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">t2</span><span class="o">.</span><span class="n">get_raw_bytes</span><span class="p">(</span><span class="s2">&quot;obl_ang&quot;</span><span class="p">))</span>
+<span class="c1"># Prints b&quot;  1.0&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="example-4-using-a-format-function">
+<h3>Example 4: Using a format function<a class="headerlink" href="#example-4-using-a-format-function" title="Permalink to this headline">¶</a></h3>
+<p>Sometimes a format is complicated enough it can’t be captured with with
+a format string.</p>
+<p>After supplying more test data, Yoyodyne informs us that the “real” rule
+they need is that they want a float with 2 digits after the decimal point
+zero filled, unless the number is &gt; 20 in which case it needs to use 1 digit
+and be space filled.</p>
+<p>The basic structure for this example is like the previous example except
+we supply a formatting function instead of a format string:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">my_format</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">v</span> <span class="o">&gt;</span> <span class="mi">20</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%5.1lf</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">v</span>
+    <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%05.2lf</span><span class="s2">&quot;</span> <span class="o">%</span><span class="n">v</span>
+<span class="n">my_desc</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">TreUSE00A</span><span class="o">.</span><span class="n">desc</span><span class="p">)</span>
+<span class="n">ind</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">d</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">my_desc</span><span class="p">)</span> <span class="k">if</span> <span class="n">d</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;obl_ang&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">my_desc</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;obl_ang&quot;</span><span class="p">,</span> <span class="s2">&quot;Obliquity Angle&quot;</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span>
+                <span class="p">{</span><span class="s2">&quot;frmt&quot;</span> <span class="p">:</span> <span class="n">my_format</span><span class="p">,</span> <span class="s2">&quot;optional&quot;</span> <span class="p">:</span><span class="kc">True</span><span class="p">}]</span>
+<span class="k">class</span> <span class="nc">MyTreUSE00A</span><span class="p">(</span><span class="n">Tre</span><span class="p">):</span>
+    <span class="vm">__doc__</span> <span class="o">=</span> <span class="n">TreUSE00A</span><span class="o">.</span><span class="vm">__doc__</span>
+    <span class="n">desc</span> <span class="o">=</span> <span class="n">my_desc</span>
+    <span class="n">tre_tag</span> <span class="o">=</span> <span class="n">TreUSE00A</span><span class="o">.</span><span class="n">tre_tag</span>
+<span class="n">tre_tag_to_cls</span><span class="o">.</span><span class="n">add_cls</span><span class="p">(</span><span class="n">MyTreUSE00A</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If we now test on a new file:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># ... rest of code like before</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">MyTreUSE00A</span><span class="p">()</span>
+<span class="n">t</span><span class="o">.</span><span class="n">obl_ang</span> <span class="o">=</span> <span class="mf">1.0</span>
+<span class="c1"># ... rest of code like before</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">t2</span><span class="o">.</span><span class="n">get_raw_bytes</span><span class="p">(</span><span class="s2">&quot;obl_ang&quot;</span><span class="p">))</span>
+<span class="c1"># Prints b&quot;01.00&quot;</span>
+
+<span class="c1"># ... rest of code like before</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">MyTreUSE00A</span><span class="p">()</span>
+<span class="n">t</span><span class="o">.</span><span class="n">obl_ang</span> <span class="o">=</span> <span class="mf">30.0</span>
+<span class="c1"># ... rest of code like before</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">t2</span><span class="o">.</span><span class="n">get_raw_bytes</span><span class="p">(</span><span class="s2">&quot;obl_ang&quot;</span><span class="p">))</span>
+<span class="c1"># Prints b&quot; 30.0&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="example-5-using-a-fielddata-class">
+<h3>Example 5: Using a FieldData class<a class="headerlink" href="#example-5-using-a-fielddata-class" title="Permalink to this headline">¶</a></h3>
+<p>Even more complicated, there can be formats that can’t use the
+normal format string for writing nor the standard python types for reading.</p>
+<p>Yoyodyne has decided that what it really needs is the number to be zero filled,
+using a space, and written backwards. For example 12.0 gets written as “00 21”.</p>
+<p>The most general formatting takes a class that is derived from
+FieldData (or alternatively, just provides the same interface if
+deriving from it is inconvenient).</p>
+<p>So our example would look like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ReverseNumber</span><span class="p">(</span><span class="n">FieldData</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">get_print</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">t</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="k">return</span> <span class="s2">&quot;Not used&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">t</span>
+
+    <span class="k">def</span> <span class="nf">unpack</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="sa">b</span><span class="s2">&quot;.&quot;</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">pack</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="sa">b</span><span class="s2">&quot;</span><span class="si">%05.2f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;.&quot;</span><span class="p">,</span><span class="sa">b</span><span class="s2">&quot; &quot;</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+<span class="n">my_desc</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">TreUSE00A</span><span class="o">.</span><span class="n">desc</span><span class="p">)</span>
+<span class="n">ind</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">d</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">my_desc</span><span class="p">)</span> <span class="k">if</span> <span class="n">d</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;obl_ang&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">my_desc</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;obl_ang&quot;</span><span class="p">,</span> <span class="s2">&quot;Obliquity Angle&quot;</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span>
+                <span class="p">{</span><span class="s2">&quot;field_value_class&quot;</span> <span class="p">:</span> <span class="n">ReverseNumber</span><span class="p">,</span> <span class="s2">&quot;optional&quot;</span> <span class="p">:</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="s2">&quot;size_not_updated&quot;</span> <span class="p">:</span> <span class="kc">True</span> <span class="p">}]</span>
+<span class="k">class</span> <span class="nc">MyTreUSE00A</span><span class="p">(</span><span class="n">Tre</span><span class="p">):</span>
+    <span class="vm">__doc__</span> <span class="o">=</span> <span class="n">TreUSE00A</span><span class="o">.</span><span class="vm">__doc__</span>
+    <span class="n">desc</span> <span class="o">=</span> <span class="n">my_desc</span>
+    <span class="n">tre_tag</span> <span class="o">=</span> <span class="n">TreUSE00A</span><span class="o">.</span><span class="n">tre_tag</span>
+<span class="n">tre_tag_to_cls</span><span class="o">.</span><span class="n">add_cls</span><span class="p">(</span><span class="n">MyTreUSE00A</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We would then use this like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># ... rest of code like before</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">MyTreUSE00A</span><span class="p">()</span>
+<span class="n">t</span><span class="o">.</span><span class="n">obl_ang</span> <span class="o">=</span> <span class="mf">1.0</span>
+<span class="c1"># ... rest of code like before</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">t2</span><span class="o">.</span><span class="n">get_raw_bytes</span><span class="p">(</span><span class="s2">&quot;obl_ang&quot;</span><span class="p">))</span>
+<span class="c1"># Prints b&quot;00 10&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="example-6-changing-and-rsm-tre">
+<h3>Example 6: Changing and RSM TRE<a class="headerlink" href="#example-6-changing-and-rsm-tre" title="Permalink to this headline">¶</a></h3>
+<p>This is actually a non-example, we just list this to prevent any confusion.
+If you are using GeoCal, you can’t modify the RSM TREs directly. This is really
+just a limitation imposed by another design constraint.</p>
+<p>The RSM stuff is really pretty complicated. All the TREs are handled
+by C++.  Before writing an RSM out, the GeoCal code deletes all the
+existing RSM TREs and recreates them from scratch. So any changes made
+to the TREs in python wouldn’t stick. This is required because the set
+of TREs actually depends on the RSM. I have not been able to come up
+with a design that avoids this, it just seems like an inherent
+complication.  Note that you <em>can</em> interact with the GeoCal Rsm C++ class
+through python, but the final writing and reading of the TREs is handled by
+the Rsm C++ class.</p>
+<p>This means that changes to the RSM need to be made at the C++ level in GeoCal,
+you can’t play the same sorts of games like you can with all the other TREs.
+This is unlike any other part of the NITF file, which gets handled by python.
+Even the GLAS/GFM interface is simpler than the RSM in this regard - you can
+do the same sort of modification games with the GLAS/GFM interface.</p>
+</section>
+</section>
+<section id="full-unit-test-examples">
+<h2>Full unit test examples<a class="headerlink" href="#full-unit-test-examples" title="Permalink to this headline">¶</a></h2>
+<p>There is actual working pytest unit tests available in
+tests/sample_format_test.py that illustrate the various modification tests.</p>
+<p>The source is here for reference, but you can directly view and run this
+in the pynitf source tree.</p>
+<div class="literal-block-wrapper docutils container" id="sample-format-test">
+<div class="code-block-caption"><span class="caption-number">Listing 1 </span><span class="caption-text">tests/sample_format_test.py</span><a class="headerlink" href="#sample-format-test" title="Permalink to this code">¶</a></div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pynitf.nitf_file</span> <span class="kn">import</span> <span class="n">NitfFile</span>
+<span class="kn">from</span> <span class="nn">pynitf.nitf_field</span> <span class="kn">import</span> <span class="n">NitfLiteral</span><span class="p">,</span> <span class="n">FieldData</span>
+<span class="kn">from</span> <span class="nn">pynitf.nitf_tre_csde</span> <span class="kn">import</span> <span class="n">TreUSE00A</span>
+<span class="kn">from</span> <span class="nn">pynitf.nitf_tre</span> <span class="kn">import</span> <span class="n">Tre</span><span class="p">,</span> <span class="n">tre_tag_to_cls</span>
+<span class="kn">from</span> <span class="nn">pynitf_test_support</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+
+<span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;function&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">modify_use00a_tre</span><span class="p">():</span>
+    <span class="sd">&#39;&#39;&#39;Wrapper that allows use00a to be modified and then moved </span>
+<span class="sd">    back to normal&#39;&#39;&#39;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">yield</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="n">tre_tag_to_cls</span><span class="o">.</span><span class="n">add_cls</span><span class="p">(</span><span class="n">TreUSE00A</span><span class="p">)</span>    
+    
+<span class="c1"># One of the common issues with NITF is the need to do special formatting</span>
+<span class="c1"># for a particular field.</span>
+<span class="c1">#</span>
+<span class="c1"># This falls into two categories:</span>
+<span class="c1">#</span>
+<span class="c1"># 1. There is a formatting for a field that pynitf isn&#39;t doing correctly</span>
+<span class="c1">#    (e.g., what amounts to a bug in pynitf)</span>
+<span class="c1"># 2. A particular formatting that is needed by a partner that we are</span>
+<span class="c1">#    sending files to. In some cases this can just be a tool that has</span>
+<span class="c1">#    a more restrictive formatting assumption than the standard (e.g.,</span>
+<span class="c1">#    it *requires* a &#39;+&#39; before a positive number even if the NITF standard</span>
+<span class="c1">#    documentation doesn&#39;t), or it requires a format that is actually</span>
+<span class="c1">#    wrong (e.g., what amounts to a bug in the tool they are using, but where</span>
+<span class="c1">#    the tool isn&#39;t going to be updated and we need to conform to the wrong</span>
+<span class="c1">#    format).</span>
+<span class="c1">#</span>
+<span class="c1"># One of the advantages of python is that it is a dynamic language. All the</span>
+<span class="c1"># NITF handling can be changed at run time.</span>
+<span class="c1">#</span>
+<span class="c1"># Note that often you need to modify the writing of a NITF field, but not</span>
+<span class="c1"># do anything special for the reading. Many of our field handlers just use</span>
+<span class="c1"># the normal python command (e.g., &#39;float&#39; to get a float), which doesn&#39;t</span>
+<span class="c1"># assume much about the format. So if we modify a field to a &quot;+10.0&quot; or a</span>
+<span class="c1"># &quot; 10.0&quot; or a &quot;10.0&quot; all get parsed without change.</span>
+<span class="c1">#</span>
+<span class="c1"># However in some cases you do need to update the reading also.</span>
+<span class="c1">#</span>
+<span class="c1"># In the case of (1), this should ultimately get fixed in pynitf - a</span>
+<span class="c1"># bug report should be submitted and pynitf changed. But even in that case</span>
+<span class="c1"># it can useful to dynamically fix this in a particular program until a</span>
+<span class="c1"># new version of pynitf is available. So a useful procedure is to fix it</span>
+<span class="c1"># first in your application, report the problem to pynitf, and then when</span>
+<span class="c1"># you update to new version of pynitf remove your local fix.</span>
+
+<span class="k">def</span> <span class="nf">test_no_change</span><span class="p">(</span><span class="n">isolated_dir</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;This just creates a simple file with one image segment and</span>
+<span class="sd">    adds a USE00A TRE. We use this TRE just because it is simple and</span>
+<span class="sd">    a nice one for testing.&#39;&#39;&#39;</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="n">NitfFile</span><span class="p">()</span>
+    <span class="n">create_image_seg</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">create_tre</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">image_segment</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">tre</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">image_segment</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tre_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">tre</span><span class="o">.</span><span class="n">obl_ang</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;test.ntf&quot;</span><span class="p">)</span>
+    <span class="n">f2</span> <span class="o">=</span> <span class="n">NitfFile</span><span class="p">(</span><span class="s2">&quot;test.ntf&quot;</span><span class="p">)</span>
+    <span class="n">tre2</span> <span class="o">=</span> <span class="n">f2</span><span class="o">.</span><span class="n">image_segment</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tre_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="c1"># Float value is as expected</span>
+    <span class="k">assert</span> <span class="n">tre2</span><span class="o">.</span><span class="n">obl_ang</span> <span class="o">==</span> <span class="mf">1.0</span>
+    <span class="c1"># Raw bytes have 0 leading fill, with exactly 2 digits after decimal point</span>
+    <span class="k">assert</span> <span class="n">tre2</span><span class="o">.</span><span class="n">get_raw_bytes</span><span class="p">(</span><span class="s2">&quot;obl_ang&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="sa">b</span><span class="s2">&quot;01.00&quot;</span>
+
+<span class="c1"># Our partner Yoyodyne insists</span>
+<span class="c1"># that we supply this number with leading spaces (instead of 0), and with only</span>
+<span class="c1"># 1 digit after the decimal place.</span>
+
+<span class="c1"># The easiest way to do this as a one off (e.g., something quick and dirty for</span>
+<span class="c1"># test data) is to pass a &#39;NitfLiteral&#39;. This is a special class in pynitf</span>
+<span class="c1"># used to say &quot;use this exact string&quot;. The string is padded to be the right</span>
+<span class="c1"># size for the NITF file (using python ljust to add trailing spaces), but is</span>
+<span class="c1"># otherwise unchanged.</span>
+
+<span class="k">def</span> <span class="nf">test_nitf_literal</span><span class="p">(</span><span class="n">isolated_dir</span><span class="p">):</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="n">NitfFile</span><span class="p">()</span>
+    <span class="n">create_image_seg</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">create_tre</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">image_segment</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">tre</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">image_segment</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tre_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">tre</span><span class="o">.</span><span class="n">obl_ang</span> <span class="o">=</span> <span class="n">NitfLiteral</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;  1.0&quot;</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;test.ntf&quot;</span><span class="p">)</span>
+    <span class="n">f2</span> <span class="o">=</span> <span class="n">NitfFile</span><span class="p">(</span><span class="s2">&quot;test.ntf&quot;</span><span class="p">)</span>
+    <span class="n">tre2</span> <span class="o">=</span> <span class="n">f2</span><span class="o">.</span><span class="n">image_segment</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tre_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="c1"># Float value is as expected</span>
+    <span class="k">assert</span> <span class="n">tre2</span><span class="o">.</span><span class="n">obl_ang</span> <span class="o">==</span> <span class="mf">1.0</span>
+    <span class="c1"># Raw bytes have 0 leading fill, with exactly 2 digits after decimal point</span>
+    <span class="k">assert</span> <span class="n">tre2</span><span class="o">.</span><span class="n">get_raw_bytes</span><span class="p">(</span><span class="s2">&quot;obl_ang&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="sa">b</span><span class="s2">&quot;  1.0&quot;</span>
+
+<span class="c1"># After supplying the test file to Yoyodyne, we determine that we want to</span>
+<span class="c1"># be able to produce a number of files with this new format. We want to</span>
+<span class="c1"># modify the TRE in our local application to use the new format for all files.</span>
+<span class="c1">#</span>
+<span class="c1"># Note this is also very similar to the use case of having a bug fix against</span>
+<span class="c1"># pynitf (e.g. Yoyodyne&#39;s format matches the standard and pynitf doesn&#39;t).</span>
+<span class="c1"># We may need to handle things locally until pynitf is updated, or perhaps</span>
+<span class="c1"># we have a set of changes we want to work out/batch together before modifying</span>
+<span class="c1"># pynitf.</span>
+<span class="c1">#</span>
+<span class="c1"># The way to do this is to modify how pynitf handles the TRE. All the</span>
+<span class="c1"># TREs are handled by classes registered in tre_tag_to_cls (a</span>
+<span class="c1"># instance of TreTagToCls). You can either create an entirely new TRE class,</span>
+<span class="c1"># or just copy and modify the existing class.</span>
+    
+<span class="k">def</span> <span class="nf">test_tre_modify</span><span class="p">(</span><span class="n">isolated_dir</span><span class="p">,</span> <span class="n">modify_use00a_tre</span><span class="p">):</span>
+    <span class="c1"># Most of the TREs are instances of the Tre class, which is</span>
+    <span class="c1"># in turn and instance of FieldStruct that has the class specified</span>
+    <span class="c1"># as a &quot;desc&quot; table. This *isn&#39;t* required, you just need to supply</span>
+    <span class="c1"># the same functions as Tre has, or you can supply a</span>
+    <span class="c1"># tre_implementation_class. But for this example we make a class</span>
+    <span class="c1"># derived from the Tre.</span>
+
+    <span class="c1"># Since we are only changing one field, we start with the existing</span>
+    <span class="c1"># TreUSE00A desc table. An alternative is just to create an entirely</span>
+    <span class="c1"># new table</span>
+    <span class="n">my_desc</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">TreUSE00A</span><span class="o">.</span><span class="n">desc</span><span class="p">)</span>
+    <span class="n">ind</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">d</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">my_desc</span><span class="p">)</span> <span class="k">if</span> <span class="n">d</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;obl_ang&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">my_desc</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;obl_ang&quot;</span><span class="p">,</span> <span class="s2">&quot;Obliquity Angle&quot;</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span>
+                    <span class="c1"># frmt was &quot;%05.2lf&quot; for 2 digits after decimal point,</span>
+                    <span class="c1"># 0 filled on left. Change to 1 digit, space filled.</span>
+                    <span class="p">{</span><span class="s2">&quot;frmt&quot;</span> <span class="p">:</span> <span class="s2">&quot;</span><span class="si">%5.1lf</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;optional&quot;</span> <span class="p">:</span><span class="kc">True</span><span class="p">}]</span>
+    <span class="k">class</span> <span class="nc">MyTreUSE00A</span><span class="p">(</span><span class="n">Tre</span><span class="p">):</span>
+        <span class="vm">__doc__</span> <span class="o">=</span> <span class="n">TreUSE00A</span><span class="o">.</span><span class="vm">__doc__</span>
+        <span class="n">desc</span> <span class="o">=</span> <span class="n">my_desc</span>
+        <span class="n">tre_tag</span> <span class="o">=</span> <span class="n">TreUSE00A</span><span class="o">.</span><span class="n">tre_tag</span>
+    <span class="n">tre_tag_to_cls</span><span class="o">.</span><span class="n">add_cls</span><span class="p">(</span><span class="n">MyTreUSE00A</span><span class="p">)</span>
+
+    <span class="c1"># Now test on a new file</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="n">NitfFile</span><span class="p">()</span>
+    <span class="n">create_image_seg</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">MyTreUSE00A</span><span class="p">()</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">angle_to_north</span> <span class="o">=</span> <span class="mi">270</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">mean_gsd</span> <span class="o">=</span> <span class="mf">105.2</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">dynamic_range</span> <span class="o">=</span> <span class="mi">2047</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">obl_ang</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">roll_ang</span> <span class="o">=</span> <span class="o">-</span><span class="mf">21.15</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">n_ref</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">rev_num</span> <span class="o">=</span> <span class="mi">3317</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">n_seg</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">max_lp_seg</span> <span class="o">=</span> <span class="mi">6287</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">sun_el</span> <span class="o">=</span> <span class="mf">68.5</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">sun_az</span> <span class="o">=</span> <span class="mf">131.3</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">image_segment</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tre_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;test.ntf&quot;</span><span class="p">)</span>
+    <span class="n">f2</span> <span class="o">=</span> <span class="n">NitfFile</span><span class="p">(</span><span class="s2">&quot;test.ntf&quot;</span><span class="p">)</span>
+    <span class="n">tre2</span> <span class="o">=</span> <span class="n">f2</span><span class="o">.</span><span class="n">image_segment</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tre_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="c1"># Float value is as expected</span>
+    <span class="k">assert</span> <span class="n">tre2</span><span class="o">.</span><span class="n">obl_ang</span> <span class="o">==</span> <span class="mf">1.0</span>
+    <span class="c1"># Raw bytes have space leading fill, with exactly 1 digit after</span>
+    <span class="c1"># decimal point</span>
+    <span class="k">assert</span> <span class="n">tre2</span><span class="o">.</span><span class="n">get_raw_bytes</span><span class="p">(</span><span class="s2">&quot;obl_ang&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="sa">b</span><span class="s2">&quot;  1.0&quot;</span>
+
+<span class="c1"># Sometimes a format is complicated enough it can&#39;t be captured with with</span>
+<span class="c1"># a format string.</span>
+<span class="c1"># For example Yoyodyne *must* have the float with 2 digits after the decimal</span>
+<span class="c1"># point zero filled, unless it is &gt; 20 in which case it needs to use 1 digit</span>
+<span class="c1"># space filled.</span>
+<span class="c1">#</span>
+<span class="c1"># Basic structure of this test is like the last one, except we supply a</span>
+<span class="c1"># formatting function instead of a format string</span>
+
+<span class="k">def</span> <span class="nf">test_tre_modify_complicated_format</span><span class="p">(</span><span class="n">isolated_dir</span><span class="p">,</span> <span class="n">modify_use00a_tre</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">my_format</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">v</span> <span class="o">&gt;</span> <span class="mi">20</span><span class="p">):</span>
+            <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%5.1lf</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">v</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%05.2lf</span><span class="s2">&quot;</span> <span class="o">%</span><span class="n">v</span>
+    
+    <span class="n">my_desc</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">TreUSE00A</span><span class="o">.</span><span class="n">desc</span><span class="p">)</span>
+    <span class="n">ind</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">d</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">my_desc</span><span class="p">)</span> <span class="k">if</span> <span class="n">d</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;obl_ang&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">my_desc</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;obl_ang&quot;</span><span class="p">,</span> <span class="s2">&quot;Obliquity Angle&quot;</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span>
+                    <span class="p">{</span><span class="s2">&quot;frmt&quot;</span> <span class="p">:</span> <span class="n">my_format</span><span class="p">,</span> <span class="s2">&quot;optional&quot;</span> <span class="p">:</span><span class="kc">True</span><span class="p">}]</span>
+    <span class="k">class</span> <span class="nc">MyTreUSE00A</span><span class="p">(</span><span class="n">Tre</span><span class="p">):</span>
+        <span class="vm">__doc__</span> <span class="o">=</span> <span class="n">TreUSE00A</span><span class="o">.</span><span class="vm">__doc__</span>
+        <span class="n">desc</span> <span class="o">=</span> <span class="n">my_desc</span>
+        <span class="n">tre_tag</span> <span class="o">=</span> <span class="n">TreUSE00A</span><span class="o">.</span><span class="n">tre_tag</span>
+    <span class="n">tre_tag_to_cls</span><span class="o">.</span><span class="n">add_cls</span><span class="p">(</span><span class="n">MyTreUSE00A</span><span class="p">)</span>
+
+    <span class="c1"># Now test on a new file</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="n">NitfFile</span><span class="p">()</span>
+    <span class="n">create_image_seg</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">create_image_seg</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">MyTreUSE00A</span><span class="p">()</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">angle_to_north</span> <span class="o">=</span> <span class="mi">270</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">mean_gsd</span> <span class="o">=</span> <span class="mf">105.2</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">dynamic_range</span> <span class="o">=</span> <span class="mi">2047</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">obl_ang</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">roll_ang</span> <span class="o">=</span> <span class="o">-</span><span class="mf">21.15</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">n_ref</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">rev_num</span> <span class="o">=</span> <span class="mi">3317</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">n_seg</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">max_lp_seg</span> <span class="o">=</span> <span class="mi">6287</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">sun_el</span> <span class="o">=</span> <span class="mf">68.5</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">sun_az</span> <span class="o">=</span> <span class="mf">131.3</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">image_segment</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tre_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">MyTreUSE00A</span><span class="p">()</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">angle_to_north</span> <span class="o">=</span> <span class="mi">270</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">mean_gsd</span> <span class="o">=</span> <span class="mf">105.2</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">dynamic_range</span> <span class="o">=</span> <span class="mi">2047</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">obl_ang</span> <span class="o">=</span> <span class="mf">30.0</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">roll_ang</span> <span class="o">=</span> <span class="o">-</span><span class="mf">21.15</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">n_ref</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">rev_num</span> <span class="o">=</span> <span class="mi">3317</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">n_seg</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">max_lp_seg</span> <span class="o">=</span> <span class="mi">6287</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">sun_el</span> <span class="o">=</span> <span class="mf">68.5</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">sun_az</span> <span class="o">=</span> <span class="mf">131.3</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">image_segment</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">tre_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;test.ntf&quot;</span><span class="p">)</span>
+    <span class="n">f2</span> <span class="o">=</span> <span class="n">NitfFile</span><span class="p">(</span><span class="s2">&quot;test.ntf&quot;</span><span class="p">)</span>
+    <span class="n">tre2</span> <span class="o">=</span> <span class="n">f2</span><span class="o">.</span><span class="n">image_segment</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tre_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">tre3</span> <span class="o">=</span> <span class="n">f2</span><span class="o">.</span><span class="n">image_segment</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">tre_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="c1"># Float value is as expected</span>
+    <span class="k">assert</span> <span class="n">tre2</span><span class="o">.</span><span class="n">obl_ang</span> <span class="o">==</span> <span class="mf">1.0</span>
+    <span class="k">assert</span> <span class="n">tre3</span><span class="o">.</span><span class="n">obl_ang</span> <span class="o">==</span> <span class="mf">30.0</span>
+    <span class="c1"># Raw bytes have 0 leading fill, with exactly 2 digit after</span>
+    <span class="c1"># decimal point</span>
+    <span class="k">assert</span> <span class="n">tre2</span><span class="o">.</span><span class="n">get_raw_bytes</span><span class="p">(</span><span class="s2">&quot;obl_ang&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="sa">b</span><span class="s2">&quot;01.00&quot;</span>
+    <span class="c1"># Raw bytes have space leading fill, with exactly 1 digit after</span>
+    <span class="c1"># decimal point</span>
+    <span class="k">assert</span> <span class="n">tre3</span><span class="o">.</span><span class="n">get_raw_bytes</span><span class="p">(</span><span class="s2">&quot;obl_ang&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="sa">b</span><span class="s2">&quot; 30.0&quot;</span>
+    
+
+<span class="c1"># Even more complicated, there can be formats that can&#39;t use the</span>
+<span class="c1"># normal format string for either reading and writing.</span>
+<span class="c1">#</span>
+<span class="c1"># For example Yoyodyne has decided that what it really needs is the</span>
+<span class="c1"># number to zero filled, using a space, and written backwards.</span>
+<span class="c1">#</span>
+<span class="c1"># The most general formatting takes a class that is derived from</span>
+<span class="c1"># pynitf.FieldData (or alternatively, just provides the same interface if</span>
+<span class="c1"># deriving from it is inconvenient).</span>
+
+<span class="k">def</span> <span class="nf">test_tre_modify_even_more_complicated_format</span><span class="p">(</span><span class="n">isolated_dir</span><span class="p">,</span>
+                                                 <span class="n">modify_use00a_tre</span><span class="p">):</span>
+    <span class="k">class</span> <span class="nc">ReverseNumber</span><span class="p">(</span><span class="n">FieldData</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">get_print</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+            <span class="k">if</span><span class="p">(</span><span class="n">t</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+                <span class="k">return</span> <span class="s2">&quot;Not used&quot;</span>
+            <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">t</span>
+
+        <span class="k">def</span> <span class="nf">unpack</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="sa">b</span><span class="s2">&quot;.&quot;</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        
+        <span class="k">def</span> <span class="nf">pack</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">(</span><span class="sa">b</span><span class="s2">&quot;</span><span class="si">%05.2f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;.&quot;</span><span class="p">,</span><span class="sa">b</span><span class="s2">&quot; &quot;</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">my_desc</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">TreUSE00A</span><span class="o">.</span><span class="n">desc</span><span class="p">)</span>
+    <span class="n">ind</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">d</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">my_desc</span><span class="p">)</span> <span class="k">if</span> <span class="n">d</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;obl_ang&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">my_desc</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;obl_ang&quot;</span><span class="p">,</span> <span class="s2">&quot;Obliquity Angle&quot;</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span>
+                    <span class="p">{</span><span class="s2">&quot;field_value_class&quot;</span> <span class="p">:</span> <span class="n">ReverseNumber</span><span class="p">,</span> <span class="s2">&quot;optional&quot;</span> <span class="p">:</span><span class="kc">True</span><span class="p">,</span>
+                     <span class="s2">&quot;size_not_updated&quot;</span> <span class="p">:</span> <span class="kc">True</span> <span class="p">}]</span>
+    <span class="k">class</span> <span class="nc">MyTreUSE00A</span><span class="p">(</span><span class="n">Tre</span><span class="p">):</span>
+        <span class="vm">__doc__</span> <span class="o">=</span> <span class="n">TreUSE00A</span><span class="o">.</span><span class="vm">__doc__</span>
+        <span class="n">desc</span> <span class="o">=</span> <span class="n">my_desc</span>
+        <span class="n">tre_tag</span> <span class="o">=</span> <span class="n">TreUSE00A</span><span class="o">.</span><span class="n">tre_tag</span>
+    <span class="n">tre_tag_to_cls</span><span class="o">.</span><span class="n">add_cls</span><span class="p">(</span><span class="n">MyTreUSE00A</span><span class="p">)</span>
+
+    <span class="c1"># Now test on a new file</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="n">NitfFile</span><span class="p">()</span>
+    <span class="n">create_image_seg</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">MyTreUSE00A</span><span class="p">()</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">angle_to_north</span> <span class="o">=</span> <span class="mi">270</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">mean_gsd</span> <span class="o">=</span> <span class="mf">105.2</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">dynamic_range</span> <span class="o">=</span> <span class="mi">2047</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">obl_ang</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">roll_ang</span> <span class="o">=</span> <span class="o">-</span><span class="mf">21.15</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">n_ref</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">rev_num</span> <span class="o">=</span> <span class="mi">3317</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">n_seg</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">max_lp_seg</span> <span class="o">=</span> <span class="mi">6287</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">sun_el</span> <span class="o">=</span> <span class="mf">68.5</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">sun_az</span> <span class="o">=</span> <span class="mf">131.3</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">image_segment</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tre_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;test.ntf&quot;</span><span class="p">)</span>
+    <span class="n">f2</span> <span class="o">=</span> <span class="n">NitfFile</span><span class="p">(</span><span class="s2">&quot;test.ntf&quot;</span><span class="p">)</span>
+    <span class="n">tre2</span> <span class="o">=</span> <span class="n">f2</span><span class="o">.</span><span class="n">image_segment</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">tre_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="c1"># Float value is as expected</span>
+    <span class="k">assert</span> <span class="n">tre2</span><span class="o">.</span><span class="n">obl_ang</span> <span class="o">==</span> <span class="mf">1.0</span>
+    <span class="c1"># Raw bytes have 0 leading fill, with exactly 2 digit after</span>
+    <span class="c1"># decimal point, decimal point is a space, and in reverse order</span>
+    <span class="k">assert</span> <span class="n">tre2</span><span class="o">.</span><span class="n">get_raw_bytes</span><span class="p">(</span><span class="s2">&quot;obl_ang&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="sa">b</span><span class="s2">&quot;00 10&quot;</span>
+    
+            
+</pre></div>
+</div>
+</div>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;Copyright 2020, by the California Institute of Technology.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/nitf_format_change.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

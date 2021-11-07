@@ -7,7 +7,7 @@ Welcome to pynitf's documentation!
 ==================================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :caption: Contents:
 
    introduction
@@ -15,6 +15,7 @@ Welcome to pynitf's documentation!
    design
    nitf_file
    nitf_diff
+   nitf_format_change
    script
    nitf_file_ref
    

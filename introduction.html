@@ -1,17 +1,18 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
-    <title>Introduction &#8212; pynitf 1.01 documentation</title>
-    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Introduction &#8212; pynitf 1.07 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
-    <script src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Design principles" href="design_principle.html" />
@@ -37,7 +38,7 @@
 
 
 <h3>Navigation</h3>
-<p class="caption"><span class="caption-text">Contents:</span></p>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Introduction</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#install">Install</a></li>
@@ -50,6 +51,7 @@
 <li class="toctree-l1"><a class="reference internal" href="design.html">Software Design</a></li>
 <li class="toctree-l1"><a class="reference internal" href="nitf_file.html">NITF File</a></li>
 <li class="toctree-l1"><a class="reference internal" href="nitf_diff.html">NITF File Differences</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nitf_format_change.html">NITF Special Format Changes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="script.html">Top level scripts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="nitf_file_ref.html">Pynitf Reference</a></li>
 </ul>
@@ -67,7 +69,7 @@
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
@@ -81,13 +83,13 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="introduction">
+  <section id="introduction">
 <h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
 <p>This library is used for reading and writing NITF format files.</p>
 <p>The overall NITF file specification is described in <a class="reference external" href="https://gwg.nga.mil/ntb/baseline/docs/2500c/2500C.pdf">MIL-STD-2500C</a>.</p>
 <p>Many of the TREs are described in <a class="reference external" href="https://nsgreg.nga.mil/NSGDOC/files/doc/Document/STDI_0002_1_4.zip">STDI-0002-1_4.0</a>.</p>
 <p>Additional documentation available at <a class="reference external" href="https://www.gwg.nga.mil/ntb/baseline/format.html">Reference Library for NITFS Users</a>.</p>
-<div class="section" id="install">
+<section id="install">
 <h2>Install<a class="headerlink" href="#install" title="Permalink to this headline">¶</a></h2>
 <p>This has standard setup.py. You can install a tar file using pip, or
 run setup tools directly (e.g., python setup.py install).</p>
@@ -95,8 +97,8 @@ run setup tools directly (e.g., python setup.py install).</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">install</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="testing">
+</section>
+<section id="testing">
 <h2>Testing<a class="headerlink" href="#testing" title="Permalink to this headline">¶</a></h2>
 <p>Tests can be run by:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">test</span>
@@ -115,8 +117,8 @@ do this by:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">check</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="build-documentation">
+</section>
+<section id="build-documentation">
 <h2>Build documentation<a class="headerlink" href="#build-documentation" title="Permalink to this headline">¶</a></h2>
 <p>The documentation is available online. You only did to build the documentation
 if you are updating it, or want the documentation in another format.</p>
@@ -138,8 +140,8 @@ the github page. This can be done using ghp-import, or with the Makefile:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">github</span><span class="o">-</span><span class="n">pages</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="creating-package">
+</section>
+<section id="creating-package">
 <h2>Creating package<a class="headerlink" href="#creating-package" title="Permalink to this headline">¶</a></h2>
 <p>Quick command to create a tar file including version number. First, make sure
 the version number is setup.py is correct. Then do something like:</p>
@@ -151,8 +153,8 @@ git archive --format=tar --prefix=pyntif-$V/ $V | gzip --best &gt; pynitf-$V.tar
 </div>
 <p>Note you can also just download the tar.gz file from github after you create
 the tag, if that is easier.</p>
-</div>
-</div>
+</section>
+</section>
 
 
           </div>
@@ -165,7 +167,7 @@ the tag, if that is easier.</p>
       &copy;Copyright 2020, by the California Institute of Technology.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.4</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.2.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

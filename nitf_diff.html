@@ -1,20 +1,21 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
-    <title>NITF File Differences &#8212; pynitf 1.01 documentation</title>
-    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>NITF File Differences &#8212; pynitf 1.07 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
-    <script src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Top level scripts" href="script.html" />
+    <link rel="next" title="NITF Special Format Changes" href="nitf_format_change.html" />
     <link rel="prev" title="NITF File" href="nitf_file.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -37,7 +38,7 @@
 
 
 <h3>Navigation</h3>
-<p class="caption"><span class="caption-text">Contents:</span></p>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="design_principle.html">Design principles</a></li>
@@ -50,6 +51,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#fieldstructdiff">FieldStructDiff</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="nitf_format_change.html">NITF Special Format Changes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="script.html">Top level scripts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="nitf_file_ref.html">Pynitf Reference</a></li>
 </ul>
@@ -59,7 +61,7 @@
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
       <li>Previous: <a href="nitf_file.html" title="previous chapter">NITF File</a></li>
-      <li>Next: <a href="script.html" title="next chapter">Top level scripts</a></li>
+      <li>Next: <a href="nitf_format_change.html" title="next chapter">NITF Special Format Changes</a></li>
   </ul></li>
 </ul>
 </div>
@@ -67,7 +69,7 @@
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
@@ -81,9 +83,9 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="nitf-file-differences">
+  <section id="nitf-file-differences">
 <h1>NITF File Differences<a class="headerlink" href="#nitf-file-differences" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="nitf-diff">
+<section id="nitf-diff">
 <span id="nitf-diff-section"></span><h2>NITF Diff<a class="headerlink" href="#nitf-diff" title="Permalink to this headline">¶</a></h2>
 <p>We want to be able compare two NITF files to know if they are the “same”.</p>
 <p>What is the “same” really depends on the application. For example, two files
@@ -97,7 +99,7 @@ for identical, 1 for different), along with log information describing
 what if any differences there are.</p>
 <p>We use the same pluggable set of handles like we do for NitfDesHandleSet etc.
 The design is shown in <a class="reference internal" href="#id1"><span class="std std-numref">Fig. 10</span></a>.</p>
-<div class="figure align-default" id="id2">
+<figure class="align-default" id="id2">
 <span id="id1"></span><p class="plantuml">
 <img src="_images/plantuml-56a1f2305f37591ee1151af35bbd0159d25032e8.png" alt="class NitfDiff {
    +config
@@ -150,16 +152,18 @@ PriorityHandleSet &lt;|-- NitfDiffHandleSet
 NitfDiff *-- NitfDiffHandleSet : Has a handle_set
 NitfDiffHandleSet *-- &quot;many&quot; NitfDiffHandle"/>
 </p>
-<p class="caption"><span class="caption-number">Fig. 10 </span><span class="caption-text">nitf_diff</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
-</div>
+<figcaption>
+<p><span class="caption-number">Fig. 10 </span><span class="caption-text">nitf_diff</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
 <p>Most of the time there is a known set of handles and configuration parameters,
 with a user adding or modifying a few. So we have both the default handles
 for NitfDiffHandleSet and default configuration. NitfDiff object can then
 have their handle and/or config objects modified to change the behavior for
 a specific comparison. The program nitf_diff (which is a wrapper around
 NitfDiff) can take a JSON file and/or arbitrary python code to change this.</p>
-</div>
-<div class="section" id="nitfdiffhandle">
+</section>
+<section id="nitfdiffhandle">
 <h2>NitfDiffHandle<a class="headerlink" href="#nitfdiffhandle" title="Permalink to this headline">¶</a></h2>
 <p>There are a number of NitfDiffHandle objects defined in pynitf:</p>
 <table class="docutils align-default" id="id3">
@@ -252,8 +256,8 @@ other types).</p></td>
 </table>
 <p>The handles should return an overall status of the comparison, so True for
 objects are the same, False otherwise.</p>
-</div>
-<div class="section" id="nitf-difference-logging">
+</section>
+<section id="nitf-difference-logging">
 <h2>Nitf difference logging<a class="headerlink" href="#nitf-difference-logging" title="Permalink to this headline">¶</a></h2>
 <p>In addition to an overall status results, differences should be
 reported to the users. We do this through the python logger:</p>
@@ -293,8 +297,8 @@ of “DIFFERENCE_FOUND”, “DIFFERENCE_FOUND_BUT_IGNORED” and “DIFFERENCE_
 <p>Internally, we use a logging filter DiffContextFilter to pass the context
 of the differences (e.g., “NITF File Header”, “Image Segment ‘blah’, TRE ‘blahblah’). You can use the the context manager in NitfDiff called diff_context
 for setting this.</p>
-</div>
-<div class="section" id="fieldstructdiff">
+</section>
+<section id="fieldstructdiff">
 <h2>FieldStructDiff<a class="headerlink" href="#fieldstructdiff" title="Permalink to this headline">¶</a></h2>
 <p>There are various handles to check the different FieldStruct objects.</p>
 <p>While we could just create new NitfDiffHandle objects for each field
@@ -328,8 +332,8 @@ values are used for math.isclose if not supplied (so 1e-9 and 0.0).</p>
 each element in the array. The default it to provide a summary of differences
 (e.g., array had 1 of 42 difference). We also provide information about all
 the difference found at the logging level of DIFFERENCE_DETAIL.</p>
-</div>
-</div>
+</section>
+</section>
 
 
           </div>
@@ -342,7 +346,7 @@ the difference found at the logging level of DIFFERENCE_DETAIL.</p>
       &copy;Copyright 2020, by the California Institute of Technology.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.4</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.2.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
