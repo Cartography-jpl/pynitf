@@ -113,6 +113,7 @@ def test_main(isolated_dir):
     nitf_1 = 'basic_nitf.ntf'
     nitf_2 = 'basic_nitf2.ntf'
     nitf_3 = 'basic_nitf3.ntf'
+    nitf_4 = 'basic_nitf4.ntf'    
 
     f = NitfFile()
 
@@ -352,3 +353,16 @@ def test_main(isolated_dir):
     # Write back the file that we just read in after removing an image
     f2.image_segment.remove(f2.image_segment[1])
     f2.write(nitf_3)
+
+    # Simple example of creating a new file, where we just double
+    # our input data.
+    f = NitfFile(nitf_3)
+    f2 = NitfFile()
+    img = f.image_segment[0].image
+    imgout = NitfImageWriteNumpy(img.shape[1], img.shape[2], img.dtype)
+    imgout[:,:] = img[:,:] * 2
+    f2.image_segment.append(NitfImageSegment(imgout))
+    f2.write(nitf_4)
+    f3 = NitfFile(nitf_4)
+    img2 = f3.image_segment[0].image
+    assert (img2[:,:] == img[:,:] * 2).all()
