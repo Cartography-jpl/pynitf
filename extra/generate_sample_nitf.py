@@ -10,6 +10,8 @@ import os
 
 from pynitf import *
 
+idlvl = 1
+
 def createHISTOA():
 
     t = TreHISTOA()
@@ -133,6 +135,12 @@ def write_by_row_p(d, bstart, lstart, sstart):
             #print(a*20+b*30)
             d[a, b] = a*20+b*30
 
+def get_idlvl():
+    global idlvl
+    rv = idlvl
+    idlvl += 1
+    return rv
+
 def create_50_images(f):
     for t in range(50):
         # Create a NitfImage source. The particular one we have here just puts all
@@ -149,6 +157,7 @@ def create_50_images(f):
         # just a normal python array.
         seg = NitfImageSegment(img)
         seg.subheader.iid1 = 'IMG_'+str(t+1)
+        seg.subheader.idlvl = get_idlvl()
         seg.tre_list.append(createILLUMB())
         f.image_segment.append(seg)
 
@@ -161,6 +170,7 @@ def create_16bit_image():
     segment2.subheader.iid1 = '16bit'
     segment2.tre_list.append(createHISTOA())
     segment2.tre_list.append(createENGRDA())
+    segment2.subheader.idlvl = get_idlvl()
 
     return segment2
 
@@ -173,7 +183,7 @@ def create_float_image_1():
 
     segment = NitfImageSegment(img)
     segment.subheader.iid1 = 'float1'
-
+    segment.subheader.idlvl = get_idlvl()
     segment.tre_list.append(createCSEXRB())
 
     return segment
@@ -187,6 +197,7 @@ def create_float_image_2():
 
     segment = NitfImageSegment(img)
     segment.subheader.iid1 = 'float2'
+    segment.subheader.idlvl = get_idlvl()
 
     return segment
 
@@ -203,6 +214,7 @@ def create_float_image_3():
 
     segment = NitfImageSegment(img)
     segment.subheader.iid1 = 'float3'
+    segment.subheader.idlvl = get_idlvl()
 
     return segment
 

@@ -150,6 +150,11 @@ def display_diff(f, index1, index2):
     image_segment_2 = f.image_segment[index2]
     is_displayable2, img2 = is_displayable_image(image_segment_2)
     if is_displayable1 and is_displayable2 and is_image_pair_diffable(img1, img2):
+        if img1.dtype.kind=='u':
+            img1 = img1.astype('int')
+        if img2.dtype.kind=='u':
+            im2 = img2.astype('int')
+            
         diff = img1 - img2
         plt.imshow(diff.squeeze())
         plt.title('Diff of image segments {} and {}'.format(index1, index2))
