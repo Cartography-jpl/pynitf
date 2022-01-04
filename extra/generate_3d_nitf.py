@@ -33,7 +33,7 @@ def write_by_row_p(d, bstart, lstart, sstart):
 def write_by_row_p_from_data(d, bstart, lstart, sstart):
     d[:, :] = data[lstart, :, :]
 
-def create_16bit_image():
+def create_16bit_image(idlvl=1):
     # Write by column
     img3 = NitfImageWriteDataOnDemand(nrow=rows, ncol=cols, data_type=np.uint16,
                                       numbands=bands, data_callback=write_by_row_p_from_data,
@@ -47,6 +47,7 @@ def create_16bit_image():
     ih.imode = "P"
     ih.iid1 = '16bit img'
     segment = NitfImageSegment(img3)
+    ih.idlvl = idlvl
 
     return segment
 
@@ -111,8 +112,9 @@ if __name__ ==  "__main__":
     #     plot = plt.imshow(data[i,:,:])
     #     plt.show()
 
-    f.image_segment.append(create_16bit_image())
-    f.image_segment.append(create_float_image())
+    for i in range(10):
+        f.image_segment.append(create_16bit_image(i+1))
+    #f.image_segment.append(create_float_image())
 
     # Now we write out to a nitf file
     f.write(nitf_1)
