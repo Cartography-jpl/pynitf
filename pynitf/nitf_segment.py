@@ -210,7 +210,13 @@ class NitfSegment(object):
         self.subheader.write_to_file(fh)
         sz_header = fh.tell() - start_pos
         start_pos = fh.tell()
-        self.data.write_to_file(fh)
+
+        try:
+            self.data.write_to_file(fh)
+        except Exception as ex:
+            raise(RuntimeError("Exception occurred while writing out segment number %d (zero-based index): \n\n%s \n\n%s \n\n%s" %
+                               (seg_index, str(ex), str(self.subheader), str(self.user_subheader))))
+
         sz_data = fh.tell() - start_pos
         # Normally nitf_file will be present, but for unit tests it
         # can be useful to skip this

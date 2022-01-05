@@ -189,7 +189,24 @@ def test_tre_overflow_write(isolated_dir):
     print_diag(f2)
     print_diag(f3)
     assert filecmp.cmp("z.ntf", "z2.ntf", shallow=False)
-    
+
+
+def test_field_value_exception_write(isolated_dir):
+    '''This makes sure that malformed DES will throw out RuntimeError exception.'''
+
+    f = NitfFile()
+    create_des(f, q=0.1)
+    create_des(f, q=0.2)
+    create_des(f, q=10.0)
+
+    try:
+        f.write("erroneous.ntf")
+    except RuntimeError as re:
+        assert 'segment number 2' in str(re)
+        return
+
+    assert 1 == 2
+
 def test_read_quickbird(nitf_sample_quickbird):
     f = NitfFile(nitf_sample_quickbird)
     print(f.summary())
