@@ -100,14 +100,12 @@ def createENGRDA():
 
     # Set some values
     t.resrc = "My_sensor"
-    t.recnt = 3
+    t.recnt = 1
     t.englbl[0] = b"TEMP1"
     t.engmtxc[0] = 1
     t.engmtxr[0] = 1
-    t.engtyp[0] = "I"
-    t.engdts[0] = 2
     t.engdatu[0] = "tC"
-    t.engdata[0] = b'\x01'
+    t.engdata[0] = np.array([[1,],], dtype=np.int16)
 
     return t
 
@@ -218,6 +216,28 @@ def create_float_image_3():
 
     return segment
 
+def write_by_band(d, bstart, lstart, sstart):
+    #print("sstart", sstart)
+    for a in range(d.shape[0]):
+        for b in range(d.shape[1]):
+            #print(a*20+b*30)
+            d[a, b] = bstart * 10000 + a+b
+
+def create_10_band_float_image():
+    rows = 512
+    cols = 512
+    bands = 10
+
+    img = NitfImageWriteDataOnDemand(nrow=rows, ncol=cols, data_type=np.float32,
+                                      numbands=bands, data_callback=write_by_band,
+                                      image_gen_mode=NitfImageWriteDataOnDemand.IMAGE_GEN_MODE_BAND)
+
+    segment = NitfImageSegment(img)
+    segment.subheader.iid1 = '10_BANDS'
+    segment.subheader.idlvl = get_idlvl()
+
+    return segment
+
 if __name__ ==  "__main__":
     # Create the file. We don't supply a name yet, that comes when we actually
     # write
@@ -231,6 +251,7 @@ if __name__ ==  "__main__":
     f.image_segment.append(create_float_image_1())
     f.image_segment.append(create_float_image_2())
     f.image_segment.append(create_float_image_3())
+    f.image_segment.append(create_10_band_float_image())
 
     # Write by column
     img3 = NitfImageWriteDataOnDemand(nrow=400, ncol=300, data_type=np.dtype('>i2'),
