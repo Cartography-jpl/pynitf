@@ -15,7 +15,7 @@ RSMIDA is documented at U-6, which points to other documentation, such as
 '''
 
 _second_format = "%09.6lf"
-_trg_format = "%21.14E"
+_trg_format = "%+21.14E"
 
 desc = [["iid", "Image Identifier", 80, str],
         ["edition", "RSM Image Support Data Edition", 40, str],

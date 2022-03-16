@@ -19,7 +19,7 @@ Supporting TREs Combined V2"
 _pt_format = "%+012.2lf"
 _tm_format = "%+016.9lf"
 _gsd_5_format = "%5.1lf"
-_gsd_12_format = "%12.1lf"
+_gsd_12_format = "%012.1lf"
 
 desc = [["image_uuid", "UUID Assigned to Current Image Plane", 36, str],
         ["num_assoc_des", "Number of Associated DES", 3, int],
@@ -31,11 +31,11 @@ desc = [["image_uuid", "UUID Assigned to Current Image Plane", 36, str],
         ["sensor_id", "Sensor Identifier", 6, str],
         ["sensor_type", "Sensor Type", 1, str],
         ["ground_ref_point_x", "X coordinate of Ground reference point", 12,
-         float, {"frmt" : _pt_format}],
+         float, {"frmt" : _pt_format, "optional" : True}],
         ["ground_ref_point_y", "Y coordinate of Ground reference point", 12,
-         float, {"frmt" : _pt_format}],
+         float, {"frmt" : _pt_format, "optional" : True}],
         ["ground_ref_point_z", "Z coordinate of Ground reference point", 12,
-         float, {"frmt" : _pt_format}],
+         float, {"frmt" : _pt_format,"optional" : True}],
         ["day_first_line_image", "Day of First Line of Synthetic Array Image",
          8, str, {'condition': 'f.sensor_type=="S"'}],
         ["time_first_line_image", "Time of First Line of Synthetic Array Image",
