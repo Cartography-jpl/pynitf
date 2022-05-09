@@ -25,7 +25,7 @@ def test_tre_illumb_basic():
     fh = io.BytesIO()
     t.write_to_file(fh)
     print('getvalue returns:', fh.getvalue())
-    assert fh.getvalue() == b'ILLUMB004650001Some band unit of measure                   1.700000E+01    4.200000E+01001Blah blah blah                                                                  World Geodetic System 1984                                                      WGE World Geodetic System 1984                                                      WE Geodetic                                                                        GEOD\x00\x00\x00001Today         +35.000000-130.000000 +1.000000E+03'
+    assert fh.getvalue() ==  b'ILLUMB004650001Some band unit of measure               00017.000000000000042.0000000000001Blah blah blah                                                                  World Geodetic System 1984                                                      WGE World Geodetic System 1984                                                      WE Geodetic                                                                        GEOD\x00\x00\x00001Today         +35.000000-130.000000+1.0000000E+03'
 
     fh2 = io.BytesIO(fh.getvalue())
     t2 = TreILLUMB()
