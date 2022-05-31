@@ -44,6 +44,17 @@ class Tre(FieldStruct):
         else:
             fh = io.BytesIO(bt)
             super().read_from_file(fh, nitf_literal=nitf_literal)
+
+    def __getstate__(self):
+        fh = io.BytesIO()
+        self.write_to_file(fh)
+        return { "tre" : fh.getvalue().decode('utf-8') }
+
+    def __setstate__(self, d):
+        fh = io.BytesIO(d["tre"].encode('utf-8'))
+        self.__init__()
+        self.read_from_file(fh)
+        
     def read_from_file(self, fh, delayed_read=False):
         tag = fh.read(6).rstrip().decode("utf-8")
         if(tag != self.tre_tag):
