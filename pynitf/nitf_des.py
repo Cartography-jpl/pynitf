@@ -128,7 +128,9 @@ class DesFieldStructDiff(FieldStructDiff):
         with nitf_diff.diff_context("DES '%s'" % des1.des_tag, add_text = True):
             return (True, self.compare_obj(des1, des2, nitf_diff))
 
-NitfDiffHandleSet.add_default_handle(DesFieldStructDiff())
+# Priority is lower than default 0, because this is a catch all if there
+# isn't a more specific handle (e.g., CsephDiff)
+NitfDiffHandleSet.add_default_handle(DesFieldStructDiff(),priority_order=-1)
 NitfDiffHandleSet.default_config["DES"] = {}
     
 class NitfDesCopy(NitfDes):

@@ -69,8 +69,18 @@ class PriorityHandleSet(collections.abc.Set):
     def handle(self, *args, **keywords):
         '''Find the first handle that says it can process the given arguments,
         and return the results from that handle.'''
-        for (h, p) in self:
-            could_handle, res = self.handle_h(h, *args, **keywords)
+        could_handle = False
+        res = None
+        h_handle = None
+        for p in sorted(self.handle_set.keys(), reverse=True):
+            for h in self.handle_set[p]:
+                c, r = self.handle_h(h, *args, **keywords)
+                if(c and could_handle):
+                    raise RuntimeError(f"Multiple handles of the same priority level {p} wanted to process the data. Handle {h_handle} and {h} both wanted to process the data. args={args}, keywords={keywords}.")
+                if(c):
+                    could_handle = True
+                    h_handle = h
+                    res = r
             if(could_handle):
                 return res
         raise RuntimeError("No handle was found. args=%s, keywords=%s" % (args, keywords))
