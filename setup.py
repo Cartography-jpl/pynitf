@@ -11,7 +11,7 @@ setup(name='pynitf',
       author_email='Mike.M.Smyth@jpl.nasa.gov',
       license='Copyright 2020, California Institute of Technology. ALL RIGHTS RESERVED. U.S. Government Sponsorship acknowledged.',
       packages=['pynitf'],
-      scripts=["bin/nitf_diff", "bin/nitf_info",
+      scripts=["bin/nitf_diff", "bin/nitf_info", "bin/nitf_json_delta",
                "bin/explore_nitf"],
       install_requires=[
           'numpy',

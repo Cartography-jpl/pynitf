@@ -891,6 +891,16 @@ class FieldStruct(object):
                 else:
                     yield (f.field_name, getattr(self, f.field_name))
                 
+    def __getstate__(self):
+        fh = io.BytesIO()
+        self.write_to_file(fh)
+        return { "field_data" : fh.getvalue().decode('utf-8') }
+
+    def __setstate__(self, d):
+        fh = io.BytesIO(d["field_data"].encode('utf-8'))
+        self.__init__()
+        self.read_from_file(fh)
+        
     def write_to_file(self, fh):
         '''Write to a file stream.'''
         self.pseudo_outer_loop.write_to_file(fh)

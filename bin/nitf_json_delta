@@ -1,0 +1,27 @@
+#! /usr/bin/env python
+import pynitf
+
+version="June 13, 2022"
+usage="""Usage: 
+  nitf_json_delta [options] <file_in> <json_delta_file>
+  nitf_json_delta -h | --help
+  nitf_json_delta -v | --version
+
+This strips out all the TREs, headers, etc from a file and writes it out
+as a JSON file. This can then be use to update an existing golden file
+with new data.
+Options:
+  -h --help         
+       Print this message
+
+  -v --version      
+       Print program version
+
+"""
+args = pynitf.docopt_simple.docopt_simple(usage, version=version)
+
+f = pynitf.NitfFile(args.file_in)
+fout = pynitf.NitfFileJson()
+fout.tre_list = f.tre_list
+fout.file_header = f.file_header
+fout.write(args.json_delta_file)

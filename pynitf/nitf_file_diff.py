@@ -2,6 +2,8 @@ from .nitf_file import (NitfFile, NitfImageSegment, NitfGraphicSegment,
                         NitfTextSegment, NitfDesSegment, NitfResSegment)
 from .nitf_diff_handle import (NitfDiffHandle, NitfDiffHandleSet,
                                DiffContextFilter)
+from .nitf_file_merge import NitfFileMerge
+from .nitf_file_json import NitfFileJson
 import copy
 import logging
 from contextlib import contextmanager
@@ -64,9 +66,11 @@ class NitfDiff(object):
         nested dictionaries.'''
         self.config = self._update_dict(self.config, u)
         
-    def compare(self, file1, file2):
+    def compare(self, file1, file2, json_delta=None):
         f1 = NitfFile(file1)
         f2 = NitfFile(file2)
+        if(json_delta):
+            f2 = NitfFileMerge([NitfFileJson(json_delta), f2])
         return self.compare_obj(f1, f2)
     
 

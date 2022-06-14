@@ -127,7 +127,7 @@ def create_sample_file():
     # the data into a numpy array, which is nice for testing. We'll probably
     # need to write other image sources (although most things can go to a
     # numpy array, so maybe not).
-    img = NitfImageWriteNumpy(10, 10, np.uint8)
+    img = NitfImageWriteNumpy(10, 10, np.uint8, iid1 = "Image 1")
     for i in range(10):
         for j in range(10):
             img[0,i,j] = i + j
@@ -140,26 +140,12 @@ def create_sample_file():
     # Create a larger img segment
     img2 = NitfImageWriteDataOnDemand(nrow=30, ncol=30, data_type=np.uint8,
                                       numbands=50, data_callback=write_zero,
-                                      image_gen_mode=NitfImageWriteDataOnDemand.IMAGE_GEN_MODE_BAND)
+                                      image_gen_mode=NitfImageWriteDataOnDemand.IMAGE_GEN_MODE_BAND, iid1 = "Image 2")
     segment2 = NitfImageSegment(img2)
     segment2.tre_list.append(createHISTOA())
     segment2.tre_list.append(createENGRDA())
     f.image_segment.append(segment2)
 
-    # Write by column
-    img3 = NitfImageWriteDataOnDemand(nrow=400, ncol=300, data_type=np.dtype('>i2'),
-                                      numbands=50, data_callback=write_by_row_p,
-                                      image_gen_mode=NitfImageWriteDataOnDemand.IMAGE_GEN_MODE_ROW_P)
-    ih = img3.subheader
-    ih.nbpr = 300
-    ih.nbpc = 1
-    ih.nppbh = 1
-    ih.nppbv = 400
-    ih.imode="P"
-    segment3 = NitfImageSegment(img3)
-    segment3.tre_list.append(createHISTOA())
-    segment3.tre_list.append(createBANDSB())
-    f.image_segment.append(segment3)
 
     # Can add TRES to either the file or image segment level. This automatically
     # handles TRE overflow, you just put the tre in and the writing figures out
@@ -276,7 +262,13 @@ def create_sample_file():
     f.des_segment.append(de3)
 
     # Now we write out to a nitf file
-    f.write('nitf_sample.ntf')
+    f.write('nitf_sample_golden.ntf')
+
+    # Make some changes, and we'll write out a "new"
+    # nitf file
+    f.tre_list[0].angle_to_north = 300
+    f.file_header.ftitle = "My delta"
+    f.write("nitf_sample_new.ntf")
 
 def test_file_merge(isolated_dir):
     # Requires jsonpickle, which isn't a general requirement for pynitf. So just skip
@@ -286,17 +278,21 @@ def test_file_merge(isolated_dir):
     except ImportError:
         raise pytest.skip("Requires jsonpickle to run")
     create_sample_file()
-    f_delta = NitfFileJson()
 
-    f1 = NitfFile("nitf_sample.ntf")
-    # Make a change to the TRE in f1.
-    t = copy.deepcopy(f1.tre_list[0])
-    t.angle_to_north = 300
-    f_delta.tre_list = [t]
-    f_delta.write("delta.json")
-    
-    f1 = NitfFile("nitf_sample.ntf")
-    f2 = NitfFileJson("delta.json")
-    f = NitfFileMerge([f2,f1])
-    print(f)
-    
+    # The new file and the golden aren't the same.
+    print("Results of nitf_diff with new file and old golden. Should be different")
+    t = subprocess.run(["nitf_diff", "nitf_sample_new.ntf",
+                        "nitf_sample_golden.ntf"])
+    assert t.returncode == 1
+
+    # Create a json delta file with all the new stuff in the new file.
+    t = subprocess.run(["nitf_json_delta", "nitf_sample_new.ntf",
+                        "nitf_sample_golden_delta.json"])
+    assert t.returncode == 0
+
+    # Then use the delta file to update the golden file. Should match
+    print("Results of nitf_diff with new file and old golden plus json delta file. Should be the same")
+    t = subprocess.run(["nitf_diff", "nitf_sample_new.ntf",
+                        "nitf_sample_golden.ntf",
+                        "nitf_sample_golden_delta.json"])
+    assert t.returncode == 0

@@ -8,9 +8,9 @@ import os
 import collections.abc
 import warnings
 
-version="March 3, 2020"
+version="June 13, 2022"
 usage="""Usage: 
-  nitf_diff [options] <file1> <file2>
+  nitf_diff [options] <file1> <file2> [<json_delta>]
   nitf_diff -h | --help
   nitf_diff -v | --version
 
@@ -137,8 +137,10 @@ else:
 if(fh):
     print("Comparing file 1: %s" % os.path.abspath(args.file1), file=fh.stream)
     print("Comparing file 2: %s" % os.path.abspath(args.file2), file=fh.stream)
+    if(args.json_delta):
+        print("JSON delta file: %s" % os.path.abspath(args.json_delta), file=fh.stream)
     
-is_same = nitf_diff.compare(args.file1, args.file2)
+is_same = nitf_diff.compare(args.file1, args.file2, args.json_delta)
 
 if(not is_same):
     if(fh):

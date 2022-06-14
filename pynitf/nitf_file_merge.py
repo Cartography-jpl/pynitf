@@ -18,7 +18,12 @@ class NitfFileMerge(NitfFile):
     just return the first file that has an entry.'''
     def __init__(self, file_list = []):
         self.file_list = file_list
-
+        # Let the files know about each other, so that we can do
+        # things like merge part of a ImageSegment.
+        for f in self.file_list:
+            if(hasattr(f, "notify_file_merge")):
+                f.notify_file_merge(self.file_list)
+                
     @property
     def file_header(self):
         for f in self.file_list:
