@@ -60,6 +60,10 @@ class NitfSegment(object):
     def short_desc(self):
         pass
 
+    def segment_type(self):
+        '''This is Image, Graphics, Text, Des or Res'''
+        pass
+
     @property
     def subheader(self):
         '''Return subheader for NitfSegment'''
@@ -236,6 +240,9 @@ class NitfImageSegment(NitfSegment):
     _tre_field_list = [["ixshdl", "ixofl", "ixshd"],
                        ["udidl", "udofl", "udid"]]
 
+    def segment_type(self):
+        return "Image"
+        
     def short_desc(self):
         return "ImageSegment %s" % self.subheader.iid1
     
@@ -270,6 +277,9 @@ class NitfGraphicSegment(NitfSegment):
     _type_support_tre = True
     _tre_field_list = [["sxshdl", "sxsofl", "sxshd"]]
 
+    def segment_type(self):
+        return "Graphics"
+        
     def short_desc(self):
         return "GraphicSegment %s \"%s\"" % (self.subheader.sid,
                                          self.subheader.sname)
@@ -290,6 +300,9 @@ class NitfTextSegment(NitfSegment):
     _type_support_tre = True
     _tre_field_list = [["txshdl", "txsofl", "txshd"]]
 
+    def segment_type(self):
+        return "Text"
+        
     def short_desc(self):
         return "TextSegment %s" % self.subheader.textid
     
@@ -306,6 +319,9 @@ class NitfDesSegment(NitfSegment):
     _type_support_tre = False
     _update_file_header_field = ("ldsh", "ld")
 
+    def segment_type(self):
+        return "Des"
+        
     def short_desc(self):
         return "DesSegment %s" % self.subheader.desid
 
@@ -331,7 +347,10 @@ class NitfResSegment(NitfSegment):
     sh_class = NitfResSubheader
     _type_support_tre = False
     _update_file_header_field = ("lresh", "lre")
-    
+
+    def segment_type(self):
+        return "Res"
+        
     def short_desc(self):
         return "ResSegment %s" % self.subheader.resid
 

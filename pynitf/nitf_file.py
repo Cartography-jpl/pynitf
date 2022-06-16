@@ -7,7 +7,7 @@ from .nitf_file_header import NitfFileHeader
 from .nitf_tre import read_tre, prepare_tre_write, add_find_tre_function
 from .nitf_tre_engrda import add_engrda_function
 from .nitf_security import security_unclassified
-from .nitf_segment import (NitfImageSegment, NitfGraphicSegment,
+from .nitf_segment import (NitfSegment, NitfImageSegment, NitfGraphicSegment,
                            NitfTextSegment, NitfDesSegment,
                            NitfResSegment)
 from .nitf_segment_hook import NitfSegmentHookSet
