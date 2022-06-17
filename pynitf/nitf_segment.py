@@ -57,6 +57,16 @@ class NitfSegment(object):
             self.nitf_file.segment_hook_set.after_init_hook(self,
                                                             self.nitf_file)
 
+    def primary_key(self):
+        '''NITF segments don't actually have a unique key. But in practice
+        it sort of does. So for example iid1 for NitfImageSegment is often
+        unique.
+
+        This returns whatever should be consider a key for identifying 
+        a unique segment, or None if there isn't such a key 
+        (e.g., NitfResSegment)'''
+        return self.data.primary_key()
+    
     def short_desc(self):
         pass
 
@@ -242,7 +252,7 @@ class NitfImageSegment(NitfSegment):
 
     def segment_type(self):
         return "Image"
-        
+
     def short_desc(self):
         return "ImageSegment %s" % self.subheader.iid1
     
@@ -348,6 +358,9 @@ class NitfResSegment(NitfSegment):
     _type_support_tre = False
     _update_file_header_field = ("lresh", "lre")
 
+    def primary_key(self):
+        return None
+    
     def segment_type(self):
         return "Res"
         

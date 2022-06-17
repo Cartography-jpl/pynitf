@@ -134,6 +134,9 @@ class DesEXT_DEF_CONTENT(NitfDes):
             self.data_size = self._seg().data_size
         self.data = None
 
+    def primary_key(self):
+            return (self.desid, self.user_subheader.des_id1.decode('utf-8'))
+        
     def str_hook(self, file):
         print("DesEXT_DEF_CONTENT", file=file)
 

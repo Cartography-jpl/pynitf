@@ -894,10 +894,14 @@ class FieldStruct(object):
     def __getstate__(self):
         fh = io.BytesIO()
         self.write_to_file(fh)
-        return { "field_data" : fh.getvalue().decode('utf-8') }
+        # We can't use decode here, because the byte data might not be
+        # utf-8 (although it is suppose to, NITF has all kinds of bizarre
+        # exceptions). Instead we convert this to the same expression
+        # python uses with printing this
+        return { "field_data" : str(fh.getvalue())}
 
     def __setstate__(self, d):
-        fh = io.BytesIO(d["field_data"].encode('utf-8'))
+        fh = io.BytesIO(eval(d["field_data"]))
         self.__init__()
         self.read_from_file(fh)
         

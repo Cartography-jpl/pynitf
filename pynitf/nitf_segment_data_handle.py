@@ -55,6 +55,16 @@ class NitfData(object, metaclass=abc.ABCMeta):
             self._shared_header = NitfSharedHeader(self.sh_class,
                                                    self.uh_class)
 
+    def primary_key(self):
+        '''NITF segments don't actually have a unique key. But in practice
+        it sort of does. So for example iid1 for NitfImageSegment is often
+        unique.
+
+        This returns whatever should be consider a key for identifying 
+        a unique segment, or None if there isn't such a key 
+        (e.g., NitfResSegment)'''
+        return None
+
     @property
     def subheader(self):
         '''Return subheader for NitfData'''
@@ -119,6 +129,9 @@ class NitfImage(NitfData):
         '''Return shape of data'''
         return self.subheader.shape
 
+    def primary_key(self):
+        return self.subheader.iid1
+    
     @property
     def dtype(self):
         '''Return data type of data'''
@@ -151,6 +164,9 @@ class NitfDes(NitfData):
             if(self.des_tag):
                 self.subheader.desid = self.des_tag
 
+    def primary_key(self):
+        return (self.desid, None)
+    
     @property
     def desid(self):
         return self.subheader.desid
@@ -159,11 +175,16 @@ class NitfText(NitfData):
     '''Base class for reading/writing data in a NitfTextSegment'''
     seg_class = NitfTextSegment
     sh_class = NitfTextSubheader
+    def primary_key(self):
+        return self.subheader.textid
+    
     
 class NitfGraphic(NitfData):
     '''Base class for reading/writing data in a NitfGraphicSegment'''
     seg_class = NitfGraphicSegment
     sh_class = NitfGraphicSubheader
+    def primary_key(self):
+        return self.subheader.sid
 
 class NitfRes(NitfData):
     '''Base class for reading/writing data in a NitfResSegment'''

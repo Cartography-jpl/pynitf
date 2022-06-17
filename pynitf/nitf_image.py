@@ -8,6 +8,7 @@ import numpy as np
 import io
 import mmap
 import logging
+import copy
 
 class NitfImageWithSubset(NitfImage):
     '''It is common for a NitfImage to allow reading a subset of the data. 
@@ -201,10 +202,10 @@ class NitfImageReadNumpy(NitfImageWithSubset):
                 #This may go negative on the last loop but that's fine
                 bytes_left = bytes_left - buffer_size
 
-class ImageReadNumpyDiff(NitfDiffHandle):
+class ImageWithSubsetDiff(NitfDiffHandle):
     def handle_diff(self, d1, d2, nitf_diff):
-        if(not isinstance(d1, NitfImageReadNumpy) or
-           not isinstance(d2, NitfImageReadNumpy)):
+        if(not isinstance(d1, NitfImageWithSubset) or
+           not isinstance(d2, NitfImageWithSubset)):
             return (False, None)
         is_same = True
         t1 = d1[:,:,:]
@@ -222,7 +223,7 @@ class ImageReadNumpyDiff(NitfDiffHandle):
         # nitf_diff_support
         return (True, is_same)
 
-NitfDiffHandleSet.add_default_handle(ImageReadNumpyDiff())
+NitfDiffHandleSet.add_default_handle(ImageWithSubsetDiff())
 
 class NitfImageWriteDataOnDemand(NitfImageWithSubset):
     '''This writes a NitfImage where we generate the data on demand when
@@ -437,6 +438,18 @@ class NitfImageWriteNumpy(NitfImageWriteDataOnDemand):
 
     def data_to_write(self, d, bstart, lstart, sstart):
         d[:,:,:] = self._data[bstart:(bstart+d.shape[0]),lstart:(lstart+d.shape[1]),sstart:(sstart+d.shape[2])]
+
+# I think we want this. Not 100% sure, but for now we'll have a deepcopy
+# of any image written to a NitfImageWriteNumpy
+
+def _deepcopy(self, memo=None):
+    r = NitfImageWriteNumpy(1,1,np.int8)
+    r.subheader = copy.deepcopy(self.subheader)
+    r._data = np.empty(self.shape, dtype = self.dtype)
+    r[:,:,:] = self[:,:,:]
+    return r
+
+NitfImage.__deepcopy__ = _deepcopy
         
 class NitfRadCalc(object):
     '''Sample calculation class, that shows how we can generate data on 

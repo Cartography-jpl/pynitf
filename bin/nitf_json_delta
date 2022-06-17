@@ -21,7 +21,5 @@ Options:
 args = pynitf.docopt_simple.docopt_simple(usage, version=version)
 
 f = pynitf.NitfFile(args.file_in)
-fout = pynitf.NitfFileJson()
-fout.tre_list = f.tre_list
-fout.file_header = f.file_header
+fout = pynitf.NitfFileJson.create_delta(f)
 fout.write(args.json_delta_file)

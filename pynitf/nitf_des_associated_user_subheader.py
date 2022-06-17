@@ -96,6 +96,9 @@ def _assoc_elem(self, f):
     r = [ res.get(id) for id in asid]
     return r
 
+def _primary_key(self):
+    return (self.desid, self.user_subheader.id)
+
 def add_uuid_des_function(cls):
     cls.id = property(_id, _id_set)
     cls.aisdlvl = property(_aisdlvl)
@@ -105,6 +108,7 @@ def add_uuid_des_function(cls):
     cls.add_assoc_elem_id = _add_assoc_elem_id
     cls.add_assoc_elem = _add_assoc_elem
     cls.assoc_elem = _assoc_elem
+    cls.primary_key = _primary_key
 
 class DesAssociatedUserSubheaderDiff(FieldStructDiff):
     '''Compare two user headers.'''
