@@ -127,7 +127,7 @@ def create_sample_file():
     # the data into a numpy array, which is nice for testing. We'll probably
     # need to write other image sources (although most things can go to a
     # numpy array, so maybe not).
-    img = NitfImageWriteNumpy(10, 10, np.uint8, iid1 = "Image 1")
+    img = NitfImageWriteNumpy(10, 10, np.uint8, iid1 = "Image 1", idlvl=5)
     for i in range(10):
         for j in range(10):
             img[0,i,j] = i + j
@@ -140,7 +140,7 @@ def create_sample_file():
     # Create a larger img segment
     img2 = NitfImageWriteDataOnDemand(nrow=30, ncol=30, data_type=np.uint8,
                                       numbands=50, data_callback=write_zero,
-                                      image_gen_mode=NitfImageWriteDataOnDemand.IMAGE_GEN_MODE_BAND, iid1 = "Image 2")
+                                      image_gen_mode=NitfImageWriteDataOnDemand.IMAGE_GEN_MODE_BAND, iid1 = "Image 2", idlvl=6)
     segment2 = NitfImageSegment(img2)
     segment2.tre_list.append(createHISTOA())
     segment2.tre_list.append(createENGRDA())
@@ -268,6 +268,9 @@ def create_sample_file():
     # nitf file
     f.tre_list[0].angle_to_north = 300
     f.file_header.ftitle = "My delta"
+    f.text_segment[0].text.string = "My new string"
+    f.image_segment[0].tre_list[0].angle_to_north = 310
+    f.image_segment[0].subheader.iid2 = "My new IID2"
     f.write("nitf_sample_new.ntf")
 
 def test_file_merge(isolated_dir):
@@ -287,6 +290,7 @@ def test_file_merge(isolated_dir):
 
     # Create a json delta file with all the new stuff in the new file.
     t = subprocess.run(["nitf_json_delta", "nitf_sample_new.ntf",
+                        "nitf_sample_golden.ntf",
                         "nitf_sample_golden_delta.json"])
     assert t.returncode == 0
 

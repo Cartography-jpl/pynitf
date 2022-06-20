@@ -1,8 +1,8 @@
 from .nitf_file import NitfFile
-
-from .nitf_file import NitfFile
+from .nitf_segment_hook import NitfSegmentHookSet
 from .nitf_tre import add_find_tre_function
 from .nitf_tre_engrda import add_engrda_function
+import copy
 
 class NitfFileMerge(NitfFile):
     '''This is used to merge two NitfFile.
@@ -17,12 +17,16 @@ class NitfFileMerge(NitfFile):
     I'm not 100% sure about the design we want for this. Initially, we'll
     just return the first file that has an entry.'''
     def __init__(self, file_list = []):
+        self.segment_hook_set = copy.copy(NitfSegmentHookSet.default_hook_set())
         self.file_list = file_list
         # Let the files know about each other, so that we can do
         # things like merge part of a ImageSegment.
         for f in self.file_list:
             if(hasattr(f, "notify_file_merge")):
-                f.notify_file_merge(self.file_list)
+                f.notify_file_merge(self.file_list, self)
+        # Pretty sure this is where I want to call the read hook
+        for seg in self.segments():
+            self.segment_hook_set.after_read_hook(seg, self)
                 
     @property
     def file_header(self):

@@ -313,6 +313,9 @@ class NitfTextSegment(NitfSegment):
     def segment_type(self):
         return "Text"
         
+    def primary_key(self):
+        return self.subheader.textid
+    
     def short_desc(self):
         return "TextSegment %s" % self.subheader.textid
     
@@ -332,6 +335,13 @@ class NitfDesSegment(NitfSegment):
     def segment_type(self):
         return "Des"
         
+    def primary_key(self):
+        if(self.user_subheader and hasattr(self.user_subheader, "id")):
+            return (self.subheader.desid, self.user_subheader.id)
+        if(self.user_subheader and hasattr(self.user_subheader, "des_id1")):
+            return (self.subheader.desid, self.user_subheader.des_id1)
+        return (self.subheader.desid, None)
+    
     def short_desc(self):
         return "DesSegment %s" % self.subheader.desid
 

@@ -3,7 +3,7 @@ import pynitf
 
 version="June 13, 2022"
 usage="""Usage: 
-  nitf_json_delta [options] <file_in> <json_delta_file>
+  nitf_json_delta [options] <file1> <file2> <json_delta_file>
   nitf_json_delta -h | --help
   nitf_json_delta -v | --version
 
@@ -20,6 +20,7 @@ Options:
 """
 args = pynitf.docopt_simple.docopt_simple(usage, version=version)
 
-f = pynitf.NitfFile(args.file_in)
-fout = pynitf.NitfFileJson.create_delta(f)
+f1 = pynitf.NitfFile(args.file1)
+f2 = pynitf.NitfFile(args.file2)
+fout = pynitf.NitfFileJson.create_delta(f1,f2)
 fout.write(args.json_delta_file)

@@ -1,6 +1,10 @@
 from .nitf_file import NitfFile
-from .nitf_segment import NitfSegment, NitfSharedHeader
+from .nitf_segment import (NitfSegment, NitfSharedHeader,
+                           NitfImageSegment, NitfGraphicSegment,
+                           NitfTextSegment, NitfDesSegment, NitfResSegment)
+from .nitf_des import NitfDesFieldStruct
 import copy
+import weakref
 
 class NitfSegmentJson(NitfSegment):
     '''NitfSegment where much of the content is stored as Json data.
@@ -47,6 +51,12 @@ class NitfSegmentJson(NitfSegment):
     def create_delta(cls, segin, include_data=False):
         s = cls()
         s.subheader = copy.deepcopy(segin.subheader)
+        # We already track the TREs separately, and we don't need a
+        # second copy left in the subheader
+        if(s._tre_field_list is not None):
+            for t in s._tre_field_list:
+                h_data = t[2]
+                setattr(s.subheader, h_data, b'')
         s.user_subheader = copy.deepcopy(segin.user_subheader)
         s.tre_list = copy.deepcopy(segin.tre_list)
         s._short_desc = segin.short_desc()
@@ -79,7 +89,22 @@ class NitfSegmentJson(NitfSegment):
         self._segment_type = d["segment_type"]
         self._data = d["data"]
         self._primary_key = d["primary_key"]
-                
+
+class NitfImageSegmentJson(NitfSegmentJson, NitfImageSegment):
+    pass
+
+class NitfTextSegmentJson(NitfSegmentJson, NitfTextSegment):
+    pass
+
+class NitfGraphicSegmentJson(NitfSegmentJson, NitfGraphicSegment):
+    pass
+
+class NitfDesSegmentJson(NitfSegmentJson, NitfDesSegment):
+    pass
+
+class NitfResSegmentJson(NitfSegmentJson, NitfResSegment):
+    pass
+
     
 # I don't think we actually want this to be a NitfFile.
 #class NitfFileJson(NitfFile):
@@ -100,27 +125,33 @@ class NitfFileJson():
         self.base_file = None
 
     @classmethod
-    def create_delta(cls, fin):
+    def create_delta(cls, fin1, fin2):
         f = cls()
-        f.tre_list = copy.deepcopy(fin.tre_list)
-        f.file_header = copy.deepcopy(fin.file_header)
+        f.tre_list = copy.deepcopy(fin1.tre_list)
+        f.file_header = copy.deepcopy(fin1.file_header)
+        # Remove the TREs in the file header, we track this separately and
+        # don't need a duplicate here.
+        f.file_header.udhd = b''
+        f.file_header.xhd = b''
         f.image_segment = []
         f.text_segment = []
         f.des_segment = []
-        for iseg in fin.image_segment:
-            f.image_segment.append(NitfSegmentJson.create_delta(iseg))
-        for tseg in fin.text_segment:
-            # TODO Do we need to play with the writing out of text data?
-            # Is the JSON something that is easy to diff?
-            f.text_segment.append(NitfSegmentJson.create_delta(tseg, include_data=True))
-        for dseg in fin.des_segment:
+        for iseg in fin1.image_segment:
+            f.image_segment.append(NitfImageSegmentJson.create_delta(iseg))
+        for tseg in fin1.text_segment:
+            f.text_segment.append(NitfTextSegmentJson.create_delta(tseg, include_data=True))
+        for dseg in fin1.des_segment:
             # Skip TRE_OVERFLOW, we already handle the TREs separately
             if(dseg.subheader.desid != "TRE_OVERFLOW"):
-                # TODO Logic for when to copy the data
-                f.des_segment.append(NitfSegmentJson.create_delta(dseg))
+                # We might want to rework the logic here, and somehow have
+                # the dseg decide if it wants the data written or not.
+                # But for now, just have anything that is a NitfDesFieldStruct
+                # do this, but not other DES types.
+                include_data = isinstance(dseg.data, NitfDesFieldStruct)
+                f.des_segment.append(NitfDesSegmentJson.create_delta(dseg, include_data=include_data))
         return f
     
-    def notify_file_merge(self, file_list):
+    def notify_file_merge(self, file_list, fparent):
         cnt = 0
         for f in file_list:
             if not self is f:
@@ -137,6 +168,16 @@ class NitfFileJson():
             if(seglist is not None):
                 for s in seglist:
                     s.notify_segment_merge(base_seglist)
+        nitf_file = weakref.ref(fparent)
+        for seglist in (self.image_segment, self.graphic_segment,
+                       self.text_segment, self.des_segment, 
+                       self.res_segment):
+            if(seglist is not None):
+                for s in seglist:
+                    s._nitf_file = nitf_file
+                    s.data._shared_header = s._shared_header
+                    if(s.nitf_file):
+                        s.nitf_file.segment_hook_set.after_append_hook(s, s.nitf_file)
 
     def read(self, file_name):
         import jsonpickle

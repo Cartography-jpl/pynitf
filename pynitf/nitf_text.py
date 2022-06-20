@@ -15,20 +15,36 @@ class NitfTextStr(NitfText):
         self.string = string
         
     def __str__(self):
+        return "NitfTextStr:\n%s" % (self.string_as_str)
+
+    @property
+    def string_as_str(self):
+        '''Present the data as a str object, even if it happen to
+        be bytes'''
         if isinstance(self.string, str):
-            return "NitfTextStr:\n%s" % (self.string)
-        else:
-            return "NitfTextStr:\n%s" % (self.string.decode("utf-8"))
-        
+            return self.string
+        return self.string.decode('utf-8')
+
+    @property
+    def string_as_bytes(self):
+        '''Present the data as a str object, even if it happen to
+        be bytes'''
+        if isinstance(self.string, str):
+            return self.string.encode('utf-8')
+        return self.string
+    
     def read_from_file(self, fh, seg_index=None):
         self.string = fh.read(self._seg().data_size)
         return True
 
+    def __getstate__(self):
+        return {"string" : self.string_as_str }
+
+    def __setstate__(self, d):
+        self.string = d["string"]
+
     def write_to_file(self, fh):
-        if isinstance(self.string, str):
-            fh.write(self.string.encode('utf-8'))
-        else:
-            fh.write(self.string)
+        fh.write(self.string_as_bytes)
 
 class TextStrDiff(NitfDiffHandle):
     '''Compare two NitfTextStr'''
@@ -36,11 +52,14 @@ class TextStrDiff(NitfDiffHandle):
         return nitf_diff.config.get("TextStr", {})
     
     def handle_diff(self, g1, g2, nitf_diff):
-        with nitf_diff.diff_context("TextStr"):
+        with nitf_diff.diff_context("TextStr", add_text=True):
             if(not isinstance(g1, NitfTextStr) or
                not isinstance(g2, NitfTextStr)):
                 return (False, None)
-            return (True, g1.string == g2.string)
+            is_same = g1.string_as_str == g2.string_as_str
+            if(not is_same):
+                logger.difference("Text data is not the same")
+            return (True, is_same)
 
 NitfDiffHandleSet.add_default_handle(TextStrDiff())
 NitfSegmentDataHandleSet.add_default_handle(NitfTextStr)
