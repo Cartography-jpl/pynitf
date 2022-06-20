@@ -38,6 +38,13 @@ class NitfSegmentJson(NitfSegment):
                      if s.primary_key() == self.primary_key()]
         if(len(slist) != 1):
             raise RuntimeError("Couldn't uniquely match primary_key to seg_list")
+        # TODO We might need to worry about primary_key that include
+        # a UUID. This isn't necessarily the same between a gold and and
+        # new file. For now, this doesn't matter because the only DESs that
+        # use the UUID are ones that we also manage the data for. But
+        # we might need to worry about this in the future. Could perhaps
+        # use something other than the uuid, so perhaps the count in the
+        # file
         self._merge_seg = slist[0]
 
     @property
