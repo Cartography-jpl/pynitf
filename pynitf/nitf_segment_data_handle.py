@@ -130,7 +130,7 @@ class NitfImage(NitfData):
         return self.subheader.shape
 
     def primary_key(self):
-        return self.subheader.iid1
+        return (self.subheader.iid1, self.subheader.idlvl)
     
     @property
     def dtype(self):

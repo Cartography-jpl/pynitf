@@ -146,6 +146,12 @@ def create_sample_file():
     segment2.tre_list.append(createENGRDA())
     f.image_segment.append(segment2)
 
+    img3 = NitfImageWriteNumpy(10, 10, np.uint8, iid1 = "Image 1", idlvl=7)
+    for i in range(10):
+        for j in range(10):
+            img3[0,i,j] = i + j
+    segment3 = NitfImageSegment(img3)
+    f.image_segment.append(segment3)
 
     # Can add TRES to either the file or image segment level. This automatically
     # handles TRE overflow, you just put the tre in and the writing figures out
