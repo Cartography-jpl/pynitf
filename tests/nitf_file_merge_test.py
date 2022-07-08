@@ -414,3 +414,29 @@ def test_same_tre_git_merge(isolated_dir):
                            shell=True)
         assert t.returncode == 0
     
+def test_include_h5_tre_git_merge(isolated_dir):
+    '''This is test_different_tre_git_merge, but with the H5 file included.
+    This adds a extra challenge because something we ignore in nitf_diff
+    changes for both.'''
+    print("This test fails. This isn't a 'real' conflict, just the creation time for the h5 file changes. This is something we would like to cleanly merge.")
+    fbase = create_sample_file(skip_h5_file=False)
+    fvara = create_sample_file(skip_h5_file=False)
+    fvarb = create_sample_file(skip_h5_file=False)
+    fexpect = create_sample_file(skip_h5_file=False)
+
+    # Variant A updates use00a TRE in first image segment
+    fvara.image_segment[0].tre_list[0].angle_to_north = 100
+
+    # Variant B updates use00a TRE in second image segment
+    fvarb.image_segment[1].tre_list[0].angle_to_north = 200
+
+    # Expected merge is just both of these updated
+    fexpect.image_segment[0].tre_list[0].angle_to_north = 100
+    fexpect.image_segment[1].tre_list[0].angle_to_north = 200
+
+    # Try doing merge, using git merge
+    with try_merge(fbase, fvara, fvarb, fexpect) as\
+         (base_name, a_name, b_name, out_name):
+        t = subprocess.run(f"git merge-file -p {a_name} {base_name} {b_name} > {out_name}",
+                           shell=True)
+        assert t.returncode == 0
