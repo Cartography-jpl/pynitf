@@ -387,5 +387,30 @@ def test_conflict_tre_git_merge(isolated_dir):
         # The return code is the number of conflicts. We expect exactly
         # 1 conflict
         assert t.returncode == 1
-        
+
+def test_same_tre_git_merge(isolated_dir):
+    '''Variant A and B update different fields in the same TRE. This 
+    should be a clean merge'''
+    print("Note that is currently fails. We would like this to work, the conflict isn't a 'real' conflict, just a limitation of our design.")
+    fbase = create_sample_file(skip_h5_file=True)
+    fvara = create_sample_file(skip_h5_file=True)
+    fvarb = create_sample_file(skip_h5_file=True)
+    fexpect = create_sample_file(skip_h5_file=True)
+
+    # Variant A updates use00a TRE in first image segment
+    fvara.image_segment[0].tre_list[0].angle_to_north = 100
+
+    # Variant B updates same use00a TRE, different field
+    fvarb.image_segment[1].tre_list[0].mean_gsd = 20.1
+
+    # Expected merge is just both of these updated
+    fexpect.image_segment[0].tre_list[0].angle_to_north = 100
+    fexpect.image_segment[0].tre_list[0].mean_gsd = 20.1
+
+    # Try doing merge, using git merge
+    with try_merge(fbase, fvara, fvarb, fexpect) as\
+         (base_name, a_name, b_name, out_name):
+        t = subprocess.run(f"git merge-file -p {a_name} {base_name} {b_name} > {out_name}",
+                           shell=True)
+        assert t.returncode == 0
     
