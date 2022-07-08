@@ -16,6 +16,7 @@ import json
 import numpy as np
 import hashlib
 import time
+from contextlib import contextmanager
 
 def createHISTOA():
 
@@ -114,7 +115,7 @@ def write_by_row_p(d, bstart, lstart, sstart):
             #print(a*20+b*30)
             d[a, b] = a*20+b*30
 
-def create_sample_file():
+def create_sample_file(skip_h5_file=False):
     '''This is a duplicate of the NitfFileGen test file. We just use this so we have
     something with enough complexity to test merging with, without needing to use
     an external data source.'''
@@ -263,13 +264,39 @@ def create_sample_file():
 
     d.attrs['OS'] = os.name
     h_f.close()
-    d_ext.attach_file("mytestfile.hdf5")
-
-    de3 = NitfDesSegment(d_ext)
-    f.des_segment.append(de3)
+    # Because of the creation time in file, we don't get a clean merge.
+    # We may write code to work around this, but for now just allow this
+    # to skip
+    if(not skip_h5_file):
+        d_ext.attach_file("mytestfile.hdf5")
+        de3 = NitfDesSegment(d_ext)
+        f.des_segment.append(de3)
 
     return f
 
+@contextmanager
+def try_merge(fbase, fvara, fvarb, fmerge_expect = None):
+    '''Since we do this a few times, this handles trying to do a merge.
+    This generates all the input files, then yields with the file names
+    for base, variant a, variant b, result.
+
+    If fmerge_expect is supplied, we then run nitf diff on the results
+    '''
+    fbase.write("base.ntf")
+    fvara.write("vara.ntf")
+    fvarb.write("varb.ntf")
+    for t in ("base", "vara", "varb"):
+        subprocess.run(["nitf_json_delta", f"{t}.ntf",
+                    "base.ntf",
+                    f"{t}_delta.json"], check=True)
+    yield "base_delta.json", "vara_delta.json", "varb_delta.json", "merge_delta.json"
+    if(fmerge_expect is not None):
+        fmerge_expect.write("merge_expect.ntf")
+        t = subprocess.run(["nitf_diff", "merge_expect.ntf",
+                            "base.ntf",
+                            "merge_delta.json"])
+        assert t.returncode == 0
+        
 def test_file_merge(isolated_dir):
     # Requires jsonpickle, which isn't a general requirement for pynitf. So just skip
     # test if we don't have this.
@@ -307,3 +334,58 @@ def test_file_merge(isolated_dir):
                         "nitf_sample_golden.ntf",
                         "nitf_sample_golden_delta.json"])
     assert t.returncode == 0
+
+def test_different_tre_git_merge(isolated_dir):
+    '''A simple merge, where we start with a base file and then have
+    two different variants updating different TREs. We use a standard
+    git merge. This should be a clean case, and is the simplest merge
+    we need to do.'''
+    fbase = create_sample_file(skip_h5_file=True)
+    fvara = create_sample_file(skip_h5_file=True)
+    fvarb = create_sample_file(skip_h5_file=True)
+    fexpect = create_sample_file(skip_h5_file=True)
+
+    # Variant A updates use00a TRE in first image segment
+    fvara.image_segment[0].tre_list[0].angle_to_north = 100
+
+    # Variant B updates use00a TRE in second image segment
+    fvarb.image_segment[1].tre_list[0].angle_to_north = 200
+
+    # Expected merge is just both of these updated
+    fexpect.image_segment[0].tre_list[0].angle_to_north = 100
+    fexpect.image_segment[1].tre_list[0].angle_to_north = 200
+
+    # Try doing merge, using git merge
+    with try_merge(fbase, fvara, fvarb, fexpect) as\
+         (base_name, a_name, b_name, out_name):
+        t = subprocess.run(f"git merge-file -p {a_name} {base_name} {b_name} > {out_name}",
+                           shell=True)
+        assert t.returncode == 0
+
+def test_conflict_tre_git_merge(isolated_dir):
+    '''This is a merge where both variant A and B update the same 
+    TRE field. This is a real conflict, and the merge should always
+    fail.'''
+    fbase = create_sample_file(skip_h5_file=True)
+    fvara = create_sample_file(skip_h5_file=True)
+    fvarb = create_sample_file(skip_h5_file=True)
+
+    # Variant A updates use00a TRE in first image segment
+    fvara.image_segment[0].tre_list[0].angle_to_north = 100
+
+    # Variant B updates same use00a TRE with different value
+    fvarb.image_segment[0].tre_list[0].angle_to_north = 200
+
+    # No expected merge
+    fexpect = None
+
+    # Try doing merge, using git merge
+    with try_merge(fbase, fvara, fvarb, fexpect) as\
+         (base_name, a_name, b_name, out_name):
+        t = subprocess.run(f"git merge-file -p {a_name} {base_name} {b_name} > {out_name}",
+                           shell=True)
+        # The return code is the number of conflicts. We expect exactly
+        # 1 conflict
+        assert t.returncode == 1
+        
+    
