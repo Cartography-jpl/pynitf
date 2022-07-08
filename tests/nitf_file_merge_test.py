@@ -252,12 +252,13 @@ def create_sample_file():
     d_ext = DesEXT_h5()
     h_f = h5py.File("mytestfile.hdf5", "w")
 
-    arr = np.random.randn(1000)
+    rng = np.random.RandomState(2021)
+    arr = rng.randn(1000)
 
     g = h_f.create_group('Base_Group')
     d = g.create_dataset('default', data=arr)
 
-    g.attrs['Date'] = time.time()
+    g.attrs['Date'] = "2020-01-01"
     g.attrs['User'] = 'Me'
 
     d.attrs['OS'] = os.name
@@ -267,17 +268,7 @@ def create_sample_file():
     de3 = NitfDesSegment(d_ext)
     f.des_segment.append(de3)
 
-    # Now we write out to a nitf file
-    f.write('nitf_sample_golden.ntf')
-
-    # Make some changes, and we'll write out a "new"
-    # nitf file
-    f.tre_list[0].angle_to_north = 300
-    f.file_header.ftitle = "My delta"
-    f.text_segment[0].text.string = "My new string"
-    f.image_segment[0].tre_list[0].angle_to_north = 310
-    f.image_segment[0].subheader.iid2 = "My new IID2"
-    f.write("nitf_sample_new.ntf")
+    return f
 
 def test_file_merge(isolated_dir):
     # Requires jsonpickle, which isn't a general requirement for pynitf. So just skip
@@ -286,7 +277,17 @@ def test_file_merge(isolated_dir):
         import jsonpickle
     except ImportError:
         raise pytest.skip("Requires jsonpickle to run")
-    create_sample_file()
+    f = create_sample_file()
+    f.write("nitf_sample_golden.ntf")
+    f = create_sample_file()
+    # Make some changes, and we'll write out a "new"
+    # nitf file
+    f.tre_list[0].angle_to_north = 300
+    f.file_header.ftitle = "My delta"
+    f.text_segment[0].text.string = "My new string"
+    f.image_segment[0].tre_list[0].angle_to_north = 310
+    f.image_segment[0].subheader.iid2 = "My new IID2"
+    f.write("nitf_sample_new.ntf")
 
     # The new file and the golden aren't the same.
     print("Results of nitf_diff with new file and old golden. Should be different")
