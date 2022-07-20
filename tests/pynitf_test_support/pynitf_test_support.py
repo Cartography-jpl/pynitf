@@ -208,6 +208,9 @@ require_gdal_value = pytest.mark.skipif(not sys.version_info > (3,) or
                    not cmd_exists("gdallocationinfo"),
                    reason="Require python 3 and gdallocationinfo")
 
+require_git = pytest.mark.skipif(not cmd_exists("git"),
+                                 reason="Require git")
+
 @pytest.fixture(scope="function")
 def print_logging(isolated_dir):
     '''Direct logging to a local "run.log" file.
