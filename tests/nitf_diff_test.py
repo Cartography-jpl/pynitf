@@ -144,3 +144,21 @@ def test_extra_tre(isolated_dir):
                         "nitf2.ntf"])
     assert t.returncode == 0
     
+def test_des_diff_number(isolated_dir):
+    '''Test have an extra element in CSATTB DES in the first file.
+    The diff result should be different but nitf_diff should not crash.'''
+
+    f = NitfFile()
+    create_des(f, num = 5)
+    create_csephb(f, num = 5)
+    f.write("nitf1.ntf")
+
+    f = NitfFile()
+    create_des(f, num = 6)
+    create_csephb(f, num = 7)
+    f.write("nitf2.ntf")
+
+    print("Results of nitf_diff, should be different")
+    t = subprocess.run(["nitf_diff", "nitf1.ntf",
+                        "nitf2.ntf"])
+    assert t.returncode == 1

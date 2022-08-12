@@ -9,6 +9,7 @@ from pynitf.nitf_file import (NitfImageSegment, NitfTextSegment,
 from pynitf.nitf_text import NitfTextStr
 from pynitf.nitf_segment_data_handle import NitfGraphicRaw, NitfResRaw
 from pynitf.nitf_des_csattb import DesCSATTB
+from pynitf.nitf_des_csephb import DesCSEPHB
 from pynitf.nitf_tre_csde import TreUSE00A
 from pynitf.nitf_tre import TreWarning
 from pynitf.nitf_diff_handle import DifferenceFormatter
@@ -155,7 +156,7 @@ def create_res_segment(f, res_data=b'fake res data',
     rs.subheader.resid = resid
     f.res_segment.append(rs)
     
-def create_des(f, date_att = 20170501, q = 0.1, security=None):
+def create_des(f, date_att = 20170501, q = 0.1, num = 5, security=None):
     '''Create a DES segment'''
     des = DesCSATTB()
     ds = des.user_subheader
@@ -172,7 +173,7 @@ def create_des(f, date_att = 20170501, q = 0.1, security=None):
     des.dt_att = 900.5
     des.date_att = 20170501
     des.t0_att = 235959.100001000
-    des.num_att = 5
+    des.num_att = num
     for n in range(des.num_att):
         des.q1[n] = q
         des.q2[n] = q
@@ -183,7 +184,33 @@ def create_des(f, date_att = 20170501, q = 0.1, security=None):
     de = NitfDesSegment(des, security=security)
     f.des_segment.append(de)
     
-    
+def create_csephb(f, date_att = 20170501, e = 0.1, num = 5, security=None):
+    '''Create a DES segment'''
+    des = DesCSEPHB()
+    ds = des.user_subheader
+    ds.id = '4385ab47-f3ba-40b7-9520-13d6b7a7f311'
+    ds.numais = '010'
+    for i in range(int(ds.numais)):
+        ds.aisdlvl[i] = 5 + i
+    ds.reservedsubh_len = 0
+
+    des.qual_flag_eph = 1
+    des.interp_type_eph = 1
+    des.ephem_flag = 1
+    des.eci_ecf_ephem = 0
+    des.dt_ephem = 900.5
+    des.date_ephem = 20170501
+    des.t0_ephem = 235959.100001000
+    des.num_ephem = num
+    for n in range(des.num_ephem):
+        des.ephem_x[n] = e
+        des.ephem_y[n] = e
+        des.ephem_z[n] = e
+    des.reserved_len = 0
+
+    de = NitfDesSegment(des, security=security)
+    f.des_segment.append(de)
+
 # Some tests are python 3 only. Don't want the python 2 tests to fail for
 # python code that we know can't be run
 require_python3 = pytest.mark.skipif(not sys.version_info > (3,),
