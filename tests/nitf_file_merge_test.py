@@ -16,6 +16,7 @@ import json
 import numpy as np
 import hashlib
 import time
+import datetime
 from contextlib import contextmanager
 
 def createHISTOA():
@@ -115,7 +116,7 @@ def write_by_row_p(d, bstart, lstart, sstart):
             #print(a*20+b*30)
             d[a, b] = a*20+b*30
 
-def create_sample_file(skip_h5_file=False):
+def create_sample_file(skip_h5_file=False, use_time_iid2 = False):
     '''This is a duplicate of the NitfFileGen test file. We just use this so we have
     something with enough complexity to test merging with, without needing to use
     an external data source.'''
@@ -143,6 +144,8 @@ def create_sample_file(skip_h5_file=False):
                                       numbands=50, data_callback=write_zero,
                                       image_gen_mode=NitfImageWriteDataOnDemand.IMAGE_GEN_MODE_BAND, iid1 = "Image 2", idlvl=6)
     segment2 = NitfImageSegment(img2)
+    if use_time_iid2 is True:
+        segment2.subheader.iid2 = str(datetime.datetime.now())
     segment2.tre_list.append(createHISTOA())
     segment2.tre_list.append(createENGRDA())
     f.image_segment.append(segment2)
@@ -362,6 +365,33 @@ def test_different_tre_git_merge(isolated_dir):
         t = subprocess.run(f"git merge-file -p {a_name} {base_name} {b_name} > {out_name}",
                            shell=True)
         assert t.returncode == 0
+
+@require_git
+@pytest.mark.skip
+def test_different_tre_git_merge_time_iid2(isolated_dir):
+    '''Same test_different_tre_git_merge except that the files generated uses current datetime as one of the
+    images' iid2. This will fail right now because there will be merge conflict in the image subheader'''
+    fbase = create_sample_file(skip_h5_file=True, use_time_iid2 = True)
+    fvara = create_sample_file(skip_h5_file=True, use_time_iid2 = True)
+    fvarb = create_sample_file(skip_h5_file=True, use_time_iid2 = False)
+    fexpect = create_sample_file(skip_h5_file=True, use_time_iid2 = True)
+
+    # Variant A updates use00a TRE in first image segment
+    fvara.image_segment[0].tre_list[0].angle_to_north = 100
+
+    # Variant B updates use00a TRE in second image segment
+    fvarb.image_segment[1].tre_list[0].angle_to_north = 200
+
+    # Expected merge is just both of these updated
+    fexpect.image_segment[0].tre_list[0].angle_to_north = 100
+    fexpect.image_segment[1].tre_list[0].angle_to_north = 200
+
+    # Try doing merge, using git merge
+    with try_merge(fbase, fvara, fvarb, fexpect) as\
+         (base_name, a_name, b_name, out_name):
+        t = subprocess.run(f"git merge-file -p {a_name} {base_name} {b_name} > {out_name}",
+                           shell=True)
+        assert t.returncode == 1
 
 @require_git    
 def test_conflict_tre_git_merge(isolated_dir):
