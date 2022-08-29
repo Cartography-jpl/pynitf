@@ -1,5 +1,5 @@
 from .nitf_field import IntFieldData, BytesFieldData
-from .nitf_tre import Tre, tre_tag_to_cls
+from .nitf_tre import Tre, tre_tag_to_cls, allow_extensions
 from .nitf_diff_handle import NitfDiffHandleSet
 import time
 import uuid
@@ -21,6 +21,14 @@ _tm_format = "%+016.9lf"
 _gsd_5_format = "%5.1lf"
 _gsd_12_format = "%012.1lf"
 
+if(allow_extensions):
+    # Add a sensor type for push frame camera. Like "S", but with
+    # a push frame camera associated with it. The sensor type is "P"
+    push_instrument = ("S", "P")
+else:
+    # Actual NITF standard only has "S"
+    push_instrument = ("S",)
+    
 desc = [["image_uuid", "UUID Assigned to Current Image Plane", 36, str],
         ["num_assoc_des", "Number of Associated DES", 3, int],
         [["loop", "f.num_assoc_des"],
@@ -37,11 +45,11 @@ desc = [["image_uuid", "UUID Assigned to Current Image Plane", 36, str],
         ["ground_ref_point_z", "Z coordinate of Ground reference point", 12,
          float, {"frmt" : _pt_format,"optional" : True}],
         ["day_first_line_image", "Day of First Line of Synthetic Array Image",
-         8, str, {'condition': 'f.sensor_type=="S"'}],
+         8, str, {'condition': f'f.sensor_type in {push_instrument}'}],
         ["time_first_line_image", "Time of First Line of Synthetic Array Image",
-         15, float, {'condition': 'f.sensor_type=="S"', "frmt" : "%015.9lf"}],
+         15, float, {'condition': f'f.sensor_type in {push_instrument}', "frmt" : "%015.9lf"}],
         ["time_image_duration", "Time of Image Duration",
-         16, float, {'condition': 'f.sensor_type=="S"', "frmt" : _tm_format}],
+         16, float, {'condition': f'f.sensor_type in {push_instrument}', "frmt" : _tm_format}],
         ["time_stamp_loc", "Location of Frame Time Stamps", 1, int,
          {'condition': 'f.sensor_type=="F"'}],
         ["reference_frame_num", "Reference Frame Identifier", 9, int,

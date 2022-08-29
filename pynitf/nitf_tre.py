@@ -11,6 +11,16 @@ import io
 import logging
 import warnings
 
+# We have some proposed extensions to TREs based on work we've done
+# supporting other instruments (e.g., mars, moon for AMMOS). This
+# introduces new kinds of instruments, such as PushFrame camera (LRO-WAC),
+# instruments with non-constant time spacing between lines. It
+# isn't clear if we want these extensions turned of or not in some cases.
+# We'll put a hardcoded value in place here for now, but this gives the
+# location to put logic in place to constrain what is allowed.
+
+allow_extensions = True
+
 class TreWarning(UserWarning):
     '''Warning specific to trouble reading a TRE'''
     pass
@@ -315,5 +325,5 @@ NitfDiffHandleSet.add_default_handle(TreUnknownDiff(), priority_order = 1)
 __all__ = [ "TreUnknown", "TreDiff", "Tre", "TreWarning",
             "tre_tag_to_cls",
             "read_tre", "prepare_tre_write", "read_tre_data",
-            "add_find_tre_function"]
+            "add_find_tre_function", "allow_extensions"]
 
