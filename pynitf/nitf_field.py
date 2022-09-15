@@ -13,6 +13,10 @@ import numpy as np
 # Add a bunch of debugging if you are diagnosing a problem
 DEBUG = False
 
+# Here we encode and decode single-byte string-like values as latin-1 ASCII
+# We used to use the utf-8 codec but that couldn't deal w extended ASCII characters
+_text_codec = "latin-1" #"utf-8"
+
 def float_to_fixed_width(n, max_width, maximum_precision=False):
     '''Utility function that tries to fit a float with maximum precision into
     other a fixed point string, or optionally an exponent string'''
@@ -261,11 +265,11 @@ class NitfField(object):
             if(isinstance(v, NitfLiteral)):
                 v = v.value
                 if(self.optional and
-                   v.rstrip(self.optional_char.encode('utf-8') + b' ') == b''):
+                   v.rstrip(self.optional_char.encode(_text_codec) + b' ') == b''):
                     return None
             if(self.ty == str):
                 if(isinstance(v, bytes)):
-                    return v.decode("utf-8").rstrip()
+                    return v.decode(_text_codec).rstrip()
                 return self.ty(v).rstrip()
             else:
                 return self.ty(v)
@@ -330,7 +334,7 @@ class NitfField(object):
         if(self.ty == bytes or isinstance(self.value_dict[k], NitfLiteral)):
             return t
         else:
-            return t.encode("utf-8")
+            return t.encode(_text_codec)
         
     def write_to_file(self, fh, key):
         k = self.key_as_tuple(key)
@@ -375,10 +379,10 @@ class NitfField(object):
                 if(nitf_literal):
                     self.value_dict[k] = NitfLiteral(t)
                 elif(self.optional and
-                 t.rstrip(self.optional_char.encode('utf-8') + b' ') == b''):
+                 t.rstrip(self.optional_char.encode(_text_codec) + b' ') == b''):
                     self.value_dict[k] = None
                 elif(self.ty == str):
-                    self.value_dict[k] = t.rstrip().decode("utf-8", "replace")
+                    self.value_dict[k] = t.rstrip().decode(_text_codec, "replace")
                 elif(self.ty == bytes):
                     # Don't strip spaces or nulls, since these are valid
                     # byte values
@@ -431,12 +435,12 @@ class StringFieldData(FieldData):
         return "%s" % t
 
     def unpack(self, key, bdata):
-        return bdata.decode("utf-8")
+        return bdata.decode(_text_codec)
 
     def pack(self, key, v):
         if(isinstance(v, bytes)):
             return v
-        return v.encode("utf-8")
+        return v.encode(_text_codec)
 
 class BytesFieldData(FieldData):
     def get_print(self, key):
@@ -451,7 +455,7 @@ class BytesFieldData(FieldData):
     def pack(self, key, v):
         if(isinstance(v, bytes)):
             return v
-        return v.encode("utf-8")
+        return v.encode(_text_codec)
     
 class FloatFieldData(FieldData):
     def get_print(self, key):

@@ -79,7 +79,7 @@ def createILLUMB():
 
     # Set some values
     t.num_bands = 1
-    t.band_unit = "Some band unit of measure"
+    t.band_unit = b'\xb5m'
     t.lbound[0] = 17.0
     t.ubound[0] = 42.0
     t.num_others = 0
@@ -297,11 +297,23 @@ if __name__ ==  "__main__":
     }
 
     ts = NitfTextSegment(data = (NitfTextStr(json.dumps(d))))
-
     ts.subheader.textid = 'ID12345'
     ts.subheader.txtalvl = 0
     ts.subheader.txtitl = 'sample title'
+    f.text_segment.append(ts)
 
+    xml = "<start><a>something</a><b>something else</b></start>"
+    ts = NitfTextSegment(data=(NitfTextStr(xml)))
+    ts.subheader.textid = 'ID2'
+    ts.subheader.txtalvl = 0
+    ts.subheader.txtitl = 'Unbeautified XML'
+    f.text_segment.append(ts)
+
+    xml = "<start>\n\t<a>something</a>\n\t<b>something else</b>\n</start>"
+    ts = NitfTextSegment(data=(NitfTextStr(xml)))
+    ts.subheader.textid = 'ID3'
+    ts.subheader.txtalvl = 0
+    ts.subheader.txtitl = 'Beautified XML'
     f.text_segment.append(ts)
 
     #DES ------------------------------------------------------------------------------
