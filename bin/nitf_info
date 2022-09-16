@@ -5,10 +5,11 @@ import subprocess
 import os
 import sys
 import warnings
+from pynitf import NitfFileJson, NitfFileMerge
 
-version="March 3, 2020"
+version="Sept 16, 2022"
 usage="""Usage: 
-  nitf_info [options] <input_file>
+  nitf_info [options] <input_file> [<nitf_diff_json>]
   nitf_info -h | --help
   nitf_info -v | --version
 
@@ -72,6 +73,10 @@ if(args.debug):
     pynitf.nitf_field.DEBUG = True
     pynitf.nitf_des.DEBUG = True
 f = pynitf.NitfFile(args.input_file)
+
+if args.nitf_diff_json is not None:
+    f = NitfFileMerge([NitfFileJson(args.nitf_diff_json), f])
+
 f.report_raw = args.report_raw
 if(args.summary):
     print(f.summary())

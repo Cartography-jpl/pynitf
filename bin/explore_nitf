@@ -9,10 +9,11 @@ import pydoc
 from pynitf import *
 import pynitf
 import matplotlib.pyplot as plt
+from pynitf import NitfFileJson, NitfFileMerge
 
-version="July 7, 2017"
+version="Sept 16, 2022"
 usage="""Usage:
-  explore_nitf.py [-hvc COMMAND] <nitf_file>
+  explore_nitf.py [-hvc COMMAND] <nitf_file> [<nitf_diff_json>]
 
 Options:
   -h --help     Print this message
@@ -26,7 +27,7 @@ on the console
 
 helpString = '''Usage Example:
 
-load [path to nitf] [alias]
+load alias path_to_nitf [nitf_diff_json]
 
 list files
 
@@ -64,8 +65,8 @@ image display 1
 image diff [index_1] [index_2]
 '''
 
-def load_nitf(nitf_path, alias):
-    files[alias] = {'path': nitf_path, 'nitf': NitfFile(nitf_path)}
+def load_nitf(nitf_path, nitf_obj, alias):
+    files[alias] = {'path': nitf_path, 'nitf': nitf_obj}
 
 
 def listTRESegment(segment, p=False):
@@ -186,11 +187,15 @@ def processCommand(line):
         print(helpString)
 
     elif cmd == 'load':
-        if len(args) !=2:
-            print("load [path to nitf] [alias]")
+        if len(args) < 2:
+            print("load alias path_to_nitf [nitf_diff_json]")
             return
-        nitf_path, alias = args[0], args[1]
-        load_nitf(nitf_path, alias)
+        alias, nitf_path  = args[0], args[1]
+        nitf_file = NitfFile(nitf_path)
+        if len(args) > 2:
+            nitf_file = NitfFileMerge([NitfFileJson(args[2]), nitf_file])
+            nitf_path = nitf_path + " + " + args[2]
+        load_nitf(nitf_path, nitf_file, alias)
 
     elif cmd == 'list':
         if (len(args) == 0):
@@ -292,8 +297,11 @@ if "NITF_PLUGIN" in os.environ:
 
 a = pynitf.docopt_simple.docopt_simple(usage, version=version)
 f = NitfFile(a.nitf_file)
+if a.nitf_diff_json is not None:
+    f = NitfFileMerge([NitfFileJson(a.nitf_diff_json), f])
+
 files = {}
-load_nitf(a.nitf_file, 'default')
+load_nitf(a.nitf_file if a.nitf_diff_json is None else a.nitf_file + " + " + a.nitf_diff_json, f, 'default')
 
 command = a.args['-c']
 print(type(command))
