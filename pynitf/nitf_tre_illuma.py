@@ -69,8 +69,9 @@ class TreILLUMA(Tre):
         res += b"<ILLUMA>"
         for f in self.field_list:
             v = getattr(self, f)
-            frmt = {field[0]: field for field in desc}[f][4]['frmt']
-            vFormatted = f'{frmt}' % v
+            descToDict = {field[0]: field for field in desc}
+            formatter = descToDict[f][4]['frmt']
+            vFormatted = f'{formatter}' % v
             if (vFormatted is not None):
                 res += f"  <{f}>{vFormatted}</{f}>".encode('utf-8')
         res += b"</ILLUMA>"
