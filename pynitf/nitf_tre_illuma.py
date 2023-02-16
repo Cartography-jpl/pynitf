@@ -17,18 +17,31 @@ The SNIP documentation is currently not available to the public.
 !!! by the NTB, we can implement the final version.
 '''
 
-desc = [["sol_az", "Sun Azimuth Angle", 5, float, {'frmt': '%05.1f', 'optional': True, 'optional_char' : '-'}],
-        ["sol_el", "Sun Elevation Angle", 5, float, {'frmt': '%+05.1f', 'optional': True, 'optional_char' : '-'}],
-        ["com_sol_il", "Computed Solar Illumination", 5, float, {'frmt': '%05.1f', 'optional': True, 'optional_char' : '-'}],
-        ["lun_az", "Lunar Azimuth Angle", 5, float, {'frmt': '%05.1f', 'optional': True, 'optional_char' : '-'}],
-        ["lun_el", "Lunar Elevation Angle", 5, float, {'frmt': '%05.1f', 'optional': True, 'optional_char' : '-'}],
-        ["lun_ph_ang", "Phase Angle of the Moon in Degrees", 6, float, {'frmt': '%+06.1f', 'optional': True, 'optional_char' : '-'}],
-        ["com_lun_il", "Computed Lunar Illumination", 5, float, {'frmt': '%05.1f', 'optional': True, 'optional_char' : '-'}],
-        ["sol_lun_dis_ad", "Solar/Lunar Distance Adjustment", 3, float, {'frmt': '%07f', 'optional': True, 'optional_char' : '-'}],
-        ["com_tot_nat_il", "Computed Total Natural Illumination", 5, float, {'frmt': '%05.1f', 'optional': True, 'optional_char' : '-'}],
-        ["art_ill_min", "Minimum Artificial Illumination", 5, float, {'frmt': '%05f', 'optional': True, 'optional_char' : '-'}],
-        ["art_ill_max", "Maximum Artificial Illumination", 5, float, {'frmt': '%05f', 'optional': True, 'optional_char' : '-'}],
+desc = [["solAz", "Sun Azimuth Angle", 1, float, {'frmt': '%05.1f', 'optional': True, 'optional_char' : '-'}],
+        ["solEl", "Sun Elevation Angle", 5, float, {'frmt': '%+05.1f', 'optional': True, 'optional_char' : '-'}],
+        ["comSolIl", "Computed Solar Illumination", 5, float, {'frmt': '%05.1f', 'optional': True, 'optional_char' : '-'}],
+        ["lunAz", "Lunar Azimuth Angle", 5, float, {'frmt': '%05.1f', 'optional': True, 'optional_char' : '-'}],
+        ["lunEl", "Lunar Elevation Angle", 5, float, {'frmt': '%05.1f', 'optional': True, 'optional_char' : '-'}],
+        ["lunPhAng", "Phase Angle of the Moon in Degrees", 6, float, {'frmt': '%+06.1f', 'optional': True, 'optional_char' : '-'}],
+        ["comLunIl", "Computed Lunar Illumination", 5, float, {'frmt': '%05.1f', 'optional': True, 'optional_char' : '-'}],
+        ["solLunDisAd", "Solar/Lunar Distance Adjustment", 3, float, {'frmt': '%07f', 'optional': True, 'optional_char' : '-'}],
+        ["comTotNaIl", "Computed Total Natural Illumination", 5, float, {'frmt': '%05.1f', 'optional': True, 'optional_char' : '-'}],
+        ["artIlMin", "Minimum Artificial Illumination", 5, float, {'frmt': '%05f', 'optional': True, 'optional_char' : '-'}],
+        ["artIlMax", "Maximum Artificial Illumination", 5, float, {'frmt': '%05f', 'optional': True, 'optional_char' : '-'}],
 ]
+
+# don't see any sense on having snake and camel case for same thing
+# "sol_az"
+# "sol_el"
+# "com_sol_il"
+# "lun_az"
+# "lun_el"
+# "lun_ph_ang"
+# "com_lun_il"
+# "sol_lun_dis_ad"
+# "com_tot_nat_il"
+# "art_ill_min"
+# "art_ill_max"
 
 
 # An example of implementing a nonstandard TRE. This depends on having
@@ -56,8 +69,10 @@ class TreILLUMA(Tre):
         res += b"<ILLUMA>"
         for f in self.field_list:
             v = getattr(self, f)
-            if (v is not None):
-                res += f"  <{f}>{v}</{f}>".encode('utf-8')
+            frmt = {field[0]: field for field in desc}[f][4]['frmt']
+            vFormatted = f'{frmt}' % v
+            if (vFormatted is not None):
+                res += f"  <{f}>{vFormatted}</{f}>".encode('utf-8')
         res += b"</ILLUMA>"
         return res
 
