@@ -45,6 +45,7 @@ except ImportError:
 # errors
 
 pytestmark = [pytest.mark.filterwarnings("error::pynitf.TreWarning"),
+              pytest.mark.filterwarnings("ignore:Trouble reading TRE ILLUMA"),
               pytest.mark.filterwarnings("ignore:Trouble reading TRE MATESA:pynitf.TreWarning")]
 
 # Location of test data that is part of source
@@ -348,9 +349,9 @@ def nitf_sample_ikonos(nitf_sample_files):
 @pytest.fixture(scope="function")
 def nitf_sample_rip(nitf_sample_files):
     fname = nitf_sample_files + "rip/07APR2005_Hyperion_331405N0442002E_SWIR172_001_L1R.ntf"
-    if(os.path.exists(fname)):
-        return fname
-    pytest.skip("Required file %s not found, so skipping test" % fname)
+    if(not os.path.exists(fname)):
+        pytest.skip("Required file %s not found, so skipping test" % fname)
+    return fname
     
 require_h5py = pytest.mark.skipif(not have_h5py,
       reason="need to have h5py available to run.")
