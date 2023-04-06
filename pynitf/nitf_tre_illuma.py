@@ -39,24 +39,25 @@ class TreILLUMA(Tre):
     field_list = [["solAz", "sol_az"],
                   ["solEl", "sol_el"],
                   ["comSolIl", "com_sol_il"],
-                  ["lunAz", "lun_az"],
                   ["lunEl", "lun_el"],
                   ["lunPhAng", "lun_ph_ang"],
+                  ["lunAz", "lun_az"],
                   ["comLunIl", "com_lun_il"],
+                  ["comTotNatIl", "com_tot_nat_il"],
                   ["solLunDisAd", "sol_lun_dis_ad"],
-                  ["comTotNaIl", "com_tot_nat_il"],
                   ["artIlMin", "art_il_min"],
                   ["artIlMax", "art_il_max"]]
 
     def __init__(self):
         for xml_name, attribute_name in self.field_list:
             setattr(self, attribute_name, None)
+        self.ns = {"xmlns" : 'http://namespaces.ic.gov/NSGPDD/2012/v1.0/ILLUMA'}
 
     def tre_bytes(self):
         # Can perhaps add in validation with the XLS. But for now, just
         # do a simple xml file
         res = b'<?xml version="1.0" encoding="UTF-8" ?>'
-        res += b"<ILLUMA>"
+        res += b'<ILLUMA xmlns="http://namespaces.ic.gov/NSGPDD/2012/v1.0/ILLUMA"     xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:ism="urn:us:gov:ic:ism">'
         for xml_name, attribute_name in self.field_list:
             val = getattr(self, attribute_name)
             if(val is not None):
@@ -65,10 +66,11 @@ class TreILLUMA(Tre):
         return res
 
     def read_from_tre_bytes(self, bt, nitf_literal=False):
-        print(bt)
         root = ET.fromstring(bt)
         for xml_name, attribute_name in self.field_list:
-            n = root.find(xml_name)
+            # Try with and without namespace. The namespace is needed for
+            # valid XML, not sure if we'll see this in all data though.
+            n = root.find(xml_name) or root.find(f"xmlns:{xml_name}", self.ns)
             if (n is not None):
                 setattr(self, attribute_name, float(n.text))
 

@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+<!-- Title: NITFS Illumination (ILLUMA) Tagged Record Extension Content XML Schema -->
+<!-- TRE Version: A                                                                -->
+<!-- Standard: STDI-0002-1_4.0, dated 01 AUG 2011                                  -->
+<!-- Date Created: 24 July 2018                                                    -->
+<!-- Last Updated: 24 July 2018                                                    -->
+<!-- Contact Information:                                                          -->
+<!--      Geospatial Intelligence Standards Working Group (GWG)                    -->
+<!--      NITF Standard (NITFS) Technical Board (NTB)                              -->
+<!--      National Geospatial-Intelligence Agency (NGA)                            -->
+<!--      7500 GEOINT Drive, Mail Stop N32                                         -->
+<!--      Springfield, Virginia 22150, USA                                         -->
+<!--      Email:  NTBChair@nga.mil                                                 -->
+<!--      Because contact information can change, the currency of this address     -->
+<!--      information may be verified using the Acquisition Streamlining and       -->
+<!--      Standardization Information System (ASSIST) Online Database              -->
+<!--      at https://assist.dla.mil                                                -->
+<!-- Classification/Control System: USA                                            -->
+<!-- Classified Material (Yes/No): No                                              -->
+<!-- Controlled Material (Yes/No): No                                              -->
+<!-- Classification: UNCONTROLLED UNCLASSIFIED INFORMATION (UUI)                   -->
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+<xs:schema xmlns="http://namespaces.ic.gov/NSGPDD/2012/v1.0/ILLUMA"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:ism="urn:us:gov:ic:ism"
+    attributeFormDefault="qualified" elementFormDefault="qualified"
+    targetNamespace="http://namespaces.ic.gov/NSGPDD/2012/v1.0/ILLUMA">
+    <xs:annotation>
+        <xs:appinfo ism:ownerProducer="USA" ism:classification="U"/>
+    </xs:annotation>
+    <xs:import namespace="urn:us:gov:ic:ism" schemaLocation="ISM/ISM/IC-ISM.xsd"/>
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+<!--                           Root Node                                 -->
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+<xs:element name="ILLUMA">
+    <xs:complexType>
+        <xs:sequence>
+            <xs:element ref="solAz"/>
+            <xs:element ref="solEl"/>
+            <xs:element ref="comSolIl" minOccurs="0"/>
+            <xs:element ref="lunEl" minOccurs="0"/>
+            <xs:element ref="lunPhAng" minOccurs="0"/>
+            <xs:element ref="lunAz" minOccurs="0"/>
+            <xs:element ref="comLunIl" minOccurs="0"/>
+            <xs:element ref="comTotNatIl" minOccurs="0"/>
+            <xs:element ref="solLunDisAd" minOccurs="0"/>
+            <xs:element ref="artIlMin" minOccurs="0"/>
+            <xs:element ref="artIlMax" minOccurs="0"/>
+            <xs:element name="ep" type="ExtensionPoint1" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attributeGroup ref="ism:SecurityAttributesOptionGroup"/>
+        <xs:attributeGroup ref="ism:ResourceNodeAttributeOptionGroup"></xs:attributeGroup>
+        <xs:anyAttribute namespace="##any"/>
+    </xs:complexType>
+</xs:element>
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+<!--                             Types                                   -->
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+<xs:complexType name="PortionMarkedDouble">
+    <xs:simpleContent>
+        <xs:extension base="xs:double">
+            <xs:attributeGroup ref="ism:SecurityAttributesOptionGroup"/>
+            <xs:anyAttribute namespace="##any"/>
+        </xs:extension>
+    </xs:simpleContent>
+</xs:complexType>
+<xs:complexType name="Angle360">
+    <xs:simpleContent>
+        <xs:restriction base="PortionMarkedDouble">
+            <xs:minInclusive value="0.0"/>
+            <xs:maxExclusive value="360.0"/>
+        </xs:restriction>
+    </xs:simpleContent>
+</xs:complexType>
+<xs:complexType name="AngleM90P90">
+    <xs:simpleContent>
+        <xs:restriction base="PortionMarkedDouble">
+            <xs:minInclusive value="-90.0"/>
+            <xs:maxInclusive value="+90.0"/>
+        </xs:restriction>
+    </xs:simpleContent>
+</xs:complexType>
+<xs:complexType name="AngleM180P180">
+    <xs:simpleContent>
+        <xs:restriction base="PortionMarkedDouble">
+            <xs:minInclusive value="-180.0"/>
+            <xs:maxInclusive value="+180.0"/>
+        </xs:restriction>
+    </xs:simpleContent>
+</xs:complexType>
+<xs:complexType name="UnsignedDouble">
+    <xs:simpleContent>
+        <xs:restriction base="PortionMarkedDouble">
+            <xs:minInclusive value="0.0"/>
+        </xs:restriction>
+    </xs:simpleContent>
+</xs:complexType>
+<xs:complexType name="ExtensionPoint1">
+    <xs:sequence>
+        <xs:any maxOccurs="unbounded" namespace="##any"/>
+    </xs:sequence>
+    <xs:attributeGroup ref="ism:SecurityAttributesOptionGroup"/>
+    <xs:anyAttribute namespace="##any"></xs:anyAttribute>
+</xs:complexType>
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+<!--                             Elements
+-->
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+<xs:element name="solAz" type="Angle360">
+    <xs:annotation>
+        <xs:appinfo>
+            <Element>solAz</Element>
+            <Description>The azimuth in degrees measured from True North clockwise at the target
+                (as viewed from space)</Description>
+            <Value_Range>[000.0, 360.0)</Value_Range>
+            <Comments>Units of Degrees</Comments>
+        </xs:appinfo>
+    </xs:annotation>
+</xs:element>
+<xs:element name="solEl" type="AngleM90P90">
+    <xs:annotation>
+        <xs:appinfo>
+            <Element>solEl</Element>
+            <Description>The angle of the center of the Sun to a plane tangent to the Earth's
+                surface at the target</Description>
+            <Value_Range>-90.0 to +90.0</Value_Range>
+            <Comments>Units of Degrees</Comments>
+        </xs:appinfo>
+    </xs:annotation>
+</xs:element>
+<xs:element name="comSolIl" type="UnsignedDouble">
+    <xs:annotation>
+        <xs:appinfo>
+            <Element>comSolIl</Element>
+            <Description>Computed solar natural scene illumination</Description>
+            <Value_Range>000.0 to unbounded</Value_Range>
+            <Comments>Units of watts per meter-squared per steradian</Comments>
+        </xs:appinfo>
+    </xs:annotation>
+</xs:element>
+<xs:element name="lunEl" type="AngleM90P90">
+    <xs:annotation>
+        <xs:appinfo>
+            <Element>lunEl</Element>
+            <Description>The angle of the center of the Moon to a plane tangent to the Earth's
+                surface at the target</Description>
+            <Value_Range>-90.0 to +90.0, or NaN (if not available)</Value_Range>
+            <Comments>Units of Degrees</Comments>
+        </xs:appinfo>
+    </xs:annotation>
+</xs:element>
+<xs:element name="lunPhAng" type="AngleM180P180">
+    <xs:annotation>
+        <xs:appinfo>
+            <Element>lunPhAng</Element>
+            <Description>Phase angle of the Moon in degrees (of lunar phase)</Description>
+            <Value_Range>-180.0 to +180.0</Value_Range>
+            <Comments>By convention, the lunar phase angle is given a sign. It starts at roughly
+                -180 degrees near New Moon and proceeds to near 0 degrees at Full Moon. It then
+                goes from nearly 0 degrees to near +180 degrees during the remainder of the
+                cycle. The First Quarter (Moon half illuminated on the East) occurs near a phase
+                angle of -90 degrees, and the Last Quarter (Moon half illuminated on the West)
+                near +90 degrees.</Comments>
+        </xs:appinfo>
+    </xs:annotation>
+</xs:element>
+<xs:element name="lunAz" type="Angle360">
+    <xs:annotation>
+        <xs:appinfo>
+            <Element>lunAz</Element>
+            <Description>Lunar azimuth in degrees measured from True North clockwise at the
+                target (as viewed from space)</Description>
+            <Value_Range>[000.0, 360.0)</Value_Range>
+            <Comments>Units of Degrees</Comments>
+        </xs:appinfo>
+    </xs:annotation>
+</xs:element>
+<xs:element name="comLunIl" type="UnsignedDouble">
+    <xs:annotation>
+        <xs:appinfo>
+            <Element>comLunIl</Element>
+            <Description>Computed lunar natural scene illumination</Description>
+            <Value_Range>000.0 to unbounded</Value_Range>
+            <Comments>Units of watts per meter-squared per steradian</Comments>
+        </xs:appinfo>
+    </xs:annotation>
+</xs:element>
+<xs:element name="comTotNatIl" type="UnsignedDouble">
+    <xs:annotation>
+        <xs:appinfo>
+            <Element>comTotNatIl</Element>
+            <Description>Computed total natural scene illumination</Description>
+            <Value_Range>000.0 to unbounded</Value_Range>
+            <Comments>Units of watts per meter-squared per steradian</Comments>
+        </xs:appinfo>
+    </xs:annotation>
+</xs:element>
+<xs:element name="solLunDisAd" type="UnsignedDouble">
+    <xs:annotation>
+        <xs:appinfo>
+            <Element>solLunDisAd</Element>
+            <Description>Solar/lunar distance adjustment</Description>
+            <Value_Range>0.0 to unbounded</Value_Range>
+            <Comments>Unitless</Comments>
+        </xs:appinfo>
+    </xs:annotation>
+</xs:element>
+<xs:element name="artIlMin" type="UnsignedDouble">
+    <xs:annotation>
+        <xs:appinfo>
+            <Element>artIlMin</Element>
+            <Description>Estimated minimum artificial scene illumination</Description>
+            <Value_Range>0.000 to unbounded</Value_Range>
+            <Comments>If this value is not specified by the requestor, then this field is
+                omitted : Units of watts per meter-squared per steradian</Comments>
+        </xs:appinfo>
+    </xs:annotation>
+</xs:element>
+<xs:element name="artIlMax" type="UnsignedDouble">
+    <xs:annotation>
+        <xs:appinfo>
+            <Element>artIlMax</Element>
+            <Description>Estimated maximum artificial scene illumination</Description>
+            <Value_Range>0.000 to unbounded</Value_Range>
+            <Comments>If this value is not specified by the requestor, then this field is
+omitted : Units of watts per meter-squared per steradian</Comments>
+            </xs:appinfo>
+        </xs:annotation>
+    </xs:element>
+</xs:schema>

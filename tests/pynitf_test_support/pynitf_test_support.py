@@ -52,6 +52,7 @@ pytestmark = [pytest.mark.filterwarnings("error::pynitf.TreWarning"),
 unit_test_data = os.path.abspath(os.path.expandvars(os.path.dirname(__file__)) + "/unit_test_data/") + "/"
 # Locate of programs
 program_dir = os.path.abspath(os.path.expandvars(os.path.dirname(__file__)) + "../../../bin/") + "/"
+xsd_dir = os.path.abspath(os.path.expandvars(os.path.dirname(__file__)) + "../../../xsd/") + "/"
 os.environ["PATH"] = program_dir + ":" + os.environ["PATH"]
 
 # Fake security object, just so we can test setting and reading
