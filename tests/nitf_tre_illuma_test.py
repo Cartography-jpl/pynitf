@@ -40,8 +40,17 @@ def test_nitf_tre_illuma(isolated_dir):
     assert t2.art_il_max == 50.0
     
 def test_nitf_tre_illuma_schema(isolated_dir):
-    # Requires xmlschema. We don't want to generally require this, so just skip if
-    # not  available
+    # Note you can also use XMLSchema from libxml. xmlschema seems to give
+    # clearer error messages.
+    #
+    # Even easier if you have this saved to a file, you can use the command
+    # line tool xmllint (part of libxml). For example:
+    #
+    #  xmllint --schema xsd/illuma.xsd sample.xml
+    #
+    # Requires xmlschema. We don't want to generally require this, so
+    # just skip if not  available
+    
     try:
         import xmlschema
     except ImportError:

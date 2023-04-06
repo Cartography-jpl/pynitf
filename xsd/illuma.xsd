@@ -52,7 +52,11 @@
             <xs:element ref="artIlMax" minOccurs="0"/>
             <xs:element name="ep" type="ExtensionPoint1" minOccurs="0"/>
         </xs:sequence>
+<!-- This is in the document in the appendix, however
+     ResourceNodeAttributeOptionGroup already contains SecurityAttributesOptionGroup, so this might have been something that changed in IC-ISM. Comment this
+out so xmllint is happy, otherwise it complains about duplicate attributes
         <xs:attributeGroup ref="ism:SecurityAttributesOptionGroup"/>
+-->
         <xs:attributeGroup ref="ism:ResourceNodeAttributeOptionGroup"></xs:attributeGroup>
         <xs:anyAttribute namespace="##any"/>
     </xs:complexType>
