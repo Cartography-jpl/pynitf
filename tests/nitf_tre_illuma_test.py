@@ -4,6 +4,8 @@ from pynitf.nitf_tre_illuma import *
 from pynitf_test_support import *
 import xml.etree.ElementTree as ET
 import io
+import subprocess
+import os
 
 def test_nitf_tre_illuma(isolated_dir):
     f = NitfFile()
@@ -104,5 +106,38 @@ def test_nitf_tre_illuma_schema_libxml(isolated_dir):
     root=etree.fromstring(t.tre_bytes())
     res = schema.validate(root)
     print(res)
+
+# The ILLUMA is a pretty simple XML file to generate. But there may
+# be samples of more complicated ones. Here is a stand alone example
+# that uses pyxb for generating the xml, which we then validate. This
+# can be used as a template 
+def test_nitf_tre_illuma_pyxb(isolated_dir):
+    try:
+        import pyxb
+    except ImportError:
+        pytest.skip("Require pyxb library to run test")
+        
+    subprocess.run(["pyxbgen", "-u",  xsd_dir + "illuma.xsd",
+                    "-m", "illuma", "--binding-root=./illuma"])
+    # Not sure if there is a way to do this directly, but we need
+    # to massage this to actually create a module
+    subprocess.run("sed -i 's/import _/from . import _/g' illuma/*.py",
+                   shell=True)
+    subprocess.run("echo 'from .illuma import *' > illuma/__init__.py",
+                   shell=True)
+    sys.path.append(os.getcwd())
+    from illuma import ILLUMA
+    sys.path.pop()
+    t = ILLUMA()
+    t.solAz = 10.0
+    t.solEl = 10.0
+    with open("sample.xml", "wb") as fh:
+        fh.write(t.toxml("utf-8"))
+    subprocess.run(["xmllint", "--schema", xsd_dir + "illuma.xsd",
+                    "sample.xml"])
+    tre = TreILLUMA()
+    tre.read_from_tre_bytes(t.toxml("utf-8"))
+    print(tre)
     
+                   
     
