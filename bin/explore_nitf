@@ -10,6 +10,7 @@ from pynitf import *
 import pynitf
 import matplotlib.pyplot as plt
 from pynitf import NitfFileJson, NitfFileMerge
+import readline
 
 version="Sept 16, 2022"
 usage="""Usage:
@@ -291,9 +292,50 @@ def processCommand(line):
     else:
         print('Unknown command: {}'.format(cmd))
 
+# Code source: http://pymotw.com/2/readline/
+class SimpleCompleter(object):
+
+    def __init__(self, options):
+        self.options = sorted(options)
+        return
+
+    def complete(self, text, state):
+        response = None
+        if state == 0:
+            # This is the first time for this text, so build a match list.
+            if text:
+                self.matches = [s
+                                for s in self.options
+                                if s and s.startswith(text)]
+                logging.debug('%s matches: %s', repr(text), self.matches)
+            else:
+                self.matches = self.options[:]
+                logging.debug('(empty input) matches: %s', self.matches)
+
+        # Return the state'th item from the match list,
+        # if we have that many.
+        try:
+            response = self.matches[state]
+        except IndexError:
+            response = None
+        logging.debug('complete(%s, %s) => %s',
+                      repr(text), state, repr(response))
+        return response
+
+
 if "NITF_PLUGIN" in os.environ:
     for m in os.environ["NITF_PLUGIN"].split(":"):
         exec("import %s" % m)
+
+# Register completer function
+readline.set_completer(SimpleCompleter(
+    ['load', 'alias', 'path_to_nitf', 'save_des',
+     'list', 'summary', 'print', 'data', 'save_des', 'image',
+     'seg', 'des', 'tre', 'file', 'text', 'display', 'diff']
+).complete)
+
+# Enable ab completion
+readline.parse_and_bind('tab: complete')
 
 a = pynitf.docopt_simple.docopt_simple(usage, version=version)
 f = NitfFile(a.nitf_file)
