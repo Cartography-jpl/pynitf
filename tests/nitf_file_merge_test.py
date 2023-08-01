@@ -18,6 +18,7 @@ import hashlib
 import time
 import datetime
 from contextlib import contextmanager
+import h5py
 
 def createHISTOA():
 
