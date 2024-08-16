@@ -73,8 +73,8 @@ security_fake.classification_authority = "X-File"
 security_fake.classification_reason = "X"
 security_fake.security_source_date = "19000101"
 security_fake.security_control_number = "1234"
-security_fake.copy_number = 2
-security_fake.number_of_copies = 5
+security_fake.copy_number = 0
+security_fake.number_of_copies = 0
 security_fake.encryption = 1
 
 # We often have errors in formatting floats. Give a few "evil" floats to

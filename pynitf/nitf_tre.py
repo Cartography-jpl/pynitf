@@ -225,7 +225,7 @@ def prepare_tre_write(tre_list, header, des_list, field_list = [],
         # the first row
         h_len, h_offl, h_data = field_list[0]
         des = TreOverflow(seg_index=seg_index, overflow=h_data)
-        desseg = NitfDesSegment(des)
+        desseg = NitfDesSegment(des, security=header.security)
         des.data = des_fh.getvalue()
         des_list.append(desseg)
         setattr(header, h_offl, len(des_list))

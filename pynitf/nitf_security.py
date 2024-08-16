@@ -89,6 +89,54 @@ class NitfSecurity(object):
         if(hasattr(elem, 'encryp')):
             elem.encryp = self.encryption
 
+    def __str__(self):
+        return f'''classification: {self.classification}
+classification_system: {self.classification_system}
+codewords: {self.codewords}
+control_and_handling: {self.control_and_handling}
+release_instructions: {self.release_instructions}
+declassification_type: {self.declassification_type}
+declassification_date: {self.declassification_date}
+declassification_exemption: {self.declassification_exemption}
+downgrade: {self.downgrade}
+downgrade_date: {self.downgrade_date}
+classification_text: {self.classification_text}
+classification_authority_type: {self.classification_authority_type}
+classification_authority: {self.classification_authority}
+classification_reason: {self.classification_reason}
+security_source_date: {self.security_source_date}
+security_control_number: {self.security_control_number}
+copy_number: {self.copy_number}
+number_of_copies: {self.number_of_copies}
+encryption: {self.encryption}
+'''
+
+    def __eq__(self, other):
+        return (
+            self.classification == other.classification and
+            self.classification_system == other.classification_system and
+            self.control_and_handling == other.control_and_handling and
+            self.release_instructions == other.release_instructions and
+            self.declassification_type == other.declassification_type and
+            self.declassification_date == other.declassification_date and
+            self.declassification_exemption == other.declassification_exemption and
+            self.downgrade == other.downgrade and
+            self.downgrade_date == other.downgrade_date and
+            self.classification_text == other.classification_text and
+            self.classification_authority_type == other.classification_authority_type and
+            self.classification_authority == other.classification_authority and
+            self.classification_reason == other.classification_reason and
+            self.security_source_date == other.security_source_date and
+            self.security_control_number == other.security_control_number and
+            self.copy_number == other.copy_number and
+            self.number_of_copies == other.number_of_copies 
+            # Only some element with security support encryption, so don't fail
+            # if this is different
+            #and self.encryption == other.encryption
+        )
+        
+    
+    
 security_unclassified = NitfSecurity()
 __all__ = ["NitfSecurity", "security_unclassified"]
         

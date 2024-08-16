@@ -1,6 +1,7 @@
 import cProfile
 from pynitf.nitf_file import NitfFile
 from pynitf.nitf_tre import Tre, tre_tag_to_cls
+from pynitf.nitf_security import security_unclassified
 from pynitf_test_support import *
 import pynitf.nitf_field
 import pynitf.nitf_des
@@ -474,3 +475,74 @@ def test_gc(isolated_dir):
     gc.set_debug(gc.DEBUG_STATS | gc.DEBUG_COLLECTABLE)
     gc.collect()
     gc.set_debug(old_flags)
+
+def test_tre_overflow_write_security(isolated_dir):
+    '''Repeat of test_basic_write, but also include two really big TREs that
+    forces the use of the DES TRE overflow for TREs. Check that security fields
+    get copies correctly'''
+    print(security_fake.__dict__)
+    class TreBig(Tre):
+        desc = [["big_field", "", 99999-20, str]]
+        tre_tag = "BIGTRE"
+    tre_tag_to_cls.add_cls(TreBig)    
+    f = NitfFile()
+    create_image_seg(f, security=security_fake)
+    f.tre_list.append(TreBig())
+    f.tre_list.append(TreBig())
+    f.image_segment[0].tre_list.append(TreBig())
+    f.image_segment[0].tre_list.append(TreBig())
+    create_tre(f)
+    create_tre(f.image_segment[0], 290)
+    f.write("z.ntf")
+    # Write a second time. We had a bug where the tre would appear twice,
+    # once when we write the tre_list and once when the old tre overflow des
+    # get copied. Test to make sure that writing twice still returns the
+    # same lists of TREs
+    f.write("z2.ntf")
+    f2 = NitfFile("z.ntf")
+    f3 = NitfFile("z2.ntf")
+    assert len(f2.image_segment) == 1
+    assert len(f3.image_segment) == 1
+    img = f2.image_segment[0].data
+    img2 = f3.image_segment[0].data
+    assert img.shape == (1, 9, 10)
+    assert img2.shape == (1, 9, 10)
+    for i in range(9):
+        for j in range(10):
+            assert img[0, i,j] == i * 10 + j
+            assert img2[0, i,j] == i * 10 + j
+    assert len(f2.tre_list) == 3
+    assert len(f3.tre_list) == 3
+    assert len(f2.image_segment[0].tre_list) == 3
+    assert len(f3.image_segment[0].tre_list) == 3
+    check_tre([tre for tre in f2.tre_list if tre.tre_tag == "USE00A"][0])
+    check_tre([tre for tre in f3.tre_list if tre.tre_tag == "USE00A"][0])
+    check_tre([tre for tre in f2.image_segment[0].tre_list if tre.tre_tag == "USE00A"][0], 290)
+    check_tre([tre for tre in f3.image_segment[0].tre_list if tre.tre_tag == "USE00A"][0], 290)
+    with open("f.txt", "w") as fh:
+        print(str(f), file=fh)
+    with open("f2.txt", "w") as fh:
+        print(str(f2), file=fh)
+    with open("f3.txt", "w") as fh:
+        print(str(f3), file=fh)
+    # Actually this is ok, just stuff is in a different order. No easy way
+    # to check, so we just skip this.
+    assert str(f2) == str(f3)
+    print_diag(f2)
+    print_diag(f3)
+    assert filecmp.cmp("z.ntf", "z2.ntf", shallow=False)
+    print(f.image_segment[0].security)
+    assert f.image_segment[0].security == security_fake
+    assert f2.image_segment[0].security == security_fake
+    assert f3.image_segment[0].security == security_fake
+    # We only have the overflow tre when we write, or read. So f doesn't have
+    # this, but f2 and f3 do.
+    print(f2.des_segment[0].security)
+    print(f2.des_segment[1].security)
+    # First overflow is for file (which is unclassified), and second is for
+    # image segment (which is classified)
+    assert f2.des_segment[0].security == security_unclassified
+    assert f2.des_segment[1].security == security_fake
+    assert f3.des_segment[0].security == security_unclassified
+    assert f3.des_segment[1].security == security_fake
+    
