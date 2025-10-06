@@ -111,6 +111,6 @@ mypy:
 dev-env:
 	-rm -r .pixi pixi.lock pixi.toml
 	pixi init .
-	pixi add numpy docopt-ng h5py jsonpickle pytest pytest-xdist ruff mypy Sphinx ghp-import sphinxcontrib-plantuml ptpython python pip setuptools ipython
+	pixi add numpy docopt-ng h5py jsonpickle pytest pytest-xdist ruff mypy Sphinx ghp-import sphinxcontrib-plantuml ptpython python pip setuptools ipython pyxb lxml xmlschema jsonpickle
 	pixi run python -m pip install -e . --no-deps --ignore-installed --no-cache-dir --no-index --no-build-isolation -vvv
 	echo "Execute 'pixi shell' to use development environment."

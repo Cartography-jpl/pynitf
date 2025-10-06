@@ -1,5 +1,4 @@
 from .nitf_tre import Tre, tre_tag_to_cls
-import io
 
 hlp = """This is the TMINTA TRE, Time Interval Definition
 

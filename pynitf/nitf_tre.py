@@ -5,8 +5,7 @@
 # can then cut and paste from excel to emacs
 
 from .nitf_field import FieldStruct, FieldStructDiff
-from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
-import copy
+from .nitf_diff_handle import NitfDiffHandleSet
 import io
 import logging
 import warnings

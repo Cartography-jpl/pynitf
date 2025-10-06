@@ -1,8 +1,6 @@
 from builtins import object
-from docopt import *
-import sys
+from docopt import docopt
 import re
-import os
 
 
 class DocOptSimple(object):
@@ -17,9 +15,15 @@ class DocOptSimple(object):
     we return it to an integer. If it looks like a float, we return it to
     a float. If we don't otherwise recognize it, we return this as a string."""
 
-    def __init__(self, doc, argv=None, default_help=True, version=None, options_first=False):
+    def __init__(
+        self, doc, argv=None, default_help=True, version=None, options_first=False
+    ):
         self.args = docopt(
-            doc, argv=argv, default_help=default_help, version=version, options_first=options_first
+            doc,
+            argv=argv,
+            default_help=default_help,
+            version=version,
+            options_first=options_first,
         )
 
     def __getstate__(self):
@@ -67,7 +71,11 @@ def docopt_simple(doc, argv=None, default_help=True, version=None, options_first
     on the interface."""
 
     return DocOptSimple(
-        doc, argv=argv, default_help=default_help, version=version, options_first=options_first
+        doc,
+        argv=argv,
+        default_help=default_help,
+        version=version,
+        options_first=options_first,
     )
 
 

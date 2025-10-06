@@ -1,4 +1,3 @@
-from .nitf_security import security_unclassified
 from .nitf_tre_engrda import add_engrda_function
 from .nitf_tre import read_tre, prepare_tre_write, add_find_tre_function
 from .nitf_image_subheader import NitfImageSubheader
@@ -8,7 +7,6 @@ from .nitf_graphic_subheader import NitfGraphicSubheader
 from .nitf_res_subheader import NitfResSubheader
 import io
 import weakref
-import copy
 
 
 class NitfSharedHeader(object):
@@ -141,7 +139,7 @@ class NitfSegment(object):
 
     def summary(self):
         res = io.StringIO()
-        if hasattr(self, "tre_list") == True and len(self.tre_list) > 0:
+        if hasattr(self, "tre_list") and len(self.tre_list) > 0:
             print("Segment level TRES:", file=res)
             for t in self.tre_list:
                 print(t.summary(), file=res, end="", flush=True)

@@ -1,7 +1,5 @@
 from .nitf_file import NitfFile
 from .nitf_segment_hook import NitfSegmentHookSet
-from .nitf_tre import add_find_tre_function
-from .nitf_tre_engrda import add_engrda_function
 import copy
 
 

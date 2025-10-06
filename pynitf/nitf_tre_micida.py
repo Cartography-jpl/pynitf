@@ -1,6 +1,5 @@
 from .nitf_field import StringFieldData
 from .nitf_tre import Tre, tre_tag_to_cls
-import io
 
 hlp = """This is the MICIDA TRE, Motion Imagery Core Identification
 

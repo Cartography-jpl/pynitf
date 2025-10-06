@@ -1,6 +1,5 @@
 from .nitf_field import IntFieldData
 from .nitf_tre import Tre, tre_tag_to_cls
-import io
 
 hlp = """This is the MTIMSA TRE, Motion Imagery File
 

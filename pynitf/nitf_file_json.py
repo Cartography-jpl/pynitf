@@ -1,4 +1,3 @@
-from .nitf_file import NitfFile
 from .nitf_segment import (
     NitfSegment,
     NitfSharedHeader,
@@ -180,7 +179,7 @@ class NitfFileJson:
     def notify_file_merge(self, file_list, fparent):
         cnt = 0
         for f in file_list:
-            if not self is f:
+            if self is not f:
                 self.base_file = f
                 cnt += 1
         if cnt > 1:

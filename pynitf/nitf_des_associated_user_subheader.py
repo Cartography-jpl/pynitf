@@ -1,5 +1,5 @@
 from .nitf_field import FieldStruct, BytesFieldData, FieldStructDiff
-from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
+from .nitf_diff_handle import NitfDiffHandleSet
 import uuid
 import time
 

@@ -54,15 +54,15 @@ def _eval_or_exec_expr(fs, key, expr, do_eval):
     a convenience we centralize this to one place, so there is only
     one function to update if we add new variables (e.g., add to the number
     of index variables)."""
-    f = fs
+    f = fs  # noqa: F841
     if len(key) > 0:
-        i1 = key[0]
+        i1 = key[0]  # noqa: F841
     if len(key) > 1:
-        i2 = key[1]
+        i2 = key[1]  # noqa: F841
     if len(key) > 2:
-        i3 = key[2]
+        i3 = key[2]  # noqa: F841
     if len(key) > 3:
-        i4 = key[3]
+        i4 = key[3]  # noqa: F841
     if do_eval:
         return eval(expr)
     else:
@@ -114,7 +114,7 @@ class NitfField(object):
             self.value_dict = defaultdict(lambda: self.default)
         elif self.optional:
             self.value_dict = defaultdict(lambda: None)
-        elif self.ty == str:
+        elif self.ty is str:
             self.value_dict = defaultdict(lambda: "")
         else:
             self.value_dict = defaultdict(lambda: 0)
@@ -170,7 +170,7 @@ class NitfField(object):
         """Return the size. In the simplest case, this is just self._size,
         but if self._size is an expression then we evaluate it. We also
         apply size_offset"""
-        if type(self._size) == int:
+        if type(self._size) is int:
             sz = self._size
         else:
             sz = self.eval_expr(self.key_as_tuple(key), self._size)
@@ -192,12 +192,15 @@ class NitfField(object):
         # integers we pad on the right with 0.
         fstring = "{:%ds}" % sz
         frmt = "%s"
-        if self.ty == int:
+        if self.ty is int:
             fstring = "{:s}"
             frmt = "%%0%dd" % sz
-        if self.ty == float:
+        if self.ty is float:
             fstring = "{:%ds}" % sz
-            frmt = lambda v: float_to_fixed_width(v, sz)
+
+            def frmt(v):
+                return float_to_fixed_width(v, sz)
+
         if self.frmt:
             frmt = self.frmt
         if isinstance(frmt, str):
@@ -275,7 +278,7 @@ class NitfField(object):
                     and v.rstrip(self.optional_char.encode(_text_codec) + b" ") == b""
                 ):
                     return None
-            if self.ty == str:
+            if self.ty is str:
                 if isinstance(v, bytes):
                     return v.decode(_text_codec).rstrip()
                 return self.ty(v).rstrip()
@@ -353,7 +356,7 @@ class NitfField(object):
             v = NitfField.__getitem__(self, k)
             if v is None and self.optional:
                 t = ("{:%ds}" % sz).format("").replace(" ", self.optional_char)
-            elif self.ty == bytes:
+            elif self.ty is bytes:
                 t = v
             else:
                 t = self._format_val(v, sz)
@@ -362,7 +365,7 @@ class NitfField(object):
                 "Formatting error. String '%s' is not right length for NITF field %s"
                 % (t, self.field_name)
             )
-        if self.ty == bytes or isinstance(self.value_dict[k], NitfLiteral):
+        if self.ty is bytes or isinstance(self.value_dict[k], NitfLiteral):
             return t
         else:
             return t.encode(_text_codec)
@@ -420,9 +423,9 @@ class NitfField(object):
                     and t.rstrip(self.optional_char.encode(_text_codec) + b" ") == b""
                 ):
                     self.value_dict[k] = None
-                elif self.ty == str:
+                elif self.ty is str:
                     self.value_dict[k] = t.rstrip().decode(_text_codec, "replace")
-                elif self.ty == bytes:
+                elif self.ty is bytes:
                     # Don't strip spaces or nulls, since these are valid
                     # byte values
                     self.value_dict[k] = self.ty(t)
@@ -1081,7 +1084,7 @@ class FieldStructDiff(NitfDiffHandle):
         rel_tol = c.get("rel_tol", {})
         abs_tol = c.get("abs_tol", {})
         eq_fun = c.get("eq_fun", {})
-        if isinstance(v1, float) or (isinstance(v1, NitfField) and v1.ty == float):
+        if isinstance(v1, float) or (isinstance(v1, NitfField) and v1.ty is float):
 
             def _f(a, b):
                 if a is None and b is None:

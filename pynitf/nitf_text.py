@@ -1,6 +1,5 @@
 from .nitf_segment_data_handle import NitfText, NitfSegmentDataHandleSet
-from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet, DiffContextFilter
-import io
+from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
 import logging
 
 logger = logging.getLogger("nitf_diff")

@@ -1,7 +1,6 @@
 from .nitf_field import FieldStruct, FieldStructDiff
 from .nitf_segment_data_handle import NitfDes, NitfSegmentDataHandleSet
-from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet, DiffContextFilter
-import copy
+from .nitf_diff_handle import NitfDiffHandleSet
 import io
 import logging
 
@@ -128,8 +127,8 @@ class DesFieldStructDiff(FieldStructDiff):
         if des1.des_tag != des2.des_tag:
             logger.difference(
                 "DES tags don't match. DES 1 '%s' and DES 2 '%s'",
-                des.des_tag,
-                des.des_tag,
+                des1.des_tag,
+                des2.des_tag,
             )
             return (True, False)
         # If we have a handle_diff function use it.

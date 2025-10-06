@@ -8,7 +8,6 @@ from .nitf_tre import read_tre, prepare_tre_write, add_find_tre_function
 from .nitf_tre_engrda import add_engrda_function
 from .nitf_security import security_unclassified
 from .nitf_segment import (
-    NitfSegment,
     NitfImageSegment,
     NitfGraphicSegment,
     NitfTextSegment,
@@ -18,8 +17,9 @@ from .nitf_segment import (
 from .nitf_segment_hook import NitfSegmentHookSet
 from .nitf_segment_user_subheader_handle import NitfSegmentUserSubheaderHandleSet
 from .nitf_segment_data_handle import NitfSegmentDataHandleSet
-import io, copy, weakref
+import io
 import copy
+import weakref
 import collections
 
 

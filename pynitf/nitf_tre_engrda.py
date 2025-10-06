@@ -1,4 +1,4 @@
-from .nitf_field import StringFieldData, BytesFieldData, FieldData
+from .nitf_field import StringFieldData, FieldData
 from .nitf_tre import Tre, tre_tag_to_cls
 import io
 from collections.abc import MutableMapping
@@ -171,7 +171,6 @@ class TreENGRDA(Tre, MutableMapping):
             i_to_change = self.recnt - 1
         self.englbl[i_to_change] = keyv
         self.engdatu[i_to_change] = units
-        is_byte_type = isinstance(data, (bytes, bytearray))
         if isinstance(data, (bytes, str)):
             self.engmtxc[i_to_change] = len(data)
             self.engmtxr[i_to_change] = 1
@@ -211,7 +210,7 @@ class TreENGRDA(Tre, MutableMapping):
         raise NotImplementedError("Can't delete from ENGRDA")
 
     def __iter__(self):
-        return ((self.englbl[i], _as_array(self, i)) for i in range(self.recnt))
+        return ((self.englbl[i], self._as_array(self, i)) for i in range(self.recnt))
 
 
 tre_tag_to_cls.add_cls(TreENGRDA)

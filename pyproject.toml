@@ -17,6 +17,10 @@ build-backend = "setuptools.build_meta"
 
 "__init__.py" = ["F401", "F403"]
 
+# Have some unused variables in nitf_diff_handle, but they are escape sequences
+# we aren't using the log output but might in the future
+"nitf_diff_handle.py" = ["F841",]
+
 [tool.pixi.workspace]
 name = "pynitf"
 channels = ["conda-forge"]

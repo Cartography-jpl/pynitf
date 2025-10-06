@@ -1,4 +1,4 @@
-from .nitf_image_subheader import NitfImageSubheader, set_default_image_subheader
+from .nitf_image_subheader import set_default_image_subheader
 from .nitf_segment_data_handle import NitfImage, NitfSegmentDataHandleSet
 from .nitf_security import security_unclassified
 from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
@@ -183,7 +183,7 @@ class NitfImageReadNumpy(NitfImageWithSubset):
         # Finally, there may be some weird combination of nbpp and pvtype
         # that we don't recognize. In this case, skip handling
         try:
-            dt = ih.dtype
+            _ = ih.dtype
         except RuntimeError:
             return False
         if self.do_mmap:
@@ -352,7 +352,7 @@ class NitfImageWriteDataOnDemand(NitfImageWithSubset):
             # right for this mode
             pass
         elif self.image_gen_mode == self.IMAGE_GEN_MODE_ROW_B:
-            raise NotImplemented()
+            raise NotImplementedError()
         elif self.image_gen_mode == self.IMAGE_GEN_MODE_ROW_P:
             # Note that we could have a row broken up into multiple blocks,
             # plus the row doesn't have to be 1. But this is what is
@@ -363,9 +363,9 @@ class NitfImageWriteDataOnDemand(NitfImageWithSubset):
             ih.nppbv = 1
             ih.imode = "P"
         elif self.image_gen_mode == self.IMAGE_GEN_MODE_COL_B:
-            raise NotImplemented()
+            raise NotImplementedError()
         elif self.image_gen_mode == self.IMAGE_GEN_MODE_COL_P:
-            raise NotImplemented()
+            raise NotImplementedError()
         else:
             raise RuntimeError("Unrecognized image_gen_mode")
 

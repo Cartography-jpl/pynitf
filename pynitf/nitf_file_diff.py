@@ -1,9 +1,11 @@
-from .nitf_file import NitfFile, NitfSegment
+from .nitf_file import NitfFile
+from .nitf_segment import NitfSegment
 from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet, DiffContextFilter
 from .nitf_file_merge import NitfFileMerge
 from .nitf_file_json import NitfFileJson
 import copy
 import logging
+import collections
 from contextlib import contextmanager
 
 logger = logging.getLogger("nitf_diff")

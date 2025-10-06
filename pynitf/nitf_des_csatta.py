@@ -1,7 +1,7 @@
 from .nitf_field import FieldStructDiff
 from .nitf_des import NitfDesFieldStruct
 from .nitf_segment_data_handle import NitfSegmentDataHandleSet
-from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
+from .nitf_diff_handle import NitfDiffHandleSet
 import io
 
 """WARNING!!! Do NOT use CSATTA. It's been deprecated and it hasn't kept up with the new DES design

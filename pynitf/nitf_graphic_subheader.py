@@ -1,9 +1,7 @@
 from .nitf_field import FieldStruct, BytesFieldData, FieldStructDiff
 from .nitf_security import NitfSecurity
-from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
+from .nitf_diff_handle import NitfDiffHandleSet
 import io
-import numpy as np
-import math
 
 hlp = """This is a NITF graphic subheader. The field names can be pretty
 cryptic, but these are documented in detail in the NITF 2.10 documentation

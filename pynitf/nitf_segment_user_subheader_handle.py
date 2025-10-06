@@ -1,7 +1,6 @@
 from .nitf_segment import NitfDesSegment, NitfResSegment
 from .priority_handle_set import PriorityHandleSet
 import abc
-import copy
 
 
 class NitfSegmentUserSubheaderHandleSet(PriorityHandleSet):

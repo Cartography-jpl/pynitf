@@ -1,6 +1,6 @@
 from .nitf_field import FieldStruct, BytesFieldData, FieldStructDiff
 from .nitf_security import NitfSecurity
-from .nitf_diff_handle import NitfDiffHandle, NitfDiffHandleSet
+from .nitf_diff_handle import NitfDiffHandleSet
 
 import io
 
