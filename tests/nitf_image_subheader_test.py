@@ -3,10 +3,11 @@ from pynitf.nitf_image_subheader import *
 from pynitf_test_support import *
 import io
 
+
 def test_basic():
     t = NitfFileHeader()
     t2 = NitfImageSubheader()
-    with open(unit_test_data + "sample.ntf", 'rb') as fh:
+    with open(unit_test_data + "sample.ntf", "rb") as fh:
         t.read_from_file(fh)
         t2.read_from_file(fh)
     assert t2.im == "IM"
@@ -76,18 +77,21 @@ def test_basic():
     assert t2.udidl == 0
     assert t2.ixshdl == 0
 
-    print("\n"+t2.summary())
+    print("\n" + t2.summary())
+
 
 def test_geolo_corner():
     t = NitfImageSubheader()
-    t.geolo_corner = 'G', [[50 + 30 / 60.0 + 20 / (60 * 60),
-                            40 + 50 / 60.0 + 30 / (60 * 60)],
-                           [50 + 30 / 60.0 + 40 / (60 * 60),
-                            40 + 50 / 60.0 + 30 / (60 * 60)],
-                           [50 + 30 / 60.0 + 40 / (60 * 60),
-                            40 + 50 / 60.0 + 40 / (60 * 60)],
-                           [50 + 30 / 60.0 + 20 / (60 * 60),
-                            40 + 50 / 60.0 + 40 / (60 * 60)]], None
+    t.geolo_corner = (
+        "G",
+        [
+            [50 + 30 / 60.0 + 20 / (60 * 60), 40 + 50 / 60.0 + 30 / (60 * 60)],
+            [50 + 30 / 60.0 + 40 / (60 * 60), 40 + 50 / 60.0 + 30 / (60 * 60)],
+            [50 + 30 / 60.0 + 40 / (60 * 60), 40 + 50 / 60.0 + 40 / (60 * 60)],
+            [50 + 30 / 60.0 + 20 / (60 * 60), 40 + 50 / 60.0 + 40 / (60 * 60)],
+        ],
+        None,
+    )
     assert t.icords == "G"
     assert t.igeolo == "405030N0503020E405030N0503040E405040N0503040E405040N0503020E"
     print(t.igeolo)
@@ -97,14 +101,16 @@ def test_geolo_corner():
     fh2 = io.BytesIO(fh.getvalue())
     t2.read_from_file(fh2)
     print(t2.geolo_corner)
-    t.geolo_corner = 'D', [[50 + 30 / 60.0 + 20 / (60 * 60),
-                            40 + 50 / 60.0 + 30 / (60 * 60)],
-                           [50 + 30 / 60.0 + 40 / (60 * 60),
-                            40 + 50 / 60.0 + 30 / (60 * 60)],
-                           [50 + 30 / 60.0 + 40 / (60 * 60),
-                            40 + 50 / 60.0 + 40 / (60 * 60)],
-                           [50 + 30 / 60.0 + 20 / (60 * 60),
-                            40 + 50 / 60.0 + 40 / (60 * 60)]], None
+    t.geolo_corner = (
+        "D",
+        [
+            [50 + 30 / 60.0 + 20 / (60 * 60), 40 + 50 / 60.0 + 30 / (60 * 60)],
+            [50 + 30 / 60.0 + 40 / (60 * 60), 40 + 50 / 60.0 + 30 / (60 * 60)],
+            [50 + 30 / 60.0 + 40 / (60 * 60), 40 + 50 / 60.0 + 40 / (60 * 60)],
+            [50 + 30 / 60.0 + 20 / (60 * 60), 40 + 50 / 60.0 + 40 / (60 * 60)],
+        ],
+        None,
+    )
     assert t.icords == "D"
     assert t.igeolo == "+40.842+050.506+40.842+050.511+40.844+050.511+40.844+050.506"
     print(t.igeolo)
@@ -114,5 +120,3 @@ def test_geolo_corner():
     fh2 = io.BytesIO(fh.getvalue())
     t2.read_from_file(fh2)
     print(t2.geolo_corner)
-    
-    

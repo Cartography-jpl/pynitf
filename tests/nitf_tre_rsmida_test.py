@@ -3,20 +3,21 @@ from pynitf.nitf_tre_rsmida import *
 from pynitf_test_support import *
 import io
 
+
 def test_tre_rsmida():
     t = TreRSMIDA()
-    t.iid = 'abc'
-    t.edition = 'abc'
-    t.isid = 'abc'
-    t.sid = 'abc'
-    t.stid = 'abc'
+    t.iid = "abc"
+    t.edition = "abc"
+    t.isid = "abc"
+    t.sid = "abc"
+    t.stid = "abc"
     t.year = 2017
-    t.month=12
+    t.month = 12
     t.day = 1
     t.hour = 10
     t.minute = 59
     t.second = 12.5
-    t.grndd = 'G'
+    t.grndd = "G"
     t.xuor = 1234.567890
     t.yuor = 1234.567890
     t.zuor = 1234.567890
@@ -86,23 +87,23 @@ def test_tre_rsmida():
     fh = io.BytesIO()
     t.write_to_file(fh)
     # This can vary depending on roundoff, so don't compare.
-    #assert fh.getvalue() == b'Blah'
+    # assert fh.getvalue() == b'Blah'
     fh2 = io.BytesIO(fh.getvalue())
     t2 = TreRSMIDA()
     t2.read_from_file(fh2)
     print(t2)
-    assert t2.iid == 'abc'
-    assert t2.edition == 'abc'
-    assert t2.isid == 'abc'
-    assert t2.sid == 'abc'
-    assert t2.stid == 'abc'
+    assert t2.iid == "abc"
+    assert t2.edition == "abc"
+    assert t2.isid == "abc"
+    assert t2.sid == "abc"
+    assert t2.stid == "abc"
     assert t2.year == 2017
-    assert t2.month==12
+    assert t2.month == 12
     assert t2.day == 1
     assert t2.hour == 10
     assert t2.minute == 59
     assert t2.second == 12.5
-    assert t2.grndd == 'G'
+    assert t2.grndd == "G"
     assert t2.xuor == 1234.567890
     assert t2.yuor == 1234.567890
     assert t2.zuor == 1234.567890
@@ -169,4 +170,3 @@ def test_tre_rsmida():
     assert t2.spz == 0.1234567890
     assert t2.svz == 0.1234567890
     assert t2.saz == 0.1234567890
-

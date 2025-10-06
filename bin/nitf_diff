@@ -8,8 +8,8 @@ import os
 import collections.abc
 import warnings
 
-version="June 13, 2022"
-usage="""Usage: 
+version = "June 13, 2022"
+usage = """Usage: 
   nitf_diff [options] <file1> <file2> [<json_delta>]
   nitf_diff -h | --help
   nitf_diff -v | --version
@@ -83,74 +83,75 @@ if "NITF_PLUGIN" in os.environ:
         if m != "":
             exec("import %s" % m)
 
-if(args.tre_warning_as_error):
+if args.tre_warning_as_error:
     warnings.filterwarnings("error", category=pynitf.TreWarning)
 else:
     # The MATESA TRE changed between v 0.1 and 1.0 of the SNIP. The RIP
     # data uses the old format. We can't do anything about this, so just
-    # ignore warning messages about this TRE. 
-    warnings.filterwarnings("ignore", "Trouble reading TRE MATESA",
-                            category=pynitf.TreWarning)
-            
+    # ignore warning messages about this TRE.
+    warnings.filterwarnings(
+        "ignore", "Trouble reading TRE MATESA", category=pynitf.TreWarning
+    )
+
 nitf_diff = pynitf.NitfDiff()
 
-if(args.config_file_json):
+if args.config_file_json:
     with open(args.config_file_json) as json_file:
         nitf_diff.update_config(json.load(json_file))
-if(args.config_file_python):
-    spec = importlib.util.spec_from_file_location("config_file",
-                                                  args.config_file_python)
+if args.config_file_python:
+    spec = importlib.util.spec_from_file_location(
+        "config_file", args.config_file_python
+    )
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     sys.modules["config_file"] = module
 
-logger = logging.getLogger('nitf_diff')
+logger = logging.getLogger("nitf_diff")
 fh = None
-if(args.log_file_only or args.log_file):
+if args.log_file_only or args.log_file:
     fh = logging.FileHandler(args.log_file_only or args.log_file)
-    fh.setFormatter(pynitf.DifferenceFormatter(add_color = False))
+    fh.setFormatter(pynitf.DifferenceFormatter(add_color=False))
     fh.setLevel(logging.INFO)
     logger.addHandler(fh)
-dformat = pynitf.DifferenceFormatter(add_color = not args.no_color)
+dformat = pynitf.DifferenceFormatter(add_color=not args.no_color)
 h = None
-if(not args.log_file_only):    
+if not args.log_file_only:
     h = logging.StreamHandler()
     h.setFormatter(dformat)
     logger.addHandler(h)
-if(args.debug):
-    if(h):
+if args.debug:
+    if h:
         h.setLevel(logging.DEBUG)
     logger.setLevel(logging.DEBUG)
-elif(args.verbose):
-    if(h):
+elif args.verbose:
+    if h:
         h.setLevel(logging.INFO)
     logger.setLevel(logging.INFO)
-elif(args.quiet):
-    if(h):
+elif args.quiet:
+    if h:
         h.setLevel(1000)
     logger.setLevel(1000)
-else:    
-    if(h):
+else:
+    if h:
         h.setLevel(logging.WARNING)
     logger.setLevel(logging.WARNING)
 
-if(fh):
+if fh:
     print("Comparing file 1: %s" % os.path.abspath(args.file1), file=fh.stream)
     print("Comparing file 2: %s" % os.path.abspath(args.file2), file=fh.stream)
-    if(args.json_delta):
+    if args.json_delta:
         print("JSON delta file: %s" % os.path.abspath(args.json_delta), file=fh.stream)
-    
+
 is_same = nitf_diff.compare(args.file1, args.file2, args.json_delta)
 
-if(not is_same):
-    if(fh):
+if not is_same:
+    if fh:
         print("Files are different", file=fh.stream)
-    if(not args.quiet):
+    if not args.quiet:
         print(dformat.color_text("Files are different", logging.ERROR))
     sys.exit(1)
-    
-if(not args.quiet):
-    if(fh):
+
+if not args.quiet:
+    if fh:
         print("Files are the same", file=fh.stream)
     print(dformat.color_text("Files are the same", pynitf.DIFFERENCE_DETAIL))
-    

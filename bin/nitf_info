@@ -7,8 +7,8 @@ import sys
 import warnings
 from pynitf import NitfFileJson, NitfFileMerge
 
-version="Sept 16, 2022"
-usage="""Usage: 
+version = "Sept 16, 2022"
+usage = """Usage: 
   nitf_info [options] <input_file> [<nitf_diff_json>]
   nitf_info -h | --help
   nitf_info -v | --version
@@ -53,23 +53,23 @@ if "NITF_PLUGIN" in os.environ:
     for m in os.environ["NITF_PLUGIN"].split(":"):
         exec("import %s" % m)
 
-if(args.tre_warning_as_error):
+if args.tre_warning_as_error:
     warnings.filterwarnings("error", category=pynitf.TreWarning)
 else:
     # The MATESA TRE changed between v 0.1 and 1.0 of the SNIP. The RIP
     # data uses the old format. We can't do anything about this, so just
-    # ignore warning messages about this TRE. 
-    warnings.filterwarnings("ignore", "Trouble reading TRE MATESA",
-                            category=pynitf.TreWarning)
+    # ignore warning messages about this TRE.
+    warnings.filterwarnings(
+        "ignore", "Trouble reading TRE MATESA", category=pynitf.TreWarning
+    )
 
-if(args.config_file):
-    spec = importlib.util.spec_from_file_location("config_file",
-                                                  args.config_file)
+if args.config_file:
+    spec = importlib.util.spec_from_file_location("config_file", args.config_file)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     sys.modules["config_file"] = module
-    
-if(args.debug):
+
+if args.debug:
     pynitf.nitf_field.DEBUG = True
     pynitf.nitf_des.DEBUG = True
 f = pynitf.NitfFile(args.input_file)
@@ -78,7 +78,7 @@ if args.nitf_diff_json is not None:
     f = NitfFileMerge([NitfFileJson(args.nitf_diff_json), f])
 
 f.report_raw = args.report_raw
-if(args.summary):
+if args.summary:
     print(f.summary())
 else:
     print(f)

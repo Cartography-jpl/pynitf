@@ -1,6 +1,7 @@
 from pynitf.nitf_tre_ichipb import *
 import io
 
+
 def test_tre_ichipb_basic():
     t = TreICHIPB()
 
@@ -10,12 +11,12 @@ def test_tre_ichipb_basic():
     t.anamrph_corr = 1
     t.scanblk_num = 42
 
-    t.op_row_11 = .5
-    t.op_col_11 = .5
-    t.op_row_12 = .5
+    t.op_row_11 = 0.5
+    t.op_col_11 = 0.5
+    t.op_row_12 = 0.5
     t.op_col_12 = 3.5
     t.op_row_21 = 2.5
-    t.op_col_21 = .5
+    t.op_col_21 = 0.5
     t.op_row_22 = 2.5
     t.op_col_22 = 3.5
 
@@ -33,9 +34,11 @@ def test_tre_ichipb_basic():
 
     fh = io.BytesIO()
     t.write_to_file(fh)
-    print('getvalue returns:', fh.getvalue())
-    assert fh.getvalue() == b'ICHIPB00224000001.00000014200000000.50000000000.50000000000.50000000003.50000000002.50000000000.50000000002.50000000003.50000000002.50000000001.50000000002.50000000004.50000000004.50000000001.50000000004.50000000004.5000000000900000007'
-
+    print("getvalue returns:", fh.getvalue())
+    assert (
+        fh.getvalue()
+        == b"ICHIPB00224000001.00000014200000000.50000000000.50000000000.50000000003.50000000002.50000000000.50000000002.50000000003.50000000002.50000000001.50000000002.50000000004.50000000004.50000000001.50000000004.50000000004.5000000000900000007"
+    )
 
     fh2 = io.BytesIO(fh.getvalue())
     t2 = TreICHIPB()

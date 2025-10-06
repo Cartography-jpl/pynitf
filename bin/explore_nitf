@@ -12,8 +12,8 @@ import matplotlib.pyplot as plt
 from pynitf import NitfFileJson, NitfFileMerge
 import readline
 
-version="Sept 16, 2022"
-usage="""Usage:
+version = "Sept 16, 2022"
+usage = """Usage:
   explore_nitf.py [-hvc COMMAND] <nitf_file> [<nitf_diff_json>]
 
 Options:
@@ -26,7 +26,7 @@ on the console
        
 """
 
-helpString = '''Usage Example:
+helpString = """Usage Example:
 
 load alias path_to_nitf [nitf_diff_json]
 
@@ -64,81 +64,101 @@ save_des 1
 
 image display 1
 image diff [index_1] [index_2]
-'''
+"""
+
 
 def load_nitf(nitf_path, nitf_obj, alias):
-    files[alias] = {'path': nitf_path, 'nitf': nitf_obj}
+    files[alias] = {"path": nitf_path, "nitf": nitf_obj}
 
 
 def listTRESegment(segment, p=False):
-    if (hasattr(segment, 'tre_list') == True):
+    if hasattr(segment, "tre_list") == True:
         for a in range(len(segment.tre_list)):
             print("%d: %s" % (a, segment.tre_list[a].cetag_value()))
-            if (p == True):
+            if p == True:
                 print(segment.tre_list[a])
+
 
 def listTREFile(f, p=False):
     for a in range(len(f.tre_list)):
         print("%d: %s" % (a, f.tre_list[a].cetag_value()))
-        if (p == True):
+        if p == True:
             print(f.tre_list[a])
+
 
 def listImageSegments(f):
     for a in range(len(f.image_segment)):
         print("%d: %s" % (a, f.image_segment[a].subheader.iid1))
 
+
 def listTextSegments(f):
     for a in range(len(f.text_segment)):
         print("%d: %s" % (a, f.text_segment[a].subheader.txtitl))
+
 
 def listDESSegments(f):
     for a in range(len(f.des_segment)):
         print("%d: %s" % (a, f.des_segment[a].subheader.desid))
 
+
 def processTRE(f, param, p):
     # List all TREs that are used in this NITF file
-    if (len(param) == 0):
+    if len(param) == 0:
         listTREFile(f)
-        for i in f.image_segment + f.graphic_segment + f.text_segment + f.des_segment + f.res_segment:
+        for i in (
+            f.image_segment
+            + f.graphic_segment
+            + f.text_segment
+            + f.des_segment
+            + f.res_segment
+        ):
             listTRESegment(i, p)
 
     # List all TREs that are used at the file level
-    elif (param[0] == "file"):
+    elif param[0] == "file":
         listTREFile(f, p)
 
     # List TREs in Image Segments
-    elif (param[0] == "image"):
-        #Print/List all TREs for all image segments
-        if (len(param) == 1):
+    elif param[0] == "image":
+        # Print/List all TREs for all image segments
+        if len(param) == 1:
             for i in f.image_segment:
                 listTRESegment(i, p)
-        #Print/List all TREs for a particular image segment
+        # Print/List all TREs for a particular image segment
         else:
             index = int(param[1])
-            if (index < len(f.image_segment)):
-                if ((len(param) == 3)):
+            if index < len(f.image_segment):
+                if len(param) == 3:
                     treIndex = int(param[2])
-                    if (treIndex < len(f.image_segment[index].tre_list)):
-                        print (f.image_segment[index].tre_list[treIndex])
+                    if treIndex < len(f.image_segment[index].tre_list):
+                        print(f.image_segment[index].tre_list[treIndex])
                     else:
-                        print ("Select TRE Index 0 - %d" % (len(f.image_segment[index].tre_list) - 1))
+                        print(
+                            "Select TRE Index 0 - %d"
+                            % (len(f.image_segment[index].tre_list) - 1)
+                        )
                 else:
                     listTRESegment(f.image_segment[index], p)
             else:
                 print("Select Image Segment Index 0 - %d" % (len(f.image_segment) - 1))
 
+
 def is_valid_image_index(f, index):
     return index < len(f.image_segment)
+
 
 def is_displayable_image(image_segment):
     if isinstance(image_segment.image, NitfImageReadNumpy):
         image_data = image_segment.image.data.squeeze()
-        if len(image_data.shape) == 2 or (len(image_data.shape)==3 and image_data.shape[2]==3):
+        if len(image_data.shape) == 2 or (
+            len(image_data.shape) == 3 and image_data.shape[2] == 3
+        ):
             return True, image_data
         else:
             return False, image_data
     else:
         return False, None
+
 
 def is_image_pair_diffable(image1, image2):
     rv = False
@@ -146,20 +166,21 @@ def is_image_pair_diffable(image1, image2):
         rv = True
     return rv
 
+
 def display_diff(f, index1, index2):
     image_segment_1 = f.image_segment[index1]
     is_displayable1, img1 = is_displayable_image(image_segment_1)
     image_segment_2 = f.image_segment[index2]
     is_displayable2, img2 = is_displayable_image(image_segment_2)
     if is_displayable1 and is_displayable2 and is_image_pair_diffable(img1, img2):
-        if img1.dtype.kind=='u':
-            img1 = img1.astype('int')
-        if img2.dtype.kind=='u':
-            im2 = img2.astype('int')
-            
+        if img1.dtype.kind == "u":
+            img1 = img1.astype("int")
+        if img2.dtype.kind == "u":
+            im2 = img2.astype("int")
+
         diff = img1 - img2
         plt.imshow(diff.squeeze())
-        plt.title('Diff of image segments {} and {}'.format(index1, index2))
+        plt.title("Diff of image segments {} and {}".format(index1, index2))
         plt.show()
     else:
         print("image pair not compatible for diff operation")
@@ -168,46 +189,52 @@ def display_diff(f, index1, index2):
         if img2 is not None:
             print(f"image 2 dtype: {img2.dtype} shape: {img2.shape}")
 
+
 def display_image(f, index):
     if is_valid_image_index(f, index):
         image_segment = f.image_segment[index]
-        is_displayable, image_data =  is_displayable_image(image_segment)
+        is_displayable, image_data = is_displayable_image(image_segment)
         if is_displayable:
             plt.imshow(image_data)
-            plt.title('image segment {} {}'.format(index, f.image_segment[index].iid1))
+            plt.title("image segment {} {}".format(index, f.image_segment[index].iid1))
             plt.show()
         else:
             print("Cannot display image")
     else:
-        print("Invalid image segment index {}.  Select index in range 0-{}".format(index, len(f.image_segment)-1))
+        print(
+            "Invalid image segment index {}.  Select index in range 0-{}".format(
+                index, len(f.image_segment) - 1
+            )
+        )
+
 
 def processCommand(line):
     cmd, args = line[0], line[1:]
-    f = files['default']['nitf']
-    if cmd == 'help':
+    f = files["default"]["nitf"]
+    if cmd == "help":
         print(helpString)
 
-    elif cmd == 'load':
+    elif cmd == "load":
         if len(args) < 2:
             print("load alias path_to_nitf [nitf_diff_json]")
             return
-        alias, nitf_path  = args[0], args[1]
+        alias, nitf_path = args[0], args[1]
         nitf_file = NitfFile(nitf_path)
         if len(args) > 2:
             nitf_file = NitfFileMerge([NitfFileJson(args[2]), nitf_file])
             nitf_path = nitf_path + " + " + args[2]
         load_nitf(nitf_path, nitf_file, alias)
 
-    elif cmd == 'list':
-        if (len(args) == 0):
-            print ("seg image text des tre")
+    elif cmd == "list":
+        if len(args) == 0:
+            print("seg image text des tre")
             return
 
         tar, param = args[0], args[1:]
-        if tar == 'files':
+        if tar == "files":
             print(files)
-        elif (tar == 'seg'):
-            print ("Image Segments:")
+        elif tar == "seg":
+            print("Image Segments:")
             listImageSegments(f)
             # print("Graphic Segments")
             # for i in f.graphic_segment:
@@ -219,65 +246,64 @@ def processCommand(line):
             # print("RESs:")
             # for i in f.res_segment:
             #    print(i.subheader.iid1)
-        elif (tar == 'image'):
+        elif tar == "image":
             listImageSegments(f)
-        elif (tar == 'text'):
+        elif tar == "text":
             listTextSegments(f)
-        elif (tar == 'des'):
+        elif tar == "des":
             listDESSegments(f)
-        elif (tar == 'tre'):
+        elif tar == "tre":
             processTRE(f, param, False)
 
-    elif cmd == 'summary':
+    elif cmd == "summary":
         # print(f.summary())
         print("Summary functionality not yet implemented")
 
-    elif cmd == 'print':
+    elif cmd == "print":
         tar, param = args[0], args[1:]
 
-        if (len(args) == 0):
-            print ("tre seg file")
+        if len(args) == 0:
+            print("tre seg file")
             return
 
-        if (tar == 'file'):
+        if tar == "file":
             pydoc.pager(str(f))
-        elif (tar == 'image' or tar == 'text' or tar == 'des'):
-            segs = vars(f)[tar + '_segment']
-            if (len(param) == 0):
+        elif tar == "image" or tar == "text" or tar == "des":
+            segs = vars(f)[tar + "_segment"]
+            if len(param) == 0:
                 output = ""
                 for seg in segs:
                     output += str(seg)
                 pydoc.pager(output)
             else:
                 index = int(param[0])
-                if (index < len(segs)):
+                if index < len(segs):
                     pydoc.pager(str(segs[index]))
                 else:
                     print("Select %s Segments 0 - %d" % (tar, len(segs) - 1))
-        elif (tar == 'tre'):
+        elif tar == "tre":
             processTRE(f, param, True)
-    elif cmd == 'save_des':
+    elif cmd == "save_des":
         param = args[0:]
         des_segs = f.des_segment
         if len(args) == 0:
-            print("Select DES Segments 0-{}".format(len(des_segs)-1))
+            print("Select DES Segments 0-{}".format(len(des_segs) - 1))
             return
         index = int(param[0])
         if index < len(des_segs):
             print("Select path to file:")
             save_path = input()
-            with open(save_path, 'wb') as fh:
+            with open(save_path, "wb") as fh:
                 des_segs[index].data.write_to_file(fh)
 
         else:
-            print("Select DES Segments 0-{}".format(len(des_segs)-1))
+            print("Select DES Segments 0-{}".format(len(des_segs) - 1))
             return
 
-
-    elif cmd == 'data':
+    elif cmd == "data":
         print("Data functionality not yet implemented")
 
-    elif cmd == 'image':
+    elif cmd == "image":
         if len(args) == 0:
             print("Specify sub command and image index")
 
@@ -287,14 +313,18 @@ def processCommand(line):
         elif sub_cmd == "diff":
             index2 = int(args[2])
             if index2 >= len(f.image_segment):
-                print("Select Image Segment  0-{} for index 2".format(len(f.image_segments) - 1))
+                print(
+                    "Select Image Segment  0-{} for index 2".format(
+                        len(f.image_segments) - 1
+                    )
+                )
             display_diff(f, index, index2)
     else:
-        print('Unknown command: {}'.format(cmd))
+        print("Unknown command: {}".format(cmd))
+
 
 # Code source: http://pymotw.com/2/readline/
 class SimpleCompleter(object):
-
     def __init__(self, options):
         self.options = sorted(options)
         return
@@ -304,13 +334,11 @@ class SimpleCompleter(object):
         if state == 0:
             # This is the first time for this text, so build a match list.
             if text:
-                self.matches = [s
-                                for s in self.options
-                                if s and s.startswith(text)]
-                logging.debug('%s matches: %s', repr(text), self.matches)
+                self.matches = [s for s in self.options if s and s.startswith(text)]
+                logging.debug("%s matches: %s", repr(text), self.matches)
             else:
                 self.matches = self.options[:]
-                logging.debug('(empty input) matches: %s', self.matches)
+                logging.debug("(empty input) matches: %s", self.matches)
 
         # Return the state'th item from the match list,
         # if we have that many.
@@ -318,8 +346,7 @@ class SimpleCompleter(object):
             response = self.matches[state]
         except IndexError:
             response = None
-        logging.debug('complete(%s, %s) => %s',
-                      repr(text), state, repr(response))
+        logging.debug("complete(%s, %s) => %s", repr(text), state, repr(response))
         return response
 
 
@@ -328,14 +355,32 @@ if "NITF_PLUGIN" in os.environ:
         exec("import %s" % m)
 
 # Register completer function
-readline.set_completer(SimpleCompleter(
-    ['load', 'alias', 'path_to_nitf', 'save_des',
-     'list', 'summary', 'print', 'data', 'save_des', 'image',
-     'seg', 'des', 'tre', 'file', 'text', 'display', 'diff']
-).complete)
+readline.set_completer(
+    SimpleCompleter(
+        [
+            "load",
+            "alias",
+            "path_to_nitf",
+            "save_des",
+            "list",
+            "summary",
+            "print",
+            "data",
+            "save_des",
+            "image",
+            "seg",
+            "des",
+            "tre",
+            "file",
+            "text",
+            "display",
+            "diff",
+        ]
+    ).complete
+)
 
 # Enable ab completion
-readline.parse_and_bind('tab: complete')
+readline.parse_and_bind("tab: complete")
 
 a = pynitf.docopt_simple.docopt_simple(usage, version=version)
 f = NitfFile(a.nitf_file)
@@ -343,23 +388,27 @@ if a.nitf_diff_json is not None:
     f = NitfFileMerge([NitfFileJson(a.nitf_diff_json), f])
 
 files = {}
-load_nitf(a.nitf_file if a.nitf_diff_json is None else a.nitf_file + " + " + a.nitf_diff_json, f, 'default')
+load_nitf(
+    a.nitf_file if a.nitf_diff_json is None else a.nitf_file + " + " + a.nitf_diff_json,
+    f,
+    "default",
+)
 
-command = a.args['-c']
+command = a.args["-c"]
 print(type(command))
-if (type(command) == str):
-    processCommand(command.split(' '))
+if type(command) == str:
+    processCommand(command.split(" "))
 else:
-    print('Enter a command to do something, e.g. `list tre`.')
-    print('To get help, enter `help`.')
+    print("Enter a command to do something, e.g. `list tre`.")
+    print("To get help, enter `help`.")
 
     while True:
-        line = shlex.split(input('> '))
+        line = shlex.split(input("> "))
         if len(line) == 0:
             continue
 
         cmd = line[0]
-        if cmd == 'exit':
+        if cmd == "exit":
             break
         else:
             processCommand(line)

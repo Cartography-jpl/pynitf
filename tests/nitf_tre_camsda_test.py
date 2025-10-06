@@ -2,12 +2,12 @@ from pynitf.nitf_tre import *
 from pynitf.nitf_tre_camsda import *
 from pynitf_test_support import *
 import io
-    
-def test_tre_camsda_basic():
 
+
+def test_tre_camsda_basic():
     t = TreCAMSDA()
 
-    #Set some values
+    # Set some values
     t.num_camera_sets = 42
     t.num_camera_sets_in_tre = 2
     t.first_camera_set_in_tre = 1
@@ -43,10 +43,12 @@ def test_tre_camsda_basic():
     t.nrows[1, 1] = 600
     t.ncols[1, 1] = 800
 
-    print (t.summary())
+    print(t.summary())
 
     fh = io.BytesIO()
     t.write_to_file(fh)
     print(fh.getvalue())
-    assert fh.getvalue() == b'CAMSDA00567042002001001CAM_0_0                             HD camera in first camera set                                                   Cam 0 0 layer                       042012123456789 0000108000001920002CAM_1_0                             VGA camera in second camera set                                                 Cam 1 0 layer                       04301367891234  0000048000000640CAM_1_1                             Super VGA camera in second camera set                                           Cam 1 1 layer                       0440145432167   0000060000000800'
-    
+    assert (
+        fh.getvalue()
+        == b"CAMSDA00567042002001001CAM_0_0                             HD camera in first camera set                                                   Cam 0 0 layer                       042012123456789 0000108000001920002CAM_1_0                             VGA camera in second camera set                                                 Cam 1 0 layer                       04301367891234  0000048000000640CAM_1_1                             Super VGA camera in second camera set                                           Cam 1 1 layer                       0440145432167   0000060000000800"
+    )

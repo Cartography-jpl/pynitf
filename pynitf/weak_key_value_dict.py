@@ -3,27 +3,31 @@
 
 import weakref
 
+
 class WeakKeyValueDict(object):
-    '''
+    """
     A dict in which items are removed whenever either key or value are
     garbage-collected.
-    '''
+    """
+
     def __init__(self, *args, **kw):
         init_dict = dict(*args, **kw)
-        
+
         self._d = weakref.WeakKeyDictionary(
-            (key, self._create_value(key, value))
-            for key, value in init_dict.items())
+            (key, self._create_value(key, value)) for key, value in init_dict.items()
+        )
 
     def _create_value(self, key, value):
         key_weakref = weakref.ref(key)
+
         def value_collected(wr):
             del self[key_weakref()]
+
         return weakref.ref(value, value_collected)
 
     def __getitem__(self, key):
         return self._d[key]()
-    
+
     def __setitem__(self, key, value):
         self._d[key] = self._create_value(key, value)
 
@@ -38,8 +42,7 @@ class WeakKeyValueDict(object):
             other_iteritems = other.items
         except AttributeError:
             return NotImplemented
-        return cmp(sorted(self.items()),
-                   sorted(other_items()))
+        return cmp(sorted(self.items()), sorted(other_items()))
 
     def __hash__(self):
         raise TypeError("%s objects not hashable" % (self.__class__.__name__,))
@@ -62,7 +65,7 @@ class WeakKeyValueDict(object):
 
     def values(self):
         return list(self.itervalues())
-    
+
     def items(self):
         for key in self._d:
             yield self._d[key]()
@@ -95,7 +98,7 @@ class WeakKeyValueDict(object):
 
     def _pop(self, key):
         return self._d.pop(key)()
-    
+
     def _pop_with_default(self, key, default):
         if key in self:
             return self._d.pop(key)
@@ -111,5 +114,7 @@ class WeakKeyValueDict(object):
         self[key] = default
         return default
 
-__all__ = ["WeakKeyValueDict",]
-    
+
+__all__ = [
+    "WeakKeyValueDict",
+]

@@ -5,15 +5,17 @@ from pynitf.nitf_tre import Tre, tre_tag_to_cls
 from pynitf_test_support import *
 import copy
 
+
 @pytest.fixture(scope="function")
 def modify_use00a_tre():
-    '''Wrapper that allows use00a to be modified and then moved 
-    back to normal'''
+    """Wrapper that allows use00a to be modified and then moved
+    back to normal"""
     try:
         yield
     finally:
-        tre_tag_to_cls.add_cls(TreUSE00A)    
-    
+        tre_tag_to_cls.add_cls(TreUSE00A)
+
+
 # One of the common issues with NITF is the need to do special formatting
 # for a particular field.
 #
@@ -48,10 +50,11 @@ def modify_use00a_tre():
 # first in your application, report the problem to pynitf, and then when
 # you update to new version of pynitf remove your local fix.
 
+
 def test_no_change(isolated_dir):
-    '''This just creates a simple file with one image segment and
+    """This just creates a simple file with one image segment and
     adds a USE00A TRE. We use this TRE just because it is simple and
-    a nice one for testing.'''
+    a nice one for testing."""
     f = NitfFile()
     create_image_seg(f)
     create_tre(f.image_segment[0])
@@ -65,6 +68,7 @@ def test_no_change(isolated_dir):
     # Raw bytes have 0 leading fill, with exactly 2 digits after decimal point
     assert tre2.get_raw_bytes("obl_ang") == b"01.00"
 
+
 # Our partner Yoyodyne insists
 # that we supply this number with leading spaces (instead of 0), and with only
 # 1 digit after the decimal place.
@@ -74,6 +78,7 @@ def test_no_change(isolated_dir):
 # used to say "use this exact string". The string is padded to be the right
 # size for the NITF file (using python ljust to add trailing spaces), but is
 # otherwise unchanged.
+
 
 def test_nitf_literal(isolated_dir):
     f = NitfFile()
@@ -89,6 +94,7 @@ def test_nitf_literal(isolated_dir):
     # Raw bytes have 0 leading fill, with exactly 2 digits after decimal point
     assert tre2.get_raw_bytes("obl_ang") == b"  1.0"
 
+
 # After supplying the test file to Yoyodyne, we determine that we want to
 # be able to produce a number of files with this new format. We want to
 # modify the TRE in our local application to use the new format for all files.
@@ -103,7 +109,8 @@ def test_nitf_literal(isolated_dir):
 # TREs are handled by classes registered in tre_tag_to_cls (a
 # instance of TreTagToCls). You can either create an entirely new TRE class,
 # or just copy and modify the existing class.
-    
+
+
 def test_tre_modify(isolated_dir, modify_use00a_tre):
     # Most of the TREs are instances of the Tre class, which is
     # in turn and instance of FieldStruct that has the class specified
@@ -116,15 +123,22 @@ def test_tre_modify(isolated_dir, modify_use00a_tre):
     # TreUSE00A desc table. An alternative is just to create an entirely
     # new table
     my_desc = copy.deepcopy(TreUSE00A.desc)
-    ind = [i for i,d in enumerate(my_desc) if d[0] == "obl_ang"][0]
-    my_desc[ind] = ["obl_ang", "Obliquity Angle", 5, float,
-                    # frmt was "%05.2lf" for 2 digits after decimal point,
-                    # 0 filled on left. Change to 1 digit, space filled.
-                    {"frmt" : "%5.1lf", "optional" :True}]
+    ind = [i for i, d in enumerate(my_desc) if d[0] == "obl_ang"][0]
+    my_desc[ind] = [
+        "obl_ang",
+        "Obliquity Angle",
+        5,
+        float,
+        # frmt was "%05.2lf" for 2 digits after decimal point,
+        # 0 filled on left. Change to 1 digit, space filled.
+        {"frmt": "%5.1lf", "optional": True},
+    ]
+
     class MyTreUSE00A(Tre):
         __doc__ = TreUSE00A.__doc__
         desc = my_desc
         tre_tag = TreUSE00A.tre_tag
+
     tre_tag_to_cls.add_cls(MyTreUSE00A)
 
     # Now test on a new file
@@ -152,6 +166,7 @@ def test_tre_modify(isolated_dir, modify_use00a_tre):
     # decimal point
     assert tre2.get_raw_bytes("obl_ang") == b"  1.0"
 
+
 # Sometimes a format is complicated enough it can't be captured with with
 # a format string.
 # For example Yoyodyne *must* have the float with 2 digits after the decimal
@@ -161,20 +176,28 @@ def test_tre_modify(isolated_dir, modify_use00a_tre):
 # Basic structure of this test is like the last one, except we supply a
 # formatting function instead of a format string
 
+
 def test_tre_modify_complicated_format(isolated_dir, modify_use00a_tre):
     def my_format(v):
-        if(v > 20):
+        if v > 20:
             return "%5.1lf" % v
-        return "%05.2lf" %v
-    
+        return "%05.2lf" % v
+
     my_desc = copy.deepcopy(TreUSE00A.desc)
-    ind = [i for i,d in enumerate(my_desc) if d[0] == "obl_ang"][0]
-    my_desc[ind] = ["obl_ang", "Obliquity Angle", 5, float,
-                    {"frmt" : my_format, "optional" :True}]
+    ind = [i for i, d in enumerate(my_desc) if d[0] == "obl_ang"][0]
+    my_desc[ind] = [
+        "obl_ang",
+        "Obliquity Angle",
+        5,
+        float,
+        {"frmt": my_format, "optional": True},
+    ]
+
     class MyTreUSE00A(Tre):
         __doc__ = TreUSE00A.__doc__
         desc = my_desc
         tre_tag = TreUSE00A.tre_tag
+
     tre_tag_to_cls.add_cls(MyTreUSE00A)
 
     # Now test on a new file
@@ -220,7 +243,7 @@ def test_tre_modify_complicated_format(isolated_dir, modify_use00a_tre):
     # Raw bytes have space leading fill, with exactly 1 digit after
     # decimal point
     assert tre3.get_raw_bytes("obl_ang") == b" 30.0"
-    
+
 
 # Even more complicated, there can be formats that can't use the
 # normal format string for either reading and writing.
@@ -232,30 +255,40 @@ def test_tre_modify_complicated_format(isolated_dir, modify_use00a_tre):
 # pynitf.FieldData (or alternatively, just provides the same interface if
 # deriving from it is inconvenient).
 
-def test_tre_modify_even_more_complicated_format(isolated_dir,
-                                                 modify_use00a_tre):
+
+def test_tre_modify_even_more_complicated_format(isolated_dir, modify_use00a_tre):
     class ReverseNumber(FieldData):
         def get_print(self, key):
             t = self[key]
-            if(t is None or len(t) == 0):
+            if t is None or len(t) == 0:
                 return "Not used"
             return "%f" % t
 
         def unpack(self, key, v):
             return float(v.replace(b" ", b".")[::-1])
-        
+
         def pack(self, key, v):
-            return (b"%05.2f" % v).replace(b".",b" ")[::-1]
+            return (b"%05.2f" % v).replace(b".", b" ")[::-1]
 
     my_desc = copy.deepcopy(TreUSE00A.desc)
-    ind = [i for i,d in enumerate(my_desc) if d[0] == "obl_ang"][0]
-    my_desc[ind] = ["obl_ang", "Obliquity Angle", 5, float,
-                    {"field_value_class" : ReverseNumber, "optional" :True,
-                     "size_not_updated" : True }]
+    ind = [i for i, d in enumerate(my_desc) if d[0] == "obl_ang"][0]
+    my_desc[ind] = [
+        "obl_ang",
+        "Obliquity Angle",
+        5,
+        float,
+        {
+            "field_value_class": ReverseNumber,
+            "optional": True,
+            "size_not_updated": True,
+        },
+    ]
+
     class MyTreUSE00A(Tre):
         __doc__ = TreUSE00A.__doc__
         desc = my_desc
         tre_tag = TreUSE00A.tre_tag
+
     tre_tag_to_cls.add_cls(MyTreUSE00A)
 
     # Now test on a new file
@@ -282,5 +315,3 @@ def test_tre_modify_even_more_complicated_format(isolated_dir,
     # Raw bytes have 0 leading fill, with exactly 2 digit after
     # decimal point, decimal point is a space, and in reverse order
     assert tre2.get_raw_bytes("obl_ang") == b"00 10"
-    
-            

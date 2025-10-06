@@ -3,8 +3,8 @@ from pynitf.nitf_tre_matesa import *
 from pynitf_test_support import *
 import io
 
-def test_tre_matesa_basic():
 
+def test_tre_matesa_basic():
     t = TreMATESA()
 
     t.cur_source = "Some file"
@@ -34,7 +34,10 @@ def test_tre_matesa_basic():
     fh = io.BytesIO()
     t.write_to_file(fh)
     print(fh.getvalue())
-    assert fh.getvalue() == b'MATESA00323Some file                                 Some type       0008abcdefgh0002R1                      0001S1                                        T1              0002I1R1                      0002S1                                        T1              0002I1S2                                        T2              0003I23'
+    assert (
+        fh.getvalue()
+        == b"MATESA00323Some file                                 Some type       0008abcdefgh0002R1                      0001S1                                        T1              0002I1R1                      0002S1                                        T1              0002I1S2                                        T2              0003I23"
+    )
     fh2 = io.BytesIO(fh.getvalue())
     t2 = TreMATESA()
     t2.read_from_file(fh2)
@@ -61,4 +64,4 @@ def test_tre_matesa_basic():
     assert t2.mate_type[1, 1] == "T2"
     assert t2.mate_id[1, 1] == "I23"
 
-    print (t2.summary())
+    print(t2.summary())

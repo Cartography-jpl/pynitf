@@ -2,12 +2,12 @@ from pynitf.nitf_tre import *
 from pynitf.nitf_tre_mtimfa import *
 from pynitf_test_support import *
 import io
-    
-def test_tre_mtimfa_basic():
 
+
+def test_tre_mtimfa_basic():
     t = TreMTIMFA()
 
-    #Set some values
+    # Set some values
     t.layer_id = "Some Layer"
     t.camera_set_index = 42
     t.time_interval_index = 17
@@ -28,9 +28,12 @@ def test_tre_mtimfa_basic():
     t.end_timestamp[1, 0] = "manana"
     t.image_seg_index[1, 0] = 123
 
-    print (t.summary())
+    print(t.summary())
 
     fh = io.BytesIO()
     t.write_to_file(fh)
     print(fh.getvalue())
-    assert fh.getvalue() == b'MTIMFA00279Some Layer                          042000017002Camera A                            002today                   tomorrow                314now                     later                   159Camera B                            001hoy                     manana                  123'
+    assert (
+        fh.getvalue()
+        == b"MTIMFA00279Some Layer                          042000017002Camera A                            002today                   tomorrow                314now                     later                   159Camera B                            001hoy                     manana                  123"
+    )

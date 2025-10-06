@@ -2,14 +2,14 @@ from pynitf.nitf_tre import *
 from pynitf.nitf_tre_histoa import *
 from pynitf_test_support import *
 import io
-    
-def test_basic():
 
+
+def test_basic():
     numEvents = 2
 
     t = TreHISTOA()
 
-    #Set some values
+    # Set some values
     t.systype = "SYSTEM_TYPE"
     t.pc = "NO_COMPRESSI"
     t.pe = "NONE"
@@ -28,7 +28,10 @@ def test_basic():
     fh = io.BytesIO()
     t.write_to_file(fh)
     print(fh.getvalue())
-    assert fh.getvalue() == b'HISTOA00509SYSTEM_TYPE         NO_COMPRESSINONE0000220170615121212ABCDEFGHIJAAAAAAAAAA2HELLO1                                                                          HELLO2                                                                          00              0 00000000             20170615121212ABCDEFGHIJAAAAAAAAAA2HELLO1                                                                          HELLO2                                                                          00              0 00000000             '
+    assert (
+        fh.getvalue()
+        == b"HISTOA00509SYSTEM_TYPE         NO_COMPRESSINONE0000220170615121212ABCDEFGHIJAAAAAAAAAA2HELLO1                                                                          HELLO2                                                                          00              0 00000000             20170615121212ABCDEFGHIJAAAAAAAAAA2HELLO1                                                                          HELLO2                                                                          00              0 00000000             "
+    )
     fh2 = io.BytesIO(fh.getvalue())
     t2 = TreHISTOA()
     t2.read_from_file(fh2)
@@ -47,4 +50,4 @@ def test_basic():
         assert t2.ipcom[i, 0] == "HELLO1"
         assert t2.ipcom[i, 1] == "HELLO2"
 
-    print (t2.summary())
+    print(t2.summary())

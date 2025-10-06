@@ -6,13 +6,12 @@ import glob as _glob
 from .version import __version__
 
 for _i in _glob.glob(_os.path.dirname(__file__) + "/*.py"):
-    _mname = _os.path.basename(_i).split('.')[0]
+    _mname = _os.path.basename(_i).split(".")[0]
     # Don't load ipython, which is ipython magic extensions
-    if(not _mname == 'ipython'):
+    if not _mname == "ipython":
         exec("from .%s import *" % _mname)
 
 del _i
 del _mname
 del _os
 del _glob
-        

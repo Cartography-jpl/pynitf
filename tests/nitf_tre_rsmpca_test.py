@@ -3,6 +3,7 @@ from pynitf.nitf_tre_rsmpca import *
 from pynitf_test_support import *
 import io
 
+
 def test_tre_rsmpca():
     t = TreRSMPCA()
     t.rsn = 1

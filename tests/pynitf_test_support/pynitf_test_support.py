@@ -3,9 +3,13 @@ import numpy as np
 from numpy.testing import assert_almost_equal, assert_approx_equal
 from pynitf.nitf_security import NitfSecurity
 from pynitf.nitf_image import NitfImageWriteNumpy
-from pynitf.nitf_file import (NitfImageSegment, NitfTextSegment,
-                              NitfDesSegment, NitfGraphicSegment,
-                              NitfResSegment)
+from pynitf.nitf_file import (
+    NitfImageSegment,
+    NitfTextSegment,
+    NitfDesSegment,
+    NitfGraphicSegment,
+    NitfResSegment,
+)
 from pynitf.nitf_text import NitfTextStr
 from pynitf.nitf_segment_data_handle import NitfGraphicRaw, NitfResRaw
 from pynitf.nitf_des_csattb import DesCSATTB
@@ -44,15 +48,26 @@ except ImportError:
 # ignore warning messages about this TRE. But treat other warnings as
 # errors
 
-pytestmark = [pytest.mark.filterwarnings("error::pynitf.TreWarning"),
-              pytest.mark.filterwarnings("ignore:Trouble reading TRE ILLUMA"),
-              pytest.mark.filterwarnings("ignore:Trouble reading TRE MATESA:pynitf.TreWarning")]
+pytestmark = [
+    pytest.mark.filterwarnings("error::pynitf.TreWarning"),
+    pytest.mark.filterwarnings("ignore:Trouble reading TRE ILLUMA"),
+    pytest.mark.filterwarnings("ignore:Trouble reading TRE MATESA:pynitf.TreWarning"),
+]
 
 # Location of test data that is part of source
-unit_test_data = os.path.abspath(os.path.expandvars(os.path.dirname(__file__)) + "/unit_test_data/") + "/"
+unit_test_data = (
+    os.path.abspath(os.path.expandvars(os.path.dirname(__file__)) + "/unit_test_data/")
+    + "/"
+)
 # Locate of programs
-program_dir = os.path.abspath(os.path.expandvars(os.path.dirname(__file__)) + "../../../bin/") + "/"
-xsd_dir = os.path.abspath(os.path.expandvars(os.path.dirname(__file__)) + "../../../xsd/") + "/"
+program_dir = (
+    os.path.abspath(os.path.expandvars(os.path.dirname(__file__)) + "../../../bin/")
+    + "/"
+)
+xsd_dir = (
+    os.path.abspath(os.path.expandvars(os.path.dirname(__file__)) + "../../../xsd/")
+    + "/"
+)
 os.environ["PATH"] = program_dir + ":" + os.environ["PATH"]
 
 # Fake security object, just so we can test setting and reading
@@ -65,7 +80,7 @@ security_fake.release_instructions = "US UG"
 security_fake.declassification_type = "DD"
 security_fake.declassification_date = "30000101"
 security_fake.declassification_exemption = "X251"
-security_fake.downgrade =  "S"
+security_fake.downgrade = "S"
 security_fake.downgrade_date = "25000101"
 security_fake.classification_text = "Fake classification"
 security_fake.classification_authority_type = "D"
@@ -81,7 +96,7 @@ security_fake.encryption = 1
 # use in testing
 evil_float1 = math.pi
 evil_float2 = math.pi * 1e-12
-evil_float3 = math.pi * 1e+12
+evil_float3 = math.pi * 1e12
 
 
 # Short hand for marking as unconditional skipping. Good for tests we
@@ -89,17 +104,24 @@ evil_float3 = math.pi * 1e+12
 # reason.
 skip = pytest.mark.skip
 
-def cmd_exists(cmd):
-    '''Check if a cmd exists by using type, which returns a nonzero status if
-    the program isn't found'''
-    return subprocess.call("type " + cmd, shell=True, 
-                           stdout=subprocess.PIPE, stderr=subprocess.PIPE) == 0
 
-def create_image_seg(f, security = None, iid1 = '', row_offset = 10, bias = 0,
-                     adjust = None, nrow = 9, ncol = 10):
-    '''Create a small image segment. The security setting can be passed in,
+def cmd_exists(cmd):
+    """Check if a cmd exists by using type, which returns a nonzero status if
+    the program isn't found"""
+    return (
+        subprocess.call(
+            "type " + cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
+        == 0
+    )
+
+
+def create_image_seg(
+    f, security=None, iid1="", row_offset=10, bias=0, adjust=None, nrow=9, ncol=10
+):
+    """Create a small image segment. The security setting can be passed in,
     otherwise the default unclassified version is used. The IID can be passed.
-    The values filled in can be controlled by row_offset, bias, and adjust.'''
+    The values filled in can be controlled by row_offset, bias, and adjust."""
     img = NitfImageWriteNumpy(nrow, ncol, np.uint8)
     for i in range(nrow):
         for j in range(ncol):
@@ -109,10 +131,11 @@ def create_image_seg(f, security = None, iid1 = '', row_offset = 10, bias = 0,
     f.image_segment.append(iseg)
     return iseg
 
-def create_tre(f, angle_to_north = 270):
-    '''Create a sample TRE. We use TreUSE00A because it is a simple TRE. You
+
+def create_tre(f, angle_to_north=270):
+    """Create a sample TRE. We use TreUSE00A because it is a simple TRE. You
     can pass in different values to angle_to_north to get "different" TREs.
-    '''
+    """
     t = TreUSE00A()
     t.angle_to_north = angle_to_north
     t.mean_gsd = 105.2
@@ -127,43 +150,45 @@ def create_tre(f, angle_to_north = 270):
     t.sun_az = 131.3
     f.tre_list.append(t)
 
-def create_text_segment(f, first_name = 'Guido', textid = 'ID12345',
-                        security = None):
-    '''Create a text segment'''
+
+def create_text_segment(f, first_name="Guido", textid="ID12345", security=None):
+    """Create a text segment"""
     d = {
-        'first_name': first_name,
-        'second_name': 'Rossum',
-        'titles': ['BDFL', 'Developer'],
+        "first_name": first_name,
+        "second_name": "Rossum",
+        "titles": ["BDFL", "Developer"],
     }
     ts = NitfTextSegment(NitfTextStr(json.dumps(d)), security=security)
     ts.subheader.textid = textid
     ts.subheader.txtalvl = 0
-    ts.subheader.txtitl = 'sample title'
+    ts.subheader.txtitl = "sample title"
     f.text_segment.append(ts)
 
-def create_graphic_segment(f, graphic_data=b'fake graph data',
-                           graphicid = 'GID12345', security = None):
-    '''Create a graphic segment'''
-    gs = NitfGraphicSegment(NitfGraphicRaw(graphic_data),
-                            security=security)
+
+def create_graphic_segment(
+    f, graphic_data=b"fake graph data", graphicid="GID12345", security=None
+):
+    """Create a graphic segment"""
+    gs = NitfGraphicSegment(NitfGraphicRaw(graphic_data), security=security)
     gs.subheader.sid = graphicid
     gs.subheader.sname = "Fake graphic"
     gs.subheader.salvl = 0
     f.graphic_segment.append(gs)
 
-def create_res_segment(f, res_data=b'fake res data',
-                       resid = 'GID12345', security = None):
-    '''Create a res segment'''
+
+def create_res_segment(f, res_data=b"fake res data", resid="GID12345", security=None):
+    """Create a res segment"""
     rs = NitfResSegment(NitfResRaw(res_data), security=security)
     rs.subheader.resid = resid
     f.res_segment.append(rs)
-    
-def create_des(f, date_att = 20170501, q = 0.1, num = 5, security=None):
-    '''Create a DES segment'''
+
+
+def create_des(f, date_att=20170501, q=0.1, num=5, security=None):
+    """Create a DES segment"""
     des = DesCSATTB()
     ds = des.user_subheader
-    ds.id = '4385ab47-f3ba-40b7-9520-13d6b7a7f311'
-    ds.numais = '010'
+    ds.id = "4385ab47-f3ba-40b7-9520-13d6b7a7f311"
+    ds.numais = "010"
     for i in range(int(ds.numais)):
         ds.aisdlvl[i] = 5 + i
     ds.reservedsubh_len = 0
@@ -185,13 +210,14 @@ def create_des(f, date_att = 20170501, q = 0.1, num = 5, security=None):
 
     de = NitfDesSegment(des, security=security)
     f.des_segment.append(de)
-    
-def create_csephb(f, date_att = 20170501, e = 0.1, num = 5, security=None):
-    '''Create a DES segment'''
+
+
+def create_csephb(f, date_att=20170501, e=0.1, num=5, security=None):
+    """Create a DES segment"""
     des = DesCSEPHB()
     ds = des.user_subheader
-    ds.id = '4385ab47-f3ba-40b7-9520-13d6b7a7f311'
-    ds.numais = '010'
+    ds.id = "4385ab47-f3ba-40b7-9520-13d6b7a7f311"
+    ds.numais = "010"
     for i in range(int(ds.numais)):
         ds.aisdlvl[i] = 5 + i
     ds.reservedsubh_len = 0
@@ -213,44 +239,49 @@ def create_csephb(f, date_att = 20170501, e = 0.1, num = 5, security=None):
     de = NitfDesSegment(des, security=security)
     f.des_segment.append(de)
 
+
 # Some tests are python 3 only. Don't want the python 2 tests to fail for
 # python code that we know can't be run
-require_python3 = pytest.mark.skipif(not sys.version_info > (3,),
-       reason = "require python 3 to run")                                     
+require_python3 = pytest.mark.skipif(
+    not sys.version_info > (3,), reason="require python 3 to run"
+)
 
-def gdal_value(f, line, sample, band = None):
-    '''Return value at the given location, according to gdal. This is 
+
+def gdal_value(f, line, sample, band=None):
+    """Return value at the given location, according to gdal. This is
     return as a bytes, which you can then cast to the desired type
-    (e.g., int())'''
+    (e.g., int())"""
     cmd = ["gdallocationinfo", "-valonly"]
-    if(band is not None):
+    if band is not None:
         cmd.extend(["-b", str(band + 1)])
     cmd.extend([f, str(sample), str(line)])
-    res = subprocess.run(cmd, check=True,stdout=subprocess.PIPE).stdout
+    res = subprocess.run(cmd, check=True, stdout=subprocess.PIPE).stdout
     # Complex numbers need special handling, because gdallocationinfo doesn't
     # write a string that python knows how to parse.
-    if(b'+' in res or b'i' in res):
-        res = (b'(' + re.sub(b'i', b'j', res.rstrip()) + b')\n').decode('utf-8')
+    if b"+" in res or b"i" in res:
+        res = (b"(" + re.sub(b"i", b"j", res.rstrip()) + b")\n").decode("utf-8")
     return res
 
-require_gdal_value = pytest.mark.skipif(not sys.version_info > (3,) or
-                   not cmd_exists("gdallocationinfo"),
-                   reason="Require python 3 and gdallocationinfo")
 
-require_git = pytest.mark.skipif(not cmd_exists("git"),
-                                 reason="Require git")
+require_gdal_value = pytest.mark.skipif(
+    not sys.version_info > (3,) or not cmd_exists("gdallocationinfo"),
+    reason="Require python 3 and gdallocationinfo",
+)
+
+require_git = pytest.mark.skipif(not cmd_exists("git"), reason="Require git")
+
 
 @pytest.fixture(scope="function")
 def print_logging(isolated_dir):
-    '''Direct logging to a local "run.log" file.
+    """Direct logging to a local "run.log" file.
 
     Also print the logger to the console. Normally this only shows up for
     failed tasks, but with -s we print this out for each job that runs.
-    '''
-    h = logging.FileHandler('run.log')
+    """
+    h = logging.FileHandler("run.log")
     h.setLevel(logging.INFO)
     h.setFormatter(DifferenceFormatter())
-    logger = logging.getLogger('nitf_diff')
+    logger = logging.getLogger("nitf_diff")
     original_lv = logger.getEffectiveLevel()
     try:
         logger.setLevel(logging.INFO)
@@ -263,17 +294,18 @@ def print_logging(isolated_dir):
     # the console so we can avoid the "Logger output:" part if there is no
     # actual output.
     t = open("run.log").read()
-    if(len(t) > 0):
+    if len(t) > 0:
         print("\nLogger output:")
         print(t)
 
+
 @pytest.fixture(scope="function")
 def config_dir(tmpdir, request):
-    '''
+    """
     Likes isolated_dir, but first copies a folder with the same name of test
     module and, if available, moves all contents to the temporary directory so
     tests can use them freely.
-    '''
+    """
     filename = request.module.__file__
     test_dir, _ = os.path.splitext(filename)
 
@@ -286,9 +318,10 @@ def config_dir(tmpdir, request):
     finally:
         os.chdir(curdir)
 
+
 @pytest.fixture(scope="function")
 def isolated_dir(tmpdir):
-    '''This is a fixture that creates a temporary directory, and uses this
+    """This is a fixture that creates a temporary directory, and uses this
     while running a unit tests. Useful for tests that write out a test file
     and then try to read it.
 
@@ -297,9 +330,9 @@ def isolated_dir(tmpdir):
 
     Note that this uses the fixture tmpdir, which keeps around the last few
     temporary directories (cleaning up after a fixed number are generated).
-    So if a test fails, you can look at the output at the location of tmpdir, 
+    So if a test fails, you can look at the output at the location of tmpdir,
     e.g. /tmp/pytest-of-smyth
-    '''
+    """
     curdir = os.getcwd()
     try:
         tmpdir.chdir()
@@ -307,52 +340,62 @@ def isolated_dir(tmpdir):
     finally:
         os.chdir(curdir)
 
+
 # Have tests that require NITF sample files be available. We skip these if not
 # available, tests are nice to make sure things don't break but not essential.
 # Things that really matter have small test data sets put into unit_test_data,
 # but we do want the option of running larger tests when available
 
+
 @pytest.fixture(scope="function")
 def nitf_sample_files(isolated_dir):
-    if(os.path.exists("/bigdata/smyth/NitfSamples/")):
+    if os.path.exists("/bigdata/smyth/NitfSamples/"):
         return "/bigdata/smyth/NitfSamples/"
-    elif(os.path.exists("/opt/nitf_files/NitfSamples/")):
+    elif os.path.exists("/opt/nitf_files/NitfSamples/"):
         return "/opt/nitf_files/NitfSamples/"
-    elif(os.path.exists("/data2/smythdata/NitfSamples/")):
+    elif os.path.exists("/data2/smythdata/NitfSamples/"):
         return "/data2/smythdata/NitfSamples/"
-    elif(os.path.exists("/data2/smythdata/NitfSamples/")):
+    elif os.path.exists("/data2/smythdata/NitfSamples/"):
         return "/data2/smythdata/NitfSamples/"
-    elif(os.path.exists("/Users/smyth/NitfSamples/")):
+    elif os.path.exists("/Users/smyth/NitfSamples/"):
         return "/Users/smyth/NitfSamples/"
     pytest.skip("Require NitfSamples test data to run")
+
 
 @pytest.fixture(scope="function")
 def nitf_sample_quickbird(nitf_sample_files):
     fname = nitf_sample_files + "quickbird/05NOV23034644-P1BS-005545406180_01_P001.NTF"
-    if(os.path.exists(fname)):
+    if os.path.exists(fname):
         return fname
     pytest.skip("Required file %s not found, so skipping test" % fname)
+
 
 @pytest.fixture(scope="function")
 def nitf_sample_wv2(nitf_sample_files):
     fname = nitf_sample_files + "wv2/12JAN23015358-P1BS-052654848010_01_P003.NTF"
-    if(os.path.exists(fname)):
+    if os.path.exists(fname):
         return fname
     pytest.skip("Required file %s not found, so skipping test" % fname)
+
 
 @pytest.fixture(scope="function")
 def nitf_sample_ikonos(nitf_sample_files):
     fname = nitf_sample_files + "ikonos/11DEC11IK0101000po_755166_pan_0000000.ntf"
-    if(os.path.exists(fname)):
+    if os.path.exists(fname):
         return fname
     pytest.skip("Required file %s not found, so skipping test" % fname)
 
+
 @pytest.fixture(scope="function")
 def nitf_sample_rip(nitf_sample_files):
-    fname = nitf_sample_files + "rip/07APR2005_Hyperion_331405N0442002E_SWIR172_001_L1R.ntf"
-    if(not os.path.exists(fname)):
+    fname = (
+        nitf_sample_files + "rip/07APR2005_Hyperion_331405N0442002E_SWIR172_001_L1R.ntf"
+    )
+    if not os.path.exists(fname):
         pytest.skip("Required file %s not found, so skipping test" % fname)
     return fname
-    
-require_h5py = pytest.mark.skipif(not have_h5py,
-      reason="need to have h5py available to run.")
+
+
+require_h5py = pytest.mark.skipif(
+    not have_h5py, reason="need to have h5py available to run."
+)

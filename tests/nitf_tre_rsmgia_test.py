@@ -3,6 +3,7 @@ from pynitf.nitf_tre_rsmgia import *
 from pynitf_test_support import *
 import io
 
+
 def test_tre_rsmpia():
     t = TreRSMGIA()
     t.grnis = 3
@@ -11,7 +12,7 @@ def test_tre_rsmpia():
     fh = io.BytesIO()
     t.write_to_file(fh)
     # This can vary depending on roundoff, so don't compare.
-    #assert fh.getvalue() == b'Blah'
+    # assert fh.getvalue() == b'Blah'
     fh2 = io.BytesIO(fh.getvalue())
     t2 = TreRSMGIA()
     t2.read_from_file(fh2)

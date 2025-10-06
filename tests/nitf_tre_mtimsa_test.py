@@ -4,11 +4,11 @@ from pynitf_test_support import *
 import io
 import struct
 
-def test_tre_mtimsa_basic():
 
+def test_tre_mtimsa_basic():
     t = TreMTIMSA()
 
-    #Set some values
+    # Set some values
     t.image_seg_index = 42
     t.geocoords_static = 99
     t.layer_id = "Some Layer"
@@ -26,12 +26,15 @@ def test_tre_mtimsa_basic():
     t.dt[0] = 123
     t.dt[1] = 124
 
-    print (t.summary())
+    print(t.summary())
 
     fh = io.BytesIO()
     t.write_to_file(fh)
     print(fh.getvalue())
-    assert fh.getvalue() == b'MTIMSA0016004299Some Layer                          043Camera A                            00001704433.3300000000000000045today                   \x00\x00\x00\x00\x00\x00\x04\xd2\x04\x00\x00\x00d\x00\x00\x00\x02\x00\x00\x00{\x00\x00\x00|'
+    assert (
+        fh.getvalue()
+        == b"MTIMSA0016004299Some Layer                          043Camera A                            00001704433.3300000000000000045today                   \x00\x00\x00\x00\x00\x00\x04\xd2\x04\x00\x00\x00d\x00\x00\x00\x02\x00\x00\x00{\x00\x00\x00|"
+    )
 
     fh2 = io.BytesIO(fh.getvalue())
     t2 = TreMTIMSA()
@@ -54,11 +57,11 @@ def test_tre_mtimsa_basic():
     assert t2.dt[0] == 123
     assert t2.dt[1] == 124
 
-def test_tre_mtimsa_size_2():
 
+def test_tre_mtimsa_size_2():
     t = TreMTIMSA()
 
-    #Set some values
+    # Set some values
     t.image_seg_index = 42
     t.geocoords_static = 99
     t.layer_id = "Some Layer"
@@ -76,12 +79,15 @@ def test_tre_mtimsa_size_2():
     t.dt[0] = 123
     t.dt[1] = 124
 
-    print (t.summary())
+    print(t.summary())
 
     fh = io.BytesIO()
     t.write_to_file(fh)
     print(fh.getvalue())
-    assert fh.getvalue() == b'MTIMSA0015604299Some Layer                          043Camera A                            00001704433.3300000000000000045today                   \x00\x00\x00\x00\x00\x00\x04\xd2\x02\x00\x00\x00d\x00\x00\x00\x02\x00{\x00|'
+    assert (
+        fh.getvalue()
+        == b"MTIMSA0015604299Some Layer                          043Camera A                            00001704433.3300000000000000045today                   \x00\x00\x00\x00\x00\x00\x04\xd2\x02\x00\x00\x00d\x00\x00\x00\x02\x00{\x00|"
+    )
 
     fh2 = io.BytesIO(fh.getvalue())
     t2 = TreMTIMSA()

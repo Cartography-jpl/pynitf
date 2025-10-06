@@ -3,8 +3,8 @@ from pynitf.nitf_tre_cscrna import *
 from pynitf_test_support import *
 import io
 
-def test_tre_cscrna_basic():
 
+def test_tre_cscrna_basic():
     t = TreCSCRNA()
 
     # Set some values
@@ -25,7 +25,10 @@ def test_tre_cscrna_basic():
     fh = io.BytesIO()
     t.write_to_file(fh)
     print(fh.getvalue())
-    assert fh.getvalue() == b'CSCRNA00109Y-90.00000-170.00000+10555.5+09.00000-170.00000+00000.0+90.00000+170.00000+00004.5-09.00000+017.00000-00555.5'
+    assert (
+        fh.getvalue()
+        == b"CSCRNA00109Y-90.00000-170.00000+10555.5+09.00000-170.00000+00000.0+90.00000+170.00000+00004.5-09.00000+017.00000-00555.5"
+    )
 
     fh2 = io.BytesIO(fh.getvalue())
     t2 = TreCSCRNA()
@@ -44,4 +47,4 @@ def test_tre_cscrna_basic():
     assert t.llcnr_long == 17.00000
     assert t.llcnr_ht == -555.5
 
-    print (t2.summary())
+    print(t2.summary())

@@ -2,8 +2,8 @@
 import pynitf
 import os
 
-version="June 13, 2022"
-usage="""Usage: 
+version = "June 13, 2022"
+usage = """Usage: 
   nitf_json_delta [options] <file1> <file2> <json_delta_file>
   nitf_json_delta -h | --help
   nitf_json_delta -v | --version
@@ -29,5 +29,5 @@ if "NITF_PLUGIN" in os.environ:
 
 f1 = pynitf.NitfFile(args.file1)
 f2 = pynitf.NitfFile(args.file2)
-fout = pynitf.NitfFileJson.create_delta(f1,f2)
+fout = pynitf.NitfFileJson.create_delta(f1, f2)
 fout.write(args.json_delta_file)

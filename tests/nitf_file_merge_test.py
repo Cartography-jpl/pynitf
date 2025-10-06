@@ -20,8 +20,8 @@ import datetime
 from contextlib import contextmanager
 import h5py
 
-def createHISTOA():
 
+def createHISTOA():
     t = TreHISTOA()
 
     # Set some values
@@ -48,42 +48,42 @@ def createHISTOA():
 
     return t
 
+
 def createBANDSB():
     t = TreBANDSB()
 
     t.count = 5
-    t.radiometric_quantity = 'REFLECTANCE'
-    t.radiometric_quantity_unit = 'F'
+    t.radiometric_quantity = "REFLECTANCE"
+    t.radiometric_quantity_unit = "F"
     t.cube_scale_factor = 1.0
     t.cube_additive_factor = 0.0
     t.row_gsd_nrs = 9999.99
-    t.row_gsd_nrs_unit = 'M'
+    t.row_gsd_nrs_unit = "M"
     t.col_gsd_ncs = 8888.88
-    t.col_gsd_ncs_unit = 'M'
+    t.col_gsd_ncs_unit = "M"
     t.spt_resp_row_nom = 7777.77
-    t.spt_resp_unit_row_nom = 'M'
+    t.spt_resp_unit_row_nom = "M"
     t.spt_resp_col_nom = 6666.66
-    t.spt_resp_unit_col_nom = 'M'
-    t.data_fld_1 = b'a' * 48
+    t.spt_resp_unit_col_nom = "M"
+    t.data_fld_1 = b"a" * 48
     t.existence_mask = 0x00000001
 
     t.num_aux_b = 2
     t.num_aux_c = 2
     for i in range(t.num_aux_b):
-        t.bapf[i] = 'R'
-        t.ubap[i] = 'ABCDEFG'
+        t.bapf[i] = "R"
+        t.ubap[i] = "ABCDEFG"
         for j in range(t.count):
             t.apr_band[i, j] = 7
 
     for i in range(t.num_aux_c):
-        t.capf[i] = 'R'
-        t.ucap[i] = 'ABCDEFG'
+        t.capf[i] = "R"
+        t.ucap[i] = "ABCDEFG"
         t.apr_cube[i] = 8
     return t
 
 
 def createENGRDA():
-
     t = TreENGRDA()
 
     # Set some values
@@ -93,34 +93,44 @@ def createENGRDA():
     t.engmtxc[0] = 1
     t.engmtxr[0] = 1
     t.engdatu[0] = "tC"
-    t.engdata[0] = np.array([[277]], dtype = np.int16)
+    t.engdata[0] = np.array([[277]], dtype=np.int16)
     t.englbl[1] = "TEMP2"
-    t.engmtxc[1]=1
-    t.engmtxr[1]=1
-    t.engdatu[1]="tK"
-    t.engdata[1]= np.array([[277.45,],], dtype=np.float32)
+    t.engmtxc[1] = 1
+    t.engmtxr[1] = 1
+    t.engdatu[1] = "tK"
+    t.engdata[1] = np.array(
+        [
+            [
+                277.45,
+            ],
+        ],
+        dtype=np.float32,
+    )
     t.englbl[2] = "TEMP3 Wall"
-    t.engmtxc[2]=10
-    t.engmtxr[2]=1
-    t.engdatu[2]="NA"
-    t.engdata[2]= "10.7 DEG C"
+    t.engmtxc[2] = 10
+    t.engmtxr[2] = 1
+    t.engdatu[2] = "NA"
+    t.engdata[2] = "10.7 DEG C"
 
     return t
 
+
 def write_zero(d, bstart, lstart, sstart):
-    d[:,:] = 0
+    d[:, :] = 0
+
 
 def write_by_row_p(d, bstart, lstart, sstart):
-    #print("sstart", sstart)
+    # print("sstart", sstart)
     for a in range(d.shape[0]):
         for b in range(d.shape[1]):
-            #print(a*20+b*30)
-            d[a, b] = a*20+b*30
+            # print(a*20+b*30)
+            d[a, b] = a * 20 + b * 30
 
-def create_sample_file(skip_h5_file=False, use_time_iid2 = False):
-    '''This is a duplicate of the NitfFileGen test file. We just use this so we have
+
+def create_sample_file(skip_h5_file=False, use_time_iid2=False):
+    """This is a duplicate of the NitfFileGen test file. We just use this so we have
     something with enough complexity to test merging with, without needing to use
-    an external data source.'''
+    an external data source."""
     # Create the file. We don't supply a name yet, that comes when we actually
     # write
 
@@ -130,10 +140,10 @@ def create_sample_file(skip_h5_file=False, use_time_iid2 = False):
     # the data into a numpy array, which is nice for testing. We'll probably
     # need to write other image sources (although most things can go to a
     # numpy array, so maybe not).
-    img = NitfImageWriteNumpy(10, 10, np.uint8, iid1 = "Image 1", idlvl=5)
+    img = NitfImageWriteNumpy(10, 10, np.uint8, iid1="Image 1", idlvl=5)
     for i in range(10):
         for j in range(10):
-            img[0,i,j] = i + j
+            img[0, i, j] = i + j
 
     # We just directly add this to the NitfFile. We need to wrap this as a
     # NitfImageSegment (which adds the subheader). f.image_segment here is
@@ -141,9 +151,16 @@ def create_sample_file(skip_h5_file=False, use_time_iid2 = False):
     f.image_segment.append(NitfImageSegment(img))
 
     # Create a larger img segment
-    img2 = NitfImageWriteDataOnDemand(nrow=30, ncol=30, data_type=np.uint8,
-                                      numbands=50, data_callback=write_zero,
-                                      image_gen_mode=NitfImageWriteDataOnDemand.IMAGE_GEN_MODE_BAND, iid1 = "Image 2", idlvl=6)
+    img2 = NitfImageWriteDataOnDemand(
+        nrow=30,
+        ncol=30,
+        data_type=np.uint8,
+        numbands=50,
+        data_callback=write_zero,
+        image_gen_mode=NitfImageWriteDataOnDemand.IMAGE_GEN_MODE_BAND,
+        iid1="Image 2",
+        idlvl=6,
+    )
     segment2 = NitfImageSegment(img2)
     if use_time_iid2 is True:
         segment2.subheader.iid2 = str(datetime.datetime.now())
@@ -151,10 +168,10 @@ def create_sample_file(skip_h5_file=False, use_time_iid2 = False):
     segment2.tre_list.append(createENGRDA())
     f.image_segment.append(segment2)
 
-    img3 = NitfImageWriteNumpy(10, 10, np.uint8, iid1 = "Image 1", idlvl=7)
+    img3 = NitfImageWriteNumpy(10, 10, np.uint8, iid1="Image 1", idlvl=7)
     for i in range(10):
         for j in range(10):
-            img3[0,i,j] = i + j
+            img3[0, i, j] = i + j
     segment3 = NitfImageSegment(img3)
     f.image_segment.append(segment3)
 
@@ -178,29 +195,29 @@ def create_sample_file(skip_h5_file=False, use_time_iid2 = False):
     f.tre_list.append(t)
     f.image_segment[0].tre_list.append(t2)
 
-    #Text segment ---------------------------------------------------------------------
+    # Text segment ---------------------------------------------------------------------
 
     d = {
-        'first_name': 'Guido',
-        'second_name': 'Rossum',
-        'titles': ['BDFL', 'Developer'],
+        "first_name": "Guido",
+        "second_name": "Rossum",
+        "titles": ["BDFL", "Developer"],
     }
 
     ts = NitfTextSegment(NitfTextStr(json.dumps(d)))
 
-    ts.subheader.textid = 'ID12345'
+    ts.subheader.textid = "ID12345"
     ts.subheader.txtalvl = 0
-    ts.subheader.txtitl = 'sample title'
+    ts.subheader.txtitl = "sample title"
 
     f.text_segment.append(ts)
 
-    #DES ------------------------------------------------------------------------------
+    # DES ------------------------------------------------------------------------------
 
     # -- CSATTB --
     d = DesCSATTB()
     ds = d.user_subheader
-    ds.id = '4385ab47-f3ba-40b7-9520-13d6b7a7f311'
-    ds.numais = '010'
+    ds.id = "4385ab47-f3ba-40b7-9520-13d6b7a7f311"
+    ds.numais = "010"
     for i in range(int(ds.numais)):
         ds.aisdlvl[i] = 5 + i
     ds.reservedsubh_len = 0
@@ -227,8 +244,8 @@ def create_sample_file(skip_h5_file=False, use_time_iid2 = False):
 
     d = DesCSEPHB()
     ds3 = d.user_subheader
-    ds3.id = '4385ab47-f3ba-40b7-9520-13d6b7a7f31b'
-    ds3.numais = '011'
+    ds3.id = "4385ab47-f3ba-40b7-9520-13d6b7a7f31b"
+    ds3.numais = "011"
     for i in range(int(ds3.numais)):
         ds3.aisdlvl[i] = 5 + i
     ds3.reservedsubh_len = 0
@@ -260,47 +277,49 @@ def create_sample_file(skip_h5_file=False, use_time_iid2 = False):
     rng = np.random.RandomState(2021)
     arr = rng.randn(1000)
 
-    g = h_f.create_group('Base_Group')
-    d = g.create_dataset('default', data=arr)
+    g = h_f.create_group("Base_Group")
+    d = g.create_dataset("default", data=arr)
 
-    g.attrs['Date'] = "2020-01-01"
-    g.attrs['User'] = 'Me'
+    g.attrs["Date"] = "2020-01-01"
+    g.attrs["User"] = "Me"
 
-    d.attrs['OS'] = os.name
+    d.attrs["OS"] = os.name
     h_f.close()
     # Because of the creation time in file, we don't get a clean merge.
     # We may write code to work around this, but for now just allow this
     # to skip
-    if(not skip_h5_file):
+    if not skip_h5_file:
         d_ext.attach_file("mytestfile.hdf5")
         de3 = NitfDesSegment(d_ext)
         f.des_segment.append(de3)
 
     return f
 
+
 @contextmanager
-def try_merge(fbase, fvara, fvarb, fmerge_expect = None):
-    '''Since we do this a few times, this handles trying to do a merge.
+def try_merge(fbase, fvara, fvarb, fmerge_expect=None):
+    """Since we do this a few times, this handles trying to do a merge.
     This generates all the input files, then yields with the file names
     for base, variant a, variant b, result.
 
     If fmerge_expect is supplied, we then run nitf diff on the results
-    '''
+    """
     fbase.write("base.ntf")
     fvara.write("vara.ntf")
     fvarb.write("varb.ntf")
     for t in ("base", "vara", "varb"):
-        subprocess.run(["nitf_json_delta", f"{t}.ntf",
-                    "base.ntf",
-                    f"{t}_delta.json"], check=True)
+        subprocess.run(
+            ["nitf_json_delta", f"{t}.ntf", "base.ntf", f"{t}_delta.json"], check=True
+        )
     yield "base_delta.json", "vara_delta.json", "varb_delta.json", "merge_delta.json"
-    if(fmerge_expect is not None):
+    if fmerge_expect is not None:
         fmerge_expect.write("merge_expect.ntf")
-        t = subprocess.run(["nitf_diff", "merge_expect.ntf",
-                            "base.ntf",
-                            "merge_delta.json"])
+        t = subprocess.run(
+            ["nitf_diff", "merge_expect.ntf", "base.ntf", "merge_delta.json"]
+        )
         assert t.returncode == 0
-        
+
+
 def test_file_merge(isolated_dir):
     # Requires jsonpickle, which isn't a general requirement for pynitf. So just skip
     # test if we don't have this.
@@ -322,29 +341,41 @@ def test_file_merge(isolated_dir):
 
     # The new file and the golden aren't the same.
     print("Results of nitf_diff with new file and old golden. Should be different")
-    t = subprocess.run(["nitf_diff", "nitf_sample_new.ntf",
-                        "nitf_sample_golden.ntf"])
+    t = subprocess.run(["nitf_diff", "nitf_sample_new.ntf", "nitf_sample_golden.ntf"])
     assert t.returncode == 1
 
     # Create a json delta file with all the new stuff in the new file.
-    t = subprocess.run(["nitf_json_delta", "nitf_sample_new.ntf",
-                        "nitf_sample_golden.ntf",
-                        "nitf_sample_golden_delta.json"])
+    t = subprocess.run(
+        [
+            "nitf_json_delta",
+            "nitf_sample_new.ntf",
+            "nitf_sample_golden.ntf",
+            "nitf_sample_golden_delta.json",
+        ]
+    )
     assert t.returncode == 0
 
     # Then use the delta file to update the golden file. Should match
-    print("Results of nitf_diff with new file and old golden plus json delta file. Should be the same")
-    t = subprocess.run(["nitf_diff", "nitf_sample_new.ntf",
-                        "nitf_sample_golden.ntf",
-                        "nitf_sample_golden_delta.json"])
+    print(
+        "Results of nitf_diff with new file and old golden plus json delta file. Should be the same"
+    )
+    t = subprocess.run(
+        [
+            "nitf_diff",
+            "nitf_sample_new.ntf",
+            "nitf_sample_golden.ntf",
+            "nitf_sample_golden_delta.json",
+        ]
+    )
     assert t.returncode == 0
 
-@require_git    
+
+@require_git
 def test_different_tre_git_merge(isolated_dir):
-    '''A simple merge, where we start with a base file and then have
+    """A simple merge, where we start with a base file and then have
     two different variants updating different TREs. We use a standard
     git merge. This should be a clean case, and is the simplest merge
-    we need to do.'''
+    we need to do."""
     fbase = create_sample_file(skip_h5_file=True)
     fvara = create_sample_file(skip_h5_file=True)
     fvarb = create_sample_file(skip_h5_file=True)
@@ -361,21 +392,27 @@ def test_different_tre_git_merge(isolated_dir):
     fexpect.image_segment[1].tre_list[0].angle_to_north = 200
 
     # Try doing merge, using git merge
-    with try_merge(fbase, fvara, fvarb, fexpect) as\
-         (base_name, a_name, b_name, out_name):
-        t = subprocess.run(f"git merge-file -p {a_name} {base_name} {b_name} > {out_name}",
-                           shell=True)
+    with try_merge(fbase, fvara, fvarb, fexpect) as (
+        base_name,
+        a_name,
+        b_name,
+        out_name,
+    ):
+        t = subprocess.run(
+            f"git merge-file -p {a_name} {base_name} {b_name} > {out_name}", shell=True
+        )
         assert t.returncode == 0
+
 
 @require_git
 @pytest.mark.skip
 def test_different_tre_git_merge_time_iid2(isolated_dir):
-    '''Same test_different_tre_git_merge except that the files generated uses current datetime as one of the
-    images' iid2. This will fail right now because there will be merge conflict in the image subheader'''
-    fbase = create_sample_file(skip_h5_file=True, use_time_iid2 = True)
-    fvara = create_sample_file(skip_h5_file=True, use_time_iid2 = True)
-    fvarb = create_sample_file(skip_h5_file=True, use_time_iid2 = False)
-    fexpect = create_sample_file(skip_h5_file=True, use_time_iid2 = True)
+    """Same test_different_tre_git_merge except that the files generated uses current datetime as one of the
+    images' iid2. This will fail right now because there will be merge conflict in the image subheader"""
+    fbase = create_sample_file(skip_h5_file=True, use_time_iid2=True)
+    fvara = create_sample_file(skip_h5_file=True, use_time_iid2=True)
+    fvarb = create_sample_file(skip_h5_file=True, use_time_iid2=False)
+    fexpect = create_sample_file(skip_h5_file=True, use_time_iid2=True)
 
     # Variant A updates use00a TRE in first image segment
     fvara.image_segment[0].tre_list[0].angle_to_north = 100
@@ -388,17 +425,23 @@ def test_different_tre_git_merge_time_iid2(isolated_dir):
     fexpect.image_segment[1].tre_list[0].angle_to_north = 200
 
     # Try doing merge, using git merge
-    with try_merge(fbase, fvara, fvarb, fexpect) as\
-         (base_name, a_name, b_name, out_name):
-        t = subprocess.run(f"git merge-file -p {a_name} {base_name} {b_name} > {out_name}",
-                           shell=True)
+    with try_merge(fbase, fvara, fvarb, fexpect) as (
+        base_name,
+        a_name,
+        b_name,
+        out_name,
+    ):
+        t = subprocess.run(
+            f"git merge-file -p {a_name} {base_name} {b_name} > {out_name}", shell=True
+        )
         assert t.returncode == 1
 
-@require_git    
+
+@require_git
 def test_conflict_tre_git_merge(isolated_dir):
-    '''This is a merge where both variant A and B update the same 
+    """This is a merge where both variant A and B update the same
     TRE field. This is a real conflict, and the merge should always
-    fail.'''
+    fail."""
     fbase = create_sample_file(skip_h5_file=True)
     fvara = create_sample_file(skip_h5_file=True)
     fvarb = create_sample_file(skip_h5_file=True)
@@ -413,22 +456,30 @@ def test_conflict_tre_git_merge(isolated_dir):
     fexpect = None
 
     # Try doing merge, using git merge
-    with try_merge(fbase, fvara, fvarb, fexpect) as\
-         (base_name, a_name, b_name, out_name):
-        t = subprocess.run(f"git merge-file -p {a_name} {base_name} {b_name} > {out_name}",
-                           shell=True)
+    with try_merge(fbase, fvara, fvarb, fexpect) as (
+        base_name,
+        a_name,
+        b_name,
+        out_name,
+    ):
+        t = subprocess.run(
+            f"git merge-file -p {a_name} {base_name} {b_name} > {out_name}", shell=True
+        )
         # The return code is the number of conflicts. We expect exactly
         # 1 conflict
         assert t.returncode == 1
 
+
 # Skip, just until we can get this working. We know there is a problem here
 # and we don't want our unit tests failing for a known/unimplemented problem.
-@skip 
-@require_git    
+@skip
+@require_git
 def test_same_tre_git_merge(isolated_dir):
-    '''Variant A and B update different fields in the same TRE. This 
-    should be a clean merge'''
-    print("Note that is currently fails. We would like this to work, the conflict isn't a 'real' conflict, just a limitation of our design.")
+    """Variant A and B update different fields in the same TRE. This
+    should be a clean merge"""
+    print(
+        "Note that is currently fails. We would like this to work, the conflict isn't a 'real' conflict, just a limitation of our design."
+    )
     fbase = create_sample_file(skip_h5_file=True)
     fvara = create_sample_file(skip_h5_file=True)
     fvarb = create_sample_file(skip_h5_file=True)
@@ -445,21 +496,29 @@ def test_same_tre_git_merge(isolated_dir):
     fexpect.image_segment[0].tre_list[0].mean_gsd = 20.1
 
     # Try doing merge, using git merge
-    with try_merge(fbase, fvara, fvarb, fexpect) as\
-         (base_name, a_name, b_name, out_name):
-        t = subprocess.run(f"git merge-file -p {a_name} {base_name} {b_name} > {out_name}",
-                           shell=True)
+    with try_merge(fbase, fvara, fvarb, fexpect) as (
+        base_name,
+        a_name,
+        b_name,
+        out_name,
+    ):
+        t = subprocess.run(
+            f"git merge-file -p {a_name} {base_name} {b_name} > {out_name}", shell=True
+        )
         assert t.returncode == 0
-    
+
+
 # Skip, just until we can get this working. We know there is a problem here
 # and we don't want our unit tests failing for a known/unimplemented problem.
-@skip 
-@require_git    
+@skip
+@require_git
 def test_include_h5_tre_git_merge(isolated_dir):
-    '''This is test_different_tre_git_merge, but with the H5 file included.
+    """This is test_different_tre_git_merge, but with the H5 file included.
     This adds a extra challenge because something we ignore in nitf_diff
-    changes for both.'''
-    print("This test fails. This isn't a 'real' conflict, just the creation time for the h5 file changes. This is something we would like to cleanly merge.")
+    changes for both."""
+    print(
+        "This test fails. This isn't a 'real' conflict, just the creation time for the h5 file changes. This is something we would like to cleanly merge."
+    )
     fbase = create_sample_file(skip_h5_file=False)
     fvara = create_sample_file(skip_h5_file=False)
     fvarb = create_sample_file(skip_h5_file=False)
@@ -476,8 +535,13 @@ def test_include_h5_tre_git_merge(isolated_dir):
     fexpect.image_segment[1].tre_list[0].angle_to_north = 200
 
     # Try doing merge, using git merge
-    with try_merge(fbase, fvara, fvarb, fexpect) as\
-         (base_name, a_name, b_name, out_name):
-        t = subprocess.run(f"git merge-file -p {a_name} {base_name} {b_name} > {out_name}",
-                           shell=True)
+    with try_merge(fbase, fvara, fvarb, fexpect) as (
+        base_name,
+        a_name,
+        b_name,
+        out_name,
+    ):
+        t = subprocess.run(
+            f"git merge-file -p {a_name} {base_name} {b_name} > {out_name}", shell=True
+        )
         assert t.returncode == 0

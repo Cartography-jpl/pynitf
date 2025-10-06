@@ -3,7 +3,7 @@ from .nitf_tre import Tre, tre_tag_to_cls
 import xml.etree.ElementTree as ET
 import io
 
-hlp = '''This is the ILLUMA TRE, Illumination for Spectral Products. 
+hlp = """This is the ILLUMA TRE, Illumination for Spectral Products. 
 
 The field names can be pretty cryptic, but are documented in detail in 
 the NITF TRE documentation (STDI-0002-1 Appendix AL: ILLUM v1.0).
@@ -29,29 +29,32 @@ This class has the attributes (mapping to xml) of:
              Computed Total Natural Illumination (W m^-2 sr^-1, optional)
   art_il_min Minimum Artificial Illumination (W m^-2 sr^-1, optional)
   art_il_min Maximum Artificial Illumination (W m^-2 sr^-1, optional)
-'''
+"""
+
 
 class TreILLUMA(Tre):
     __doc__ = hlp
     tre_tag = "ILLUMA"
     # Field list, as a pair of the XML name and the python attribute going
     # with it
-    field_list = [["solAz", "sol_az"],
-                  ["solEl", "sol_el"],
-                  ["comSolIl", "com_sol_il"],
-                  ["lunEl", "lun_el"],
-                  ["lunPhAng", "lun_ph_ang"],
-                  ["lunAz", "lun_az"],
-                  ["comLunIl", "com_lun_il"],
-                  ["comTotNatIl", "com_tot_nat_il"],
-                  ["solLunDisAd", "sol_lun_dis_ad"],
-                  ["artIlMin", "art_il_min"],
-                  ["artIlMax", "art_il_max"]]
+    field_list = [
+        ["solAz", "sol_az"],
+        ["solEl", "sol_el"],
+        ["comSolIl", "com_sol_il"],
+        ["lunEl", "lun_el"],
+        ["lunPhAng", "lun_ph_ang"],
+        ["lunAz", "lun_az"],
+        ["comLunIl", "com_lun_il"],
+        ["comTotNatIl", "com_tot_nat_il"],
+        ["solLunDisAd", "sol_lun_dis_ad"],
+        ["artIlMin", "art_il_min"],
+        ["artIlMax", "art_il_max"],
+    ]
 
     def __init__(self):
         for xml_name, attribute_name in self.field_list:
             setattr(self, attribute_name, None)
-        self.ns = {"xmlns" : 'http://namespaces.ic.gov/NSGPDD/2012/v1.0/ILLUMA'}
+        self.ns = {"xmlns": "http://namespaces.ic.gov/NSGPDD/2012/v1.0/ILLUMA"}
 
     def tre_bytes(self):
         # Can perhaps add in validation with the XLS. But for now, just
@@ -60,8 +63,8 @@ class TreILLUMA(Tre):
         res += b'<ILLUMA xmlns="http://namespaces.ic.gov/NSGPDD/2012/v1.0/ILLUMA"     xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:ism="urn:us:gov:ic:ism">'
         for xml_name, attribute_name in self.field_list:
             val = getattr(self, attribute_name)
-            if(val is not None):
-                res += f"  <{xml_name}>{val}</{xml_name}>".encode('utf-8')
+            if val is not None:
+                res += f"  <{xml_name}>{val}</{xml_name}>".encode("utf-8")
         res += b"</ILLUMA>"
         return res
 
@@ -71,19 +74,19 @@ class TreILLUMA(Tre):
             # Try with and without namespace. The namespace is needed for
             # valid XML, not sure if we'll see this in all data though.
             n = root.find(xml_name) or root.find(f"xmlns:{xml_name}", self.ns)
-            if (n is not None):
+            if n is not None:
                 setattr(self, attribute_name, float(n.text))
 
     def read_from_file(self, fh, delayed_read=False):
         tag = fh.read(6).rstrip().decode("utf-8")
-        if (tag != self.tre_tag):
+        if tag != self.tre_tag:
             raise RuntimeError("Expected TRE %s but got %s" % (self.tre_tag, tag))
         cel = int(fh.read(5))
         self.read_from_tre_bytes(fh.read(cel))
 
     def __str__(self):
-        '''Text description of structure, e.g., something you can print
-        out.'''
+        """Text description of structure, e.g., something you can print
+        out."""
         res = io.StringIO()
         print("TRE - %s" % self.tre_tag, file=res)
         for xml_name, attribute_name in self.field_list:
@@ -94,6 +97,6 @@ class TreILLUMA(Tre):
 tre_tag_to_cls.add_cls(TreILLUMA)
 
 
-__all__ = ["TreILLUMA", ]
-
-
+__all__ = [
+    "TreILLUMA",
+]
