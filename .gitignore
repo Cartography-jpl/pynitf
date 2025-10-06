@@ -13,3 +13,9 @@ basic*.ntf
 build
 dist
 
+# pixi environments
+.pixi
+# Don't check in pixi.lock. We just use this for development, and
+# when we recreate we always want to use the latest of everything
+pixi.lock
+pixi.toml

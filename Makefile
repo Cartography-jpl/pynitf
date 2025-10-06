@@ -7,12 +7,12 @@ SPHINXOPTS =
 PYTEST_OPTS = -n auto
 
 install:
-	$(PYTHON) -m pip install . --no-deps --ignore-installed --no-cache-dir --no-index -vvv
+	$(PYTHON) -m pip install . --no-deps --ignore-installed --no-cache-dir --no-index --no-build-isolation -vvv
 
 # install to "develop" mode. This sets up a link to the source code, so we
 # can modify the source and immediately see the results in using pynitf
 install-develop:
-	$(PYTHON) -m pip install -e . --no-deps --ignore-installed --no-cache-dir --no-index -vvv
+	$(PYTHON) -m pip install -e . --no-deps --ignore-installed --no-cache-dir --no-index --no-build-isolation -vvv
 
 # variation that installs the source into $AFIDSPYTHONTOP, since this
 # is something we commonly do during development. Note you may also want
@@ -100,3 +100,17 @@ mypy-simplier:
 mypy:
 	PYTHONPATH=$(PWD) mypy --disallow-untyped-defs pynitf
 
+
+# ------------------------------------------------------------------
+# Create a development environment using pixi. Note there is no
+# requirement that conda/pixi be used, it can just be nice to easily
+# create a stand alone development environment when working on
+# pynitf
+# ------------------------------------------------------------------
+
+dev-env:
+	-rm -r .pixi pixi.lock pixi.toml
+	pixi init .
+	pixi add numpy docopt-ng h5py jsonpickle pytest pytest-xdist ruff mypy Sphinx ghp-import sphinxcontrib-plantuml ptpython python pip setuptools ipython
+	pixi run python -m pip install -e . --no-deps --ignore-installed --no-cache-dir --no-index --no-build-isolation -vvv
+	echo "Execute 'pixi shell' to use development environment."

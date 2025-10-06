@@ -15,7 +15,7 @@ setup(name='pynitf',
                "bin/explore_nitf"],
       install_requires=[
           'numpy',
-          'docopt'
+          'docopt_ng'
       ],
       setup_requires=["pytest-runner",],
       tests_requires=["pytest","h5py"],
