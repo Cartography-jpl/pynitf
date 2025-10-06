@@ -1,9 +1,9 @@
-from builtins import object
-from docopt import docopt
 import re
 
+from docopt import docopt
 
-class DocOptSimple(object):
+
+class DocOptSimple:
     """The package docopt (http://docopt.org) is a nice package,
     but it has the disadvantage that getting the options etc. from it
     uses a somewhat unnatural interface (e.g., --my-opt=n comes as
